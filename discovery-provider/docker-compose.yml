@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  discovery-provider-db:
+    image: postgres:11.4
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    user: postgres
+    volumes:
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+  discovery-provider-cache:
+    image: redis:5.0.5
+    command: redis-server --save ""
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 10s
+      timeout: 5s
+  discovery-provider-backend:
+    image: audius/discovery-provider:257b60f2ff0b990138d08e618b4e364e3b27b6d7
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+      discovery-provider-cache:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:5000/health_check" ]
+      interval: 10s
+      timeout: 5s
