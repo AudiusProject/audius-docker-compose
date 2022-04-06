@@ -24,7 +24,7 @@ services:
       - creator-node
 
   creator-node-backend:
-    image: audius/creator-node:257b60f2ff0b990138d08e618b4e364e3b27b6d7
+    image: audius/creator-node:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     depends_on:
       creator-node-db:
         condition: service_healthy
@@ -35,6 +35,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
+      - .env.defaults
       - .env
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:4000/health_check" ]
@@ -51,8 +52,8 @@ services:
     extends:
       file: common-services.yml
       service: base-db
-    volumes:
-      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
+        #    volumes:
+        #      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data  # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
     profiles:
@@ -68,7 +69,7 @@ services:
       - discovery-provider
 
   discovery-provider-backend:
-    image: audius/discovery-provider:257b60f2ff0b990138d08e618b4e364e3b27b6d7
+    image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     depends_on:
       discovery-provider-db:
         condition: service_healthy
@@ -77,6 +78,7 @@ services:
     ports:
       - "5000:5000"
     env_file:
+      - .env.defaults
       - .env
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:5000/health_check" ]
