@@ -1,158 +1,229 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-# Terminology:
-# | audius-cli | docker-compose |
-# +------------+----------------+
-# | service    | project        |
-# | container  | service        |
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.request
 
-import argparse
+import click
+import psutil
+
+DEFAULT_MANIFESTS_PATH = os.getenv(
+    "MANIFESTS_PATH", os.path.expanduser("~/audius-k8s-manifests")
+)
+
+RECOMMENDED_CPU_COUNT = 8
+RECOMMENDED_MEMORY = 16
+
+SERVICE_PORTS = {
+    "discovery-provider": "5000",
+    "creator-node": "4000",
+    "identity-server": "7000",
+}
+
+service_type = click.Choice(["creator-node", "discovery-provider", "identity"])
+container_type = click.Choice(["backend", "cache", "db"])
 
 
+@click.group()
+@click.option(
+    "-m",
+    "--manifests-path",
+    default=DEFAULT_MANIFESTS_PATH,
+    help="Path to the manifests directory, if not specified, the value of the MANIFESTS_PATH environment variable, or ~/audius-k8s-manifests if neither is specified.",
+)
+@click.pass_context
+def cli(ctx, manifests_path):
+    """A tool for managing audius services"""
+    ctx.ensure_object(dict)
+    ctx.obj["manifests_path"] = manifests_path
+
+
+@cli.command()
+@click.argument("service", type=service_type)
 def check_config(service):
+    """Check the config for a service"""
     pass
 
 
-def health_check(service):
-    pass
-
-
-def launch(service, seed_job):
-    pass
-
-
-def logs(service, container):
-    pass
-
-
-def restart(service, container):
-    pass
-
-
-def main():
-    parser = argparse.ArgumentParser(description="A tool for managing audius services")
-
-    commands = parser.add_subparsers(
-        required=True,
-        help="Run '%(prog)s <command> --help' for more information on a command",
-        metavar="<command>",
+@cli.command()
+@click.argument("service", type=service_type)
+@click.pass_context
+def health_check(ctx, service):
+    """Check the health of a service"""
+    proc = subprocess.run(
+        [
+            "docker-compose",
+            "--project-directory",
+            ctx.obj["manifests_path"],
+            "ps",
+            "-q",
+            f"{service}-backend",
+        ],
+        capture_output=True,
     )
 
-    # check-config command
-    check_config_parser = commands.add_parser(
-        "check-config",
-        help="Check the configuration file for unset keys",
-        description="Check the configuration file for unset keys",
+    if proc.returncode:
+        click.secho("Service is not running", fg="yellow")
+        sys.exit(1)
+
+    try:
+        response = json.load(
+            urllib.request.urlopen(
+                f"http://localhost:{SERVICE_PORTS[service]}/health_check"
+            )
+        )
+
+        if service == "creator-node":
+            healthy = response["data"]["healthy"]
+        elif service == "discovery-provider":
+            healthy = (
+                response["data"]["block_difference"]
+                < response["data"]["maximum_healthy_block_difference"]
+            )
+        elif service == "identity":
+            healthy = response["healthy"]
+
+        if healthy:
+            click.secho("Service is healthy", fg="green")
+            sys.exit(0)
+        else:
+            click.secho("Service is not healthy", fg="red")
+            sys.exit(1)
+    except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
+        click.secho("Service is not healthy", fg="red")
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("service", type=service_type)
+@click.pass_context
+def launch(ctx, service):
+    """Launch the service"""
+    try:
+        ctx.forward(check_config)
+    except SystemExit:
+        pass
+
+    total_memory = psutil.virtual_memory().total // (1024 ** 3)
+    cpu_count = psutil.cpu_count()
+
+    click.echo(f"CPUs:\t{cpu_count}\t(recommended: {RECOMMENDED_CPU_COUNT})")
+    click.echo(f"Memory:\t{total_memory}GB\t(recommended: {RECOMMENDED_MEMORY}GB)")
+
+    if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY:
+        click.secho("System does not meet recommended requirements", fg="red")
+    else:
+        click.secho("System meets recommended requirements", fg="green")
+
+    click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
+
+    subprocess.run(
+        [
+            "docker-compose",
+            "--project-directory",
+            ctx.obj["manifests_path"],
+            "--profile",
+            service,
+            "up",
+            "-d",
+        ],
     )
 
-    check_config_parser.add_argument(
-        "service",
-        help="The service to check configuration for (choices: %(choices)s)",
-        choices=["creator-node", "discovery-provider", "identity"],
-        metavar="<service>",
+
+@cli.command()
+@click.argument("service", type=service_type)
+@click.argument("containers", type=container_type)
+@click.pass_context
+def logs(ctx, service, containers):
+    """Get logs for a service/container"""
+    containers = [f"{service}-{container}" for container in containers]
+    subprocess.run(
+        [
+            "docker-compose",
+            "--project-directory",
+            ctx.obj["manifests_path"],
+            "--profile",
+            service,
+            "logs",
+            "-f",
+            *containers,
+        ],
     )
 
-    check_config_parser.set_defaults(func=check_config)
 
-    # health-check command
-    health_check_parser = commands.add_parser(
-        "health-check",
-        help="Check the health of the services",
-        description="Check the health of the services",
-    )
+@cli.command()
+@click.argument("service", type=service_type, required=False)
+@click.argument("containers", type=container_type, nargs=-1)
+@click.pass_context
+def restart(ctx, service, containers):
+    """Restart a service/container"""
+    if service:
+        containers = [f"{service}-{container}" for container in containers]
+        subprocess.run(
+            [
+                "docker-compose",
+                "--project-directory",
+                ctx.obj["manifests_path"],
+                "--profile",
+                service,
+                "restart",
+                *containers,
+            ],
+        )
+    else:
+        subprocess.run(
+            [
+                "docker-compose",
+                "--project-directory",
+                ctx.obj["manifests_path"],
+                "restart",
+            ],
+        )
 
-    health_check_parser.add_argument(
-        "service",
-        help="The service to check health of (choices: %(choices)s)",
-        choices=["creator-node", "discovery-provider", "identity"],
-        metavar="<service>",
-    )
 
-    health_check_parser.set_defaults(func=health_check)
+@cli.command()
+@click.argument("key", required=False)
+@click.argument("value", required=False)
+@cli.pass_context
+def set_config(ctx, key, value):
+    """Set a config value"""
+    if key is None:
+        key = click.prompt(click.style("Key", bold=True))
+    if value is None:
+        value = click.prompt(click.style("Value", bold=True))
 
-    # launch command
-    launch_parser = commands.add_parser(
-        "launch",
-        help="Launch a service",
-        description="Launch a service",
-    )
+    with open(os.path.join(ctx.obj["manifests_path"], ".env"), "a") as fp:
+        fp.write(f"{key}={repr(value)}\n")
 
-    launch_parser.add_argument(
-        "-s",
-        "--seed-job",
-        action="store_true",
-        help="Run seed job when launching discovery provider",
-    )
 
-    launch_parser.add_argument(
-        "service",
-        help="The service to launch (choices: %(choices)s)",
-        choices=["creator-node", "discovery-provider", "identity"],
-        metavar="<service>",
-    )
+@cli.command()
+@click.argument("branch", required=False)
+@cli.pass_context
+def pull(ctx, branch):
+    """TODO"""
+    try:
+        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifest_path"])
+        if branch:
+            subprocess.run(
+                ["git", "checkout", branch], check=True, cwd=ctx.obj["manifest_path"]
+            )
+        subprocess.run(["git", "pull"], check=True, cwd=ctx.obj["manifest_path"])
+    except subprocess.CalledProcessError:
+        click.secho("Could not pull", fg="red")
+        sys.exit(1)
 
-    launch_parser.set_defaults(func=launch)
 
-    # logs command
-    logs_parser = commands.add_parser(
-        "logs",
-        help="View logs for a service",
-        description="View logs for a service/container",
-    )
-
-    logs_parser.add_argument(
-        "service",
-        help="The service to view logs for (choices: %(choices)s)",
-        choices=["creator-node", "discovery-provider", "identity"],
-        metavar="<service>",
-    )
-
-    logs_parser.add_argument(
-        "container",
-        nargs="?",
-        help="The container to view logs for (choices: %(choices)s)",
-        choices=["db", "cache", "backend"],
-        metavar="<container>",
-    )
-
-    logs_parser.set_defaults(func=logs)
-
-    # restart command
-    restart_parser = commands.add_parser(
-        "restart",
-        help="Restart a service/container",
-        description="Restart a service/container",
-    )
-
-    restart_parser.add_argument(
-        "service",
-        help="The service to restart (choices: %(choices)s)",
-        choices=["creator-node", "discovery-provider", "identity"],
-        metavar="<service>",
-    )
-
-    restart_parser.add_argument(
-        "container",
-        nargs="?",
-        help="The container to restart (choices: %(choices)s)",
-        choices=["db", "cache", "backend"],
-        metavar="<container>",
-    )
-
-    restart_parser.set_defaults(func=restart)
-
-    # pull command
-    pull_parser = commands.add_parser(
-        "pull",
-        help="Pull the latest images for the services",
-        description="Pull the latest images for the services",
-    )
-
-    # parse arguments and execute associated function
-    args = parser.parse_args()
-    func = args.__dict__.pop("func")
-    func(**args.__dict__)
+@cli.command()
+@click.argument("branch", required=False)
+@click.pass_context
+def upgrade(ctx, branch):
+    """TODO"""
+    ctx.forward(pull)
+    ctx.invoke(restart)
 
 
 if __name__ == "__main__":
-    main()
+    cli(obj={DEFAULT_MANIFESTS_PATH})
