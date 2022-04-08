@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  db:
+    extends:
+      file: ../common-services.yml
+      service: base-db
+    volumes:
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data  # Use k8s location for backward compatibility
+    networks:
+      - discovery-provider-network
+
+  cache:
+    extends:
+      file: ../common-services.yml
+      service: base-cache
+    networks:
+      - discovery-provider-network
+
+  backend:
+    image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    env_file:
+      - env
+      - override.env
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:5000/health_check"]
+      interval: 10s
+      timeout: 5s
+    networks:
+      - discovery-provider-network
+
+  seed-job:
+    image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
+    command: bash -c "
+      curl https://audius-pgdump.s3-us-west-2.amazonaws.com/discProvProduction.dump -O &&
+      pg_restore -d $$audius_db_url discProvProduction.dump
+      "
+    env_file:
+      - env
+      - override.env
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+    networks:
+      - discovery-provider-network
+    profiles:
+      - seed-job
+
+networks:
+  discovery-provider-network:

@@ -2,6 +2,7 @@
 
 import json
 import os
+import pathlib
 import subprocess
 import sys
 import urllib.error
@@ -20,7 +21,7 @@ SERVICE_PORTS = {
     "identity-server": "7000",
 }
 
-service_type = click.Choice(["creator-node", "discovery-provider", "identity"])
+service_type = click.Choice(["creator-node", "discovery-provider"])
 container_type = click.Choice(["backend", "cache", "db"])
 
 
@@ -29,8 +30,8 @@ container_type = click.Choice(["backend", "cache", "db"])
 def cli(ctx):
     """A tool for managing audius services"""
     ctx.ensure_object(dict)
-    ctx.obj["manifests_path"] = os.getenv(
-        "MANIFESTS_PATH", os.path.dirname(os.path.realpath(__file__))
+    ctx.obj["manifests_path"] = pathlib.Path(
+        os.getenv("MANIFESTS_PATH", os.path.dirname(os.path.realpath(__file__)))
     )
 
 
@@ -39,8 +40,8 @@ def cli(ctx):
 @click.pass_context
 def check_config(ctx, service):
     """Check the config for a service"""
-    env = os.path.join(ctx.obj["manifests_path"], f"{service}.env")
-    override_env = os.path.join(ctx.obj["manifests_path"], f"{service}.override.env")
+    env = ctx.obj["manifests_path"] / service / "env"
+    override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
     override_env_data = dotenv.dotenv_values(override_env)
@@ -65,10 +66,10 @@ def health_check(ctx, service):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"],
+            ctx.obj["manifests_path"] / service,
             "ps",
             "-q",
-            f"{service}-backend",
+            "backend",
         ],
         capture_output=True,
     )
@@ -130,15 +131,15 @@ def launch(ctx, seed_job, service):
     click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
     if seed_job and service == "discovery-provider":
+        # make sure backend is not running
         subprocess.run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"],
-                "--profile",
-                service,
+                ctx.obj["manifests_path"] / service,
                 "down",
+                "backend",
             ],
         )
 
@@ -148,9 +149,9 @@ def launch(ctx, seed_job, service):
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"],
+                ctx.obj["manifests_path"] / "discovery-provider",
                 "run",
-                "discovery-provider-seed-job",
+                "seed-job",
             ],
         )
 
@@ -159,9 +160,7 @@ def launch(ctx, seed_job, service):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"],
-            "--profile",
-            service,
+            ctx.obj["manifests_path"] / service,
             "up",
             "-d",
         ],
@@ -170,19 +169,16 @@ def launch(ctx, seed_job, service):
 
 @cli.command()
 @click.argument("service", type=service_type)
-@click.argument("containers", type=container_type)
+@click.argument("containers", type=container_type, nargs=-1)
 @click.pass_context
 def logs(ctx, service, containers):
     """Get logs for a service/container"""
-    containers = [f"{service}-{container}" for container in containers]
     subprocess.run(
         [
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"],
-            "--profile",
-            service,
+            ctx.obj["manifests_path"] / service,
             "logs",
             "-f",
             *containers,
@@ -191,35 +187,21 @@ def logs(ctx, service, containers):
 
 
 @cli.command()
-@click.argument("service", type=service_type, required=False)
+@click.argument("service", type=service_type)
 @click.argument("containers", type=container_type, nargs=-1)
 @click.pass_context
 def restart(ctx, service, containers):
     """Restart a service/container"""
-    if service:
-        containers = [f"{service}-{container}" for container in containers]
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"],
-                "--profile",
-                service,
-                "restart",
-                *containers,
-            ],
-        )
-    else:
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"],
-                "restart",
-            ],
-        )
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / service,
+            "restart",
+            *containers,
+        ],
+    )
 
 
 @cli.command()
@@ -235,7 +217,7 @@ def set_config(ctx, service, unset, key, value):
     if not unset and value is None:
         value = click.prompt(click.style("Value", bold=True))
 
-    env_file = os.path.join(ctx.obj["manifests_path"], f"{service}.override.env")
+    env_file = ctx.obj["manifests_path"] / service / "override.env"
 
     if unset:
         dotenv.unset_key(env_file, key)
@@ -252,7 +234,7 @@ def set_tag(ctx, service, unset, tag):
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
 
-    env_file = os.path.join(ctx.obj["manifests_path"], f"{service}.override.env")
+    env_file = ctx.obj["manifests_path"] / service / "override.env"
 
     if unset:
         dotenv.unset_key(env_file, "TAG")
@@ -283,7 +265,7 @@ def pull(ctx, branch):
 def upgrade(ctx, branch):
     """TODO"""
     ctx.forward(pull)
-    ctx.invoke(restart)
+    # ctx.invoke(restart)
 
 
 if __name__ == "__main__":

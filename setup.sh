@@ -40,8 +40,8 @@ sudo chown $(id -u):$(id -g) /var/k8s
 sudo apt install -y python3 python3-pip
 sudo python3 -m pip install -r requirements.txt
 sudo ln -sf ./audius-cli /usr/local/bin/audius-cli
-touch creator-node.override.env
-touch discovery-provider.override.env
+touch creator-node/creator-node.override.env
+touch discovery-provider/discovery-provider.override.env
 touch .env
 
 # reboot machine
