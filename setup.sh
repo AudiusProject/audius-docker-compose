@@ -13,12 +13,12 @@ sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
 # install docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # limit log size in docker
-cat <<EOF | sudo tee > /etc/docker/daemon.json /dev/null
+cat <<EOF | sudo tee /dev/null >/etc/docker/daemon.json
 {
 	"max-concurrent-downloads": 20,
 	"max-concurrent-uploads": 20,
@@ -40,9 +40,10 @@ sudo chown $(id -u):$(id -g) /var/k8s
 sudo apt install -y python3 python3-pip
 sudo python3 -m pip install -r requirements.txt
 sudo ln -sf ./audius-cli /usr/local/bin/audius-cli
-touch creator-node/creator-node.override.env
-touch discovery-provider/discovery-provider.override.env
-touch .env
+touch creator-node/override.env
+touch creator-node/.env
+touch discovery-provider/override.env
+touch discvoery-provider/.env
 
 # reboot machine
 sudo reboot

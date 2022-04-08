@@ -234,7 +234,7 @@ def set_tag(ctx, service, unset, tag):
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
 
-    env_file = ctx.obj["manifests_path"] / service / "override.env"
+    env_file = ctx.obj["manifests_path"] / service / ".env"
 
     if unset:
         dotenv.unset_key(env_file, "TAG")
