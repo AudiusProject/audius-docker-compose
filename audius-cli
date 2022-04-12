@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import json
 import os
@@ -11,6 +11,7 @@ import urllib.request
 import click
 import dotenv
 import psutil
+import crontab
 
 RECOMMENDED_CPU_COUNT = 8
 RECOMMENDED_MEMORY = 16
@@ -187,21 +188,39 @@ def logs(ctx, service, containers):
 
 
 @cli.command()
-@click.argument("service", type=service_type)
+@click.argument("service", type=service_type, required=False)
 @click.argument("containers", type=container_type, nargs=-1)
 @click.pass_context
 def restart(ctx, service, containers):
     """Restart a service/container"""
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            "restart",
-            *containers,
-        ],
-    )
+    services = [service]
+    if service is None:
+        proc = subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "ps",
+                "-q",
+                "backend",
+            ],
+            capture_output=True,
+        )
+
+        services = proc.stdout.decode("utf-8").splitlines()
+
+    for service in services:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "up",
+                *containers,
+            ],
+        )
 
 
 @cli.command()
@@ -246,7 +265,7 @@ def set_tag(ctx, service, unset, tag):
 @click.argument("branch", required=False)
 @click.pass_context
 def pull(ctx, branch):
-    """TODO"""
+    """Pull latest updates from remote"""
     try:
         subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifest_path"])
         if branch:
@@ -263,9 +282,29 @@ def pull(ctx, branch):
 @click.argument("branch", required=False)
 @click.pass_context
 def upgrade(ctx, branch):
-    """TODO"""
+    """Pull and restarts all running services"""
     ctx.forward(pull)
-    # ctx.invoke(restart)
+    ctx.invoke(restart)
+
+
+@cli.command()
+@click.option("--remove", is_flag=True)
+@click.argument("cron-expression", default="0 */6 * * *")
+@click.pass_context
+def auto_upgrade(ctx, remove, cron_expression):
+    """Setup auto upgrade with a cron job"""
+    with crontab.CronTab(user=True) as cron:
+        for job in cron.find_comment("audius-cli auto-upgrade"):
+            cron.remove(job)
+
+        if not remove:
+            log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
+            job = cron.new(
+                f"date >> {log_file}; /usr/local/bin/audius-cli upgrade >> {log_file} 2>&1",
+                "audius-cli auto-upgrade",
+            )
+
+            job.setall(cron_expression)
 
 
 if __name__ == "__main__":
