@@ -39,11 +39,16 @@ sudo chown $(id -u):$(id -g) /var/k8s
 # audius-cli setup
 sudo apt install -y python3 python3-pip
 sudo python3 -m pip install -r requirements.txt
-sudo ln -sf ./audius-cli /usr/local/bin/audius-cli
+sudo ln -sf $PWD/audius-cli /usr/local/bin/audius-cli
 touch creator-node/override.env
 touch creator-node/.env
 touch discovery-provider/override.env
 touch discvoery-provider/.env
 
 # reboot machine
+read -p "Reboot Machine? [Y/n] " -n 1 -r
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+	exit 1
+fi
+
 sudo reboot
