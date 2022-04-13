@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 sudo apt-get upgrade -y
-sudo apt-get install -y ca-certificates curl gnupg lsb-release
+sudo apt-get install -y ca-certificates curl gnupg lsb-release jq
 
 # install docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
