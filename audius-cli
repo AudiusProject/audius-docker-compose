@@ -55,6 +55,8 @@ def check_config(ctx, service):
 
     if unset:
         sys.exit(1)
+    else:
+        click.secho("All keys are set", fg="green")
 
 
 @cli.command()
