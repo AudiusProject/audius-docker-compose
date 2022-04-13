@@ -114,7 +114,7 @@ def health_check(ctx, service):
 def launch(ctx, seed_job, service):
     """Launch the service"""
     try:
-        ctx.forward(check_config)
+        ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
 
