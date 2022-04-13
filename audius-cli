@@ -88,13 +88,20 @@ def health_check(ctx, service):
             )
         )
 
+        click.secho("Response:", bold=True)
+        click.echo(json.dumps(response, indent=2, sort_keys=True))
+
         if service == "creator-node":
             healthy = response["data"]["healthy"]
         elif service == "discovery-provider":
-            healthy = (
-                response["data"]["block_difference"]
-                < response["data"]["maximum_healthy_block_difference"]
-            )
+            healthy = "block_difference" in response["data"]
+            block_diff = response["data"]["block_difference"]
+            max_block_diff = response["data"]["maximum_healthy_block_difference"]
+            if block_diff < max_block_diff:
+                click.secho(
+                    f"Block difference ({block_diff}) is greater than maximum healthy block difference ({max_block_diff})",
+                    fg="yellow",
+                )
         elif service == "identity":
             healthy = response["healthy"]
 
