@@ -220,6 +220,7 @@ def restart(ctx, service, containers):
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 "up",
+                "-d",
                 *containers,
             ],
         )
