@@ -1,7 +1,7 @@
-dbUrl=postgres://postgres:postgres@creator-node-db:5432/postgres
+dbUrl=postgres://postgres:postgres@db:5432/postgres
 dbConnectionPoolMax=500
 
-redisHost=creator-node-cache
+redisHost=cache
 redisPort=6379
 
 dataNetworkId=99
