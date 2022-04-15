@@ -15,6 +15,8 @@ creator-node:
 ```
 
 for every key do
+```sh
 audius-cli set-config <service-name> <key> <value>
+```
 
 Note: pod can be ignored
