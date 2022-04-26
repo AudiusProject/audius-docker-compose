@@ -240,23 +240,46 @@ def restart(ctx, service, containers):
 
 @cli.command()
 @click.option("--unset", is_flag=True)
+@click.option("--required", is_flag=True)
 @click.argument("service", type=service_type)
 @click.argument("key", required=False)
 @click.argument("value", required=False)
 @click.pass_context
-def set_config(ctx, service, unset, key, value):
+def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
-    if key is None:
-        key = click.prompt(click.style("Key", bold=True))
-    if not unset and value is None:
-        value = click.prompt(click.style("Value", bold=True))
+    if required and (key or value):
+        click.secho("--required cannot be used when key or value is set", fg="red")
+        sys.exit(1)
 
-    env_file = ctx.obj["manifests_path"] / service / "override.env"
+    env = ctx.obj["manifests_path"] / service / "env"
+    env_data = dotenv.dotenv_values(env)
 
-    if unset:
-        dotenv.unset_key(env_file, key)
+    override_env = ctx.obj["manifests_path"] / service / "override.env"
+    override_env_data = dotenv.dotenv_values(override_env)
+
+    if required:
+        for key, value in env_data.items():
+            if not unset and value == "":
+                dotenv.set_key(
+                    override_env,
+                    key,
+                    click.prompt(
+                        click.style(key, bold=True),
+                        override_env_data.get(key, env_data.get(key)),
+                    ),
+                )
+            if unset and value == "":
+                dotenv.unset_key(override_env, key)
     else:
-        dotenv.set_key(env_file, key, value)
+        if key is None:
+            key = click.prompt(click.style("Key", bold=True))
+        if not unset and value is None:
+            value = click.prompt(click.style("Value", bold=True))
+
+        if unset:
+            dotenv.unset_key(override_env, key)
+        else:
+            dotenv.set_key(override_env, key, value)
 
 
 @cli.command()
