@@ -44,10 +44,11 @@ sudo chown $(id -u):$(id -g) /var/k8s
 sudo apt install -y python3 python3-pip
 sudo python3 -m pip install -r requirements.txt
 sudo ln -sf $PWD/audius-cli /usr/local/bin/audius-cli
+eval "$(_AUDIUS_CLI_COMPLETE=bash_source audius-cli)"
 touch creator-node/override.env
 touch creator-node/.env
 touch discovery-provider/override.env
-touch discvoery-provider/.env
+touch discovery-provider/.env
 
 # reboot machine
 read -p "Reboot Machine? [Y/n] " -n 1 -r
