@@ -20,9 +20,9 @@ services:
   backend:
     image: audius/creator-node:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     depends_on:
-      creator-node-db:
+      db:
         condition: service_healthy
-      creator-node-cache:
+      cache:
         condition: service_healthy
     volumes:
       - /var/k8s/creator-node-backend:/file_storage  # Use k8s location for backward compatibility
