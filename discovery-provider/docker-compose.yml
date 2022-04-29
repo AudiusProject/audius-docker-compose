@@ -36,6 +36,14 @@ services:
       - esdata:/usr/share/elasticsearch/data
     networks:
       - discovery-provider-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
 
   backend:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
@@ -43,6 +51,8 @@ services:
       db:
         condition: service_healthy
       cache:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     ports:
       - "5000:5000"
