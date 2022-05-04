@@ -85,3 +85,6 @@ services:
 
 networks:
   discovery-provider-network:
+
+volumes:
+  esdata:
