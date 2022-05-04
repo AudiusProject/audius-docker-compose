@@ -88,7 +88,6 @@ value : <audius_db_url_read_replica>
 
 The below is only if using a managed posgres database:
 
-You will have to replace the db seed job in `audius/discovery-provider/discovery-provider-db-seed-job.yaml` as well. Examples are provided.
 In the managed postgres database and set the `temp_file_limit` flag to `2147483647` and run the following SQL command on the destination db.
 ```
 CREATE EXTENSION pg_trgm;
@@ -100,3 +99,5 @@ Make sure that your service exposes all the required environment variables. See 
 ```sh
 audius-cli launch <service-name>
 ```
+
+Launch with `--seed-job` for first time discovery provider setup
