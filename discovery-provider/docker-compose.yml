@@ -6,7 +6,7 @@ services:
       file: ../common-services.yml
       service: base-db
     volumes:
-      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data  # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
 
@@ -17,42 +17,12 @@ services:
     networks:
       - discovery-provider-network
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
-    container_name: elasticsearch
-    environment:
-      - network.host=0.0.0.0
-      - discovery.type=single-node
-      - cluster.name=docker-cluster
-      - node.name=cluster1-node1
-      - xpack.license.self_generated.type=basic
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    networks:
-      - discovery-provider-network
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-
   backend:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     depends_on:
       db:
         condition: service_healthy
       cache:
-        condition: service_healthy
-      elasticsearch:
         condition: service_healthy
     ports:
       - "5000:5000"
