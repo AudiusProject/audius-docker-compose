@@ -4,8 +4,26 @@ Launch audius services via docker compose
 
 Actively under development, not recommended for production use.
 
+### Migration from Kubernetes
 
-### Setting an Audius Service
+For existing machines running audius services via kube, first run the following commands,
+```sh
+audius-cli auto-upgrade --remove
+kubectl delete --all-namespaces --all deployments
+kubectl delete --all-namespaces --all pods
+
+git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
+cd ~/audius-docker-compose
+bash setup.sh
+```
+
+Following this, you will have to reset the keys from before, you can preview old keys with,
+```
+cat audius-k8s-manifests/config.yaml
+```
+and set them similarly to before with audius-cli
+
+### Launching an Audius Service
 
 Currently, this has been tested on Ubuntu 20.04 LTS machines.
 
