@@ -209,6 +209,10 @@ def restart(ctx, service, containers):
     """Restart a service/container"""
     services = [service]
     if service is None:
+        services = ["discovery-provider", "creator-node"]
+
+    filtered = []
+    for service in services:
         proc = subprocess.run(
             [
                 "docker",
@@ -222,7 +226,8 @@ def restart(ctx, service, containers):
             capture_output=True,
         )
 
-        services = proc.stdout.decode("utf-8").splitlines()
+        if proc.stdout:
+            filtered.append(service)
 
     for service in services:
         subprocess.run(
