@@ -23,6 +23,16 @@ cat audius-k8s-manifests/config.yaml
 ```
 and set them similarly to before with audius-cli
 
+### Single Click Install
+
+```sh
+curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh | bash -s -- creator-node
+```
+
+```sh
+curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh | bash -s -- discovery-provider
+```
+
 ### Launching an Audius Service
 
 Currently, this has been tested on Ubuntu 20.04 LTS machines.
@@ -30,7 +40,6 @@ Currently, this has been tested on Ubuntu 20.04 LTS machines.
 ```sh
 bash setup.sh
 ```
-
 
 ### Setting Keys
 
