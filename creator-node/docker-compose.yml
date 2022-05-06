@@ -6,7 +6,7 @@ services:
       file: ../common-services.yml
       service: base-db
     volumes:
-      - /var/k8s/creator-node-db:/var/lib/postgresql/data  # Use k8s location for backward compatibility
+      - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
 
@@ -25,16 +25,12 @@ services:
       cache:
         condition: service_healthy
     volumes:
-      - /var/k8s/creator-node-backend:/file_storage  # Use k8s location for backward compatibility
+      - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
     ports:
       - "4000:4000"
     env_file:
       - env
       - override.env
-    healthcheck:
-      test: ["CMD", "curl", "http://localhost:4000/health_check"]
-      interval: 10s
-      timeout: 5s
     networks:
       - creator-node-network
 
