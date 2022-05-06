@@ -50,7 +50,12 @@ audius-cli set-config <service-name> <key> <value>
 #### Creator Node
 The full list of variables and explanations can be found on the wiki [here](https://github.com/AudiusProject/audius-protocol/wiki/Content-Node:-Configuration-Details#required-environment-variables).
 
-Some variables must be set, you can do this with the following commands:
+Some variables must be set, you can do this with the following command:
+```sh
+audius-cli set-config --required creator-node
+```
+
+Currently this breaks down into,
 
 ```sh
 audius-cli set-config creator-node
