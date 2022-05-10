@@ -23,7 +23,19 @@ SERVICE_PORTS = {
 }
 
 service_type = click.Choice(["creator-node", "discovery-provider"])
+environment = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
+
+
+def update_base_env(ctx, environment):
+    """
+    Sets the base env in .env for each service and
+    returns the name of the base env file to use.
+    """
+    for service in ["creator-node", "discovery-provider"]:
+        env_file = ctx.obj["manifests_path"] / service / ".env"
+        dotenv.set_key(env_file, "ENV", environment)
+    return f"{environment}.env"
 
 
 @click.group()
@@ -38,10 +50,11 @@ def cli(ctx):
 
 @cli.command()
 @click.argument("service", type=service_type)
+@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def check_config(ctx, service):
+def check_config(ctx, service, environment):
     """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / "env"
+    env = ctx.obj["manifests_path"] / service / update_base_env(ctx, environment)
     override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
@@ -122,11 +135,14 @@ def health_check(ctx, service):
 
 
 @cli.command()
-@click.option("--seed-job", is_flag=True)
 @click.argument("service", type=service_type)
+@click.option("--seed-job", is_flag=True)
+@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def launch(ctx, seed_job, service):
+def launch(ctx, service, seed_job, environment):
     """Launch the service"""
+    update_base_env(ctx, environment)
+
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
@@ -246,19 +262,20 @@ def restart(ctx, service, containers):
 
 
 @cli.command()
-@click.option("--unset", is_flag=True)
-@click.option("--required", is_flag=True)
 @click.argument("service", type=service_type)
 @click.argument("key", required=False)
 @click.argument("value", required=False)
+@click.option("--unset", is_flag=True)
+@click.option("--required", is_flag=True)
+@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def set_config(ctx, service, unset, required, key, value):
+def set_config(ctx, service, unset, required, key, value, environment):
     """Set a config value"""
     if required and (key or value):
         click.secho("--required cannot be used when key or value is set", fg="red")
         sys.exit(1)
 
-    env = ctx.obj["manifests_path"] / service / "env"
+    env = ctx.obj["manifests_path"] / service / update_base_env(ctx, environment)
     env_data = dotenv.dotenv_values(env)
 
     override_env = ctx.obj["manifests_path"] / service / "override.env"
@@ -290,8 +307,8 @@ def set_config(ctx, service, unset, required, key, value):
 
 
 @cli.command()
-@click.option("--unset", is_flag=True)
 @click.argument("tag", required=False)
+@click.option("--unset", is_flag=True)
 @click.pass_context
 def set_tag(ctx, unset, tag):
     """Set a config value"""
@@ -334,8 +351,8 @@ def upgrade(ctx, branch):
 
 
 @cli.command()
-@click.option("--remove", is_flag=True)
 @click.argument("cron-expression", default="0 */6 * * *")
+@click.option("--remove", is_flag=True)
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""

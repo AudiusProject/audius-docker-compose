@@ -29,7 +29,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - env
+      - ${ENV}.env
       - override.env
     networks:
       - creator-node-network
