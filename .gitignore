@@ -1,2 +1,6 @@
 override.env
 auto-upgrade.log
+
+# .env files for system (tag, env management)
+discovery-provider/.env
+creator-node/.env

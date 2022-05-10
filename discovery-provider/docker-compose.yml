@@ -62,7 +62,7 @@ services:
     networks:
       - discovery-provider-network
 
-  seed-job:
+  seed:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     command: bash -c " curl https://audius-pgdump.s3-us-west-2.amazonaws.com/discProvProduction.dump -O && pg_restore -d $$audius_db_url discProvProduction.dump "
     env_file:
@@ -74,7 +74,7 @@ services:
     networks:
       - discovery-provider-network
     profiles:
-      - seed-job
+      - seed
 
 networks:
   discovery-provider-network:
