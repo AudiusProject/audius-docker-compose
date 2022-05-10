@@ -72,7 +72,7 @@ services:
       - ${ENV}.env
       - override.env
     depends_on:
-      discovery-provider-db:
+      db:
         condition: service_healthy
     networks:
       - discovery-provider-network
