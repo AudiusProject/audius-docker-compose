@@ -3,6 +3,7 @@ version: "3.9"
 services:
   db:
     container_name: postgres
+    restart: always
     extends:
       file: ../common-services.yml
       service: base-db
@@ -13,6 +14,7 @@ services:
 
   cache:
     container_name: redis
+    restart: always
     extends:
       file: ../common-services.yml
       service: base-cache
@@ -22,6 +24,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    restart: always
     environment:
       - network.host=0.0.0.0
       - discovery.type=single-node
@@ -50,6 +53,7 @@ services:
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
+    restart: always
     depends_on:
       db:
         condition: service_healthy
@@ -80,6 +84,15 @@ services:
       - discovery-provider-network
     profiles:
       - seed
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - AUTOHEAL_INTERVAL=10
+      - CURL_TIMEOUT=30
 
 networks:
   discovery-provider-network:
