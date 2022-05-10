@@ -23,19 +23,15 @@ SERVICE_PORTS = {
 }
 
 service_type = click.Choice(["creator-node", "discovery-provider"])
-environment = click.Choice(["prod", "stage"])
+network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
 
-def update_base_env(ctx, environment):
-    """
-    Sets the base env in .env for each service and
-    returns the name of the base env file to use.
-    """
-    for service in ["creator-node", "discovery-provider"]:
-        env_file = ctx.obj["manifests_path"] / service / ".env"
-        dotenv.set_key(env_file, "ENV", environment)
-    return f"{environment}.env"
+def get_network(ctx, service):
+    """Returns the network name for the given service."""
+    return dotenv.dotenv_values(ctx.obj["manifests_path"] / service / ".env").get(
+        "NETWORK", "prod"
+    )
 
 
 @click.group()
@@ -50,11 +46,10 @@ def cli(ctx):
 
 @cli.command()
 @click.argument("service", type=service_type)
-@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def check_config(ctx, service, environment):
+def check_config(ctx, service):
     """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / update_base_env(ctx, environment)
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
@@ -137,14 +132,11 @@ def health_check(ctx, service):
 @cli.command()
 @click.argument("service", type=service_type)
 @click.option("--seed", is_flag=True)
-@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def launch(ctx, service, seed, environment):
+def launch(ctx, service, seed):
     """Launch the service"""
-    update_base_env(ctx, environment)
-
     try:
-        ctx.invoke(check_config, service=service, environment=environment)
+        ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
 
@@ -168,7 +160,7 @@ def launch(ctx, service, seed, environment):
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / service,
+                ctx.obj["manifests_path"] / "discovery-provider",
                 "down",
                 "backend",
             ],
@@ -267,15 +259,14 @@ def restart(ctx, service, containers):
 @click.argument("value", required=False)
 @click.option("--unset", is_flag=True)
 @click.option("--required", is_flag=True)
-@click.option("--environment", type=environment, default="prod")
 @click.pass_context
-def set_config(ctx, service, unset, required, key, value, environment):
+def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
     if required and (key or value):
         click.secho("--required cannot be used when key or value is set", fg="red")
         sys.exit(1)
 
-    env = ctx.obj["manifests_path"] / service / update_base_env(ctx, environment)
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     env_data = dotenv.dotenv_values(env)
 
     override_env = ctx.obj["manifests_path"] / service / "override.env"
@@ -322,6 +313,24 @@ def set_tag(ctx, unset, tag):
             dotenv.unset_key(env_file, "TAG")
         else:
             dotenv.set_key(env_file, "TAG", tag)
+
+
+@cli.command()
+@click.argument("network", type=network_type, required=False)
+@click.option("--unset", is_flag=True)
+@click.pass_context
+def set_network(ctx, unset, network):
+    """Set a config value"""
+    if not unset and network is None:
+        network = click.prompt(click.style("Network", bold=True))
+
+    for service in ["creator-node", "discovery-provider"]:
+        env_file = ctx.obj["manifests_path"] / service / ".env"
+
+        if unset:
+            dotenv.unset_key(env_file, "NETWORK")
+        else:
+            dotenv.set_key(env_file, "NETWORK", network)
 
 
 @cli.command()

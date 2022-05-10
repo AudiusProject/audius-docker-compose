@@ -112,6 +112,4 @@ audius-cli launch <service-name>
 # Options:
 # --seed
 #     Seeds the database from a snapshot. Required for first-time discovery setup.
-# --environment [stage, prod]
-#     Uses environment variables for the relevant environment.
 ```
