@@ -26,11 +26,7 @@ and set them similarly to before with audius-cli
 ### Single Click Install
 
 ```sh
-curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh | bash -s -- creator-node
-```
-
-```sh
-curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh | bash -s -- discovery-provider
+bash <(curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh)
 ```
 
 ### Launching an Audius Service
