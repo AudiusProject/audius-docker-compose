@@ -1,13 +1,19 @@
 #!/usr/bin/bash
 
-if [[ $ENV == 'prod' ]]; then
+ENV=$1
+
+if [ "$ENV" == 'prod' ]
+then
+  echo "Downloading $ENV database..."
   curl https://audius-pgdump.s3-us-west-2.amazonaws.com/discProvProduction.dump -O
+  echo "Restoring $ENV database to $audius_db_url..."
   pg_restore -d $audius_db_url discProvProduction.dump
-
-elif [[ $ENV == 'stage']]; then
+elif [ "$ENV" == 'stage' ]
+then
+  echo "Downloading $ENV database..."
   curl https://audius-pgdump.s3-us-west-2.amazonaws.com/discProvStaging.dump -O
+  echo "Restoring $ENV database to $audius_db_url..."
   pg_restore -d $audius_db_url discProvStaging.dump
-
 else
   echo "Invalid env: $ENV"
   exit 1

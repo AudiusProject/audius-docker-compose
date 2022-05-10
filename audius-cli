@@ -144,20 +144,20 @@ def launch(ctx, service, seed, environment):
     update_base_env(ctx, environment)
 
     try:
-        ctx.invoke(check_config, service=service)
+        ctx.invoke(check_config, service=service, environment=environment)
     except SystemExit:
         pass
 
     total_memory = psutil.virtual_memory().total // (1024 ** 3)
     cpu_count = psutil.cpu_count()
 
-    click.echo(f"CPUs:\t{cpu_count}\t(recommended: {RECOMMENDED_CPU_COUNT})")
-    click.echo(f"Memory:\t{total_memory}GB\t(recommended: {RECOMMENDED_MEMORY}GB)")
+    click.echo(f"CPUs:\t{cpu_count}\t(required: {RECOMMENDED_CPU_COUNT})")
+    click.echo(f"Memory:\t{total_memory}GB\t(required: {RECOMMENDED_MEMORY}GB)")
 
     if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY:
-        click.secho("System does not meet recommended requirements", fg="red")
+        click.secho("System does not meet requirements", fg="red")
     else:
-        click.secho("System meets recommended requirements", fg="green")
+        click.secho("System meets requirements", fg="green")
 
     click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 

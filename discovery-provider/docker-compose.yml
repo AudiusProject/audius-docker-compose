@@ -67,12 +67,12 @@ services:
 
   seed:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
-    command: bash -c /seed.sh
+    command: bash /usr/share/seed.sh ${ENV}
     env_file:
       - ${ENV}.env
       - override.env
     volumes:
-      - ./seed.sh:/seed.sh
+      - ./seed.sh:/usr/share/seed.sh
     depends_on:
       db:
         condition: service_healthy
