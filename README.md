@@ -4,13 +4,14 @@ Launch audius services via docker compose
 
 Actively under development, not recommended for production use.
 
-### Migration from Kubernetes
+## Migration from Kubernetes
 
 For existing machines running audius services via kube, first run the following commands,
 ```sh
 audius-cli auto-upgrade --remove
 kubectl delete --all-namespaces --all deployments
 kubectl delete --all-namespaces --all pods
+sudo kubeadm reset
 
 git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
 cd ~/audius-docker-compose
@@ -23,15 +24,13 @@ cat audius-k8s-manifests/config.yaml
 ```
 and set them similarly to before with audius-cli
 
-### Single Click Install
+## Single Click Install
 
 ```sh
 bash <(curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh)
 ```
 
-### Launching an Audius Service
-
-Currently, this has been tested on Ubuntu 20.04 LTS machines.
+## Launching an Audius Service
 
 ```sh
 bash setup.sh
@@ -43,6 +42,7 @@ For every key do
 ```sh
 audius-cli set-config <service-name> <key> <value>
 ```
+
 #### Creator Node
 The full list of variables and explanations can be found on the wiki [here](https://github.com/AudiusProject/audius-protocol/wiki/Content-Node:-Configuration-Details#required-environment-variables).
 
@@ -108,6 +108,8 @@ Make sure that your service exposes all the required environment variables. See 
 ### Launch
 ```sh
 audius-cli launch <service-name>
-```
 
-Launch with `--seed-job` for first time discovery provider setup
+# Options:
+# --seed
+#     Seeds the database from a snapshot. Required for first-time discovery setup.
+```

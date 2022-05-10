@@ -23,7 +23,15 @@ SERVICE_PORTS = {
 }
 
 service_type = click.Choice(["creator-node", "discovery-provider"])
+network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
+
+
+def get_network(ctx, service):
+    """Returns the network name for the given service."""
+    return dotenv.dotenv_values(ctx.obj["manifests_path"] / service / ".env").get(
+        "NETWORK", "prod"
+    )
 
 
 @click.group()
@@ -41,7 +49,7 @@ def cli(ctx):
 @click.pass_context
 def check_config(ctx, service):
     """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / "env"
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
@@ -122,10 +130,10 @@ def health_check(ctx, service):
 
 
 @cli.command()
-@click.option("--seed-job", is_flag=True)
 @click.argument("service", type=service_type)
+@click.option("--seed", is_flag=True)
 @click.pass_context
-def launch(ctx, seed_job, service):
+def launch(ctx, service, seed):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
@@ -135,24 +143,24 @@ def launch(ctx, seed_job, service):
     total_memory = psutil.virtual_memory().total // (1024 ** 3)
     cpu_count = psutil.cpu_count()
 
-    click.echo(f"CPUs:\t{cpu_count}\t(recommended: {RECOMMENDED_CPU_COUNT})")
-    click.echo(f"Memory:\t{total_memory}GB\t(recommended: {RECOMMENDED_MEMORY}GB)")
+    click.echo(f"CPUs:\t{cpu_count}\t(required: {RECOMMENDED_CPU_COUNT})")
+    click.echo(f"Memory:\t{total_memory}GB\t(required: {RECOMMENDED_MEMORY}GB)")
 
     if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY:
-        click.secho("System does not meet recommended requirements", fg="red")
+        click.secho("System does not meet requirements", fg="red")
     else:
-        click.secho("System meets recommended requirements", fg="green")
+        click.secho("System meets requirements", fg="green")
 
     click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
-    if seed_job and service == "discovery-provider":
+    if seed and service == "discovery-provider":
         # make sure backend is not running
         subprocess.run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / service,
+                ctx.obj["manifests_path"] / "discovery-provider",
                 "down",
                 "backend",
             ],
@@ -166,7 +174,7 @@ def launch(ctx, seed_job, service):
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "run",
-                "seed-job",
+                "seed",
             ],
         )
 
@@ -246,11 +254,11 @@ def restart(ctx, service, containers):
 
 
 @cli.command()
-@click.option("--unset", is_flag=True)
-@click.option("--required", is_flag=True)
 @click.argument("service", type=service_type)
 @click.argument("key", required=False)
 @click.argument("value", required=False)
+@click.option("--unset", is_flag=True)
+@click.option("--required", is_flag=True)
 @click.pass_context
 def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
@@ -258,7 +266,7 @@ def set_config(ctx, service, unset, required, key, value):
         click.secho("--required cannot be used when key or value is set", fg="red")
         sys.exit(1)
 
-    env = ctx.obj["manifests_path"] / service / "env"
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     env_data = dotenv.dotenv_values(env)
 
     override_env = ctx.obj["manifests_path"] / service / "override.env"
@@ -290,8 +298,8 @@ def set_config(ctx, service, unset, required, key, value):
 
 
 @cli.command()
-@click.option("--unset", is_flag=True)
 @click.argument("tag", required=False)
+@click.option("--unset", is_flag=True)
 @click.pass_context
 def set_tag(ctx, unset, tag):
     """Set a config value"""
@@ -305,6 +313,24 @@ def set_tag(ctx, unset, tag):
             dotenv.unset_key(env_file, "TAG")
         else:
             dotenv.set_key(env_file, "TAG", tag)
+
+
+@cli.command()
+@click.argument("network", type=network_type, required=False)
+@click.option("--unset", is_flag=True)
+@click.pass_context
+def set_network(ctx, unset, network):
+    """Set a config value"""
+    if not unset and network is None:
+        network = click.prompt(click.style("Network", bold=True))
+
+    for service in ["creator-node", "discovery-provider"]:
+        env_file = ctx.obj["manifests_path"] / service / ".env"
+
+        if unset:
+            dotenv.unset_key(env_file, "NETWORK")
+        else:
+            dotenv.set_key(env_file, "NETWORK", network)
 
 
 @cli.command()
@@ -334,8 +360,8 @@ def upgrade(ctx, branch):
 
 
 @cli.command()
-@click.option("--remove", is_flag=True)
 @click.argument("cron-expression", default="0 */6 * * *")
+@click.option("--remove", is_flag=True)
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""

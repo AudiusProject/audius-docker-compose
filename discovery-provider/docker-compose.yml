@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   db:
+    container_name: postgres
     extends:
       file: ../common-services.yml
       service: base-db
@@ -11,6 +12,7 @@ services:
       - discovery-provider-network
 
   cache:
+    container_name: redis
     extends:
       file: ../common-services.yml
       service: base-cache
@@ -18,8 +20,8 @@ services:
       - discovery-provider-network
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
       - network.host=0.0.0.0
       - discovery.type=single-node
@@ -46,6 +48,7 @@ services:
       timeout: 5s
 
   backend:
+    container_name: server
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
     depends_on:
       db:
@@ -57,24 +60,26 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - env
+      - ${NETWORK}.env
       - override.env
     networks:
       - discovery-provider-network
 
-  seed-job:
+  seed:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
-    command: bash -c " curl https://audius-pgdump.s3-us-west-2.amazonaws.com/discProvProduction.dump -O && pg_restore -d $$audius_db_url discProvProduction.dump "
+    command: bash /usr/share/seed.sh ${NETWORK}
     env_file:
-      - env
+      - ${NETWORK}.env
       - override.env
+    volumes:
+      - ./seed.sh:/usr/share/seed.sh
     depends_on:
-      discovery-provider-db:
+      db:
         condition: service_healthy
     networks:
       - discovery-provider-network
     profiles:
-      - seed-job
+      - seed
 
 networks:
   discovery-provider-network:
