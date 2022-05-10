@@ -51,7 +51,7 @@ touch discovery-provider/override.env
 touch discovery-provider/.env
 
 # setup service
-if [[ $1 == "" ]]; then
+if [[ $1 != "" ]]; then
 	audius-cli set-config --required $1
 	read -p "Launch the service? [Y/n] " -n 1 -r
 	if [[ $REPLY =~ ^([Yy]|)$ ]]; then
