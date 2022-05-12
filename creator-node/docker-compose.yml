@@ -29,6 +29,8 @@ services:
         condition: service_healthy
     volumes:
       - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
+    labels:
+      autoheal: "true"
     ports:
       - "4000:4000"
     env_file:

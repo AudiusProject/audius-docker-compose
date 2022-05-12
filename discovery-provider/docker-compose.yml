@@ -61,6 +61,8 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
+    labels:
+      autoheal: "true"
     ports:
       - "5000:5000"
     env_file:
