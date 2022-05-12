@@ -6,6 +6,8 @@ set -x
 cd "$(dirname "$0")"
 
 # upgrade the system
+export DEBIAN_FRONTEND=noninteractive
+
 sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 sudo apt-get upgrade -y
