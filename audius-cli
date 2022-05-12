@@ -302,7 +302,7 @@ def set_config(ctx, service, unset, required, key, value):
 @click.option("--unset", is_flag=True)
 @click.pass_context
 def set_tag(ctx, unset, tag):
-    """Set a config value"""
+    """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
 
@@ -320,7 +320,7 @@ def set_tag(ctx, unset, tag):
 @click.option("--unset", is_flag=True)
 @click.pass_context
 def set_network(ctx, unset, network):
-    """Set a config value"""
+    """Set the deployment network"""
     if not unset and network is None:
         network = click.prompt(click.style("Network", bold=True))
 
