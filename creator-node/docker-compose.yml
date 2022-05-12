@@ -29,6 +29,8 @@ services:
         condition: service_healthy
     volumes:
       - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
+    labels:
+      autoheal: "true"
     ports:
       - "4000:4000"
     env_file:
@@ -36,6 +38,15 @@ services:
       - override.env
     networks:
       - creator-node-network
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - AUTOHEAL_INTERVAL=10
+      - CURL_TIMEOUT=30
 
 networks:
   creator-node-network:
