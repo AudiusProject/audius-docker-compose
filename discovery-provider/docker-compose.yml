@@ -64,16 +64,16 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - ${NETWORK}.env
+      - ${NETWORK:-prod}.env
       - override.env
     networks:
       - discovery-provider-network
 
   seed:
     image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
-    command: bash /usr/share/seed.sh ${NETWORK}
+    command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
-      - ${NETWORK}.env
+      - ${NETWORK:-prod}.env
       - override.env
     volumes:
       - ./seed.sh:/usr/share/seed.sh
