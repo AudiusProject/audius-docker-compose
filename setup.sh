@@ -54,17 +54,23 @@ touch discovery-provider/override.env
 touch discovery-provider/.env
 
 # setup service
-if [[ $1 != "" ]]; then
-	audius-cli set-config --required $1
+if [[ "$1" != "" ]]; then
+	audius-cli set-config --required "$1"
 	read -p "Launch the service? [Y/n] " -n 1 -r
-	if [[ $REPLY =~ ^([Yy]|)$ ]]; then
-		audius-cli launch $1
+	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
+		if [[ "$1" == "discovery-provider" ]]; then
+			read -p "Run seed job? [Y/n] " -n 1 -r
+			if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
+				extra_args="--seed"
+			fi
+		fi
+		audius-cli launch $extra_args "$1"
 	fi
 fi
 
 # reboot machine
 read -p "Reboot Machine? [Y/n] " -n 1 -r
-if [[ ! $REPLY =~ ^([Yy]|)$ ]]; then
+if [[ ! "$REPLY" =~ ^([Yy]|)$ ]]; then
 	exit 1
 fi
 
