@@ -6,6 +6,8 @@ set -x
 cd "$(dirname "$0")"
 
 # upgrade the system
+export DEBIAN_FRONTEND=noninteractive
+
 sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 sudo apt-get upgrade -y
@@ -16,6 +18,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo systemctl start docker
 
 # limit log size in docker
 cat <<EOF | sudo tee /dev/null >/etc/docker/daemon.json
