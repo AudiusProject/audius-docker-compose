@@ -2,7 +2,7 @@
 
 Launch audius services via docker compose
 
-Actively under development, not recommended for production use.
+Tested on Ubuntu 20.04 LTS
 
 ## Migration from Kubernetes
 
