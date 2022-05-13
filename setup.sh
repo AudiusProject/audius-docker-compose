@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-set -x
-
 # set current directory to script directory
 cd "$(dirname "$0")"
 
@@ -32,6 +30,7 @@ EOF
 
 # allow current user to use docker without sudo
 sudo usermod -aG docker $USER
+sudo chmod 666 /var/run/docker.sock
 
 # install docker-compose
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
