@@ -13,4 +13,5 @@ Launch Audius services using docker-compose. Minimum system requirements:
 bash <(curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh)
 ```
 
+## More options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
