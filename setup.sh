@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
-set -x
+set -e # exit on error
+set -x # echo commands
 
 # set current directory to script directory
 cd "$(dirname "$0")"
