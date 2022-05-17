@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+set -x
+
 # set current directory to script directory
 cd "$(dirname "$0")"
 
