@@ -3,6 +3,8 @@
 import json
 import os
 import pathlib
+import random
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -15,6 +17,8 @@ import psutil
 
 RECOMMENDED_CPU_COUNT = 8
 RECOMMENDED_MEMORY = 16
+RECOMMENDED_DISCOVERY_STORAGE_GB = 250
+RECOMMENDED_CONTENT_STORAGE_GB = 2000
 
 SERVICE_PORTS = {
     "discovery-provider": "5000",
@@ -142,11 +146,24 @@ def launch(ctx, service, seed):
 
     total_memory = psutil.virtual_memory().total // (1024 ** 3)
     cpu_count = psutil.cpu_count()
+    total_storage, _, _ = shutil.disk_usage("/var/k8s")
+    total_storage_gb = (total_storage // (2**30))
+    meets_storage_requirements = False
+
 
     click.echo(f"CPUs:\t{cpu_count}\t(required: {RECOMMENDED_CPU_COUNT})")
     click.echo(f"Memory:\t{total_memory}GB\t(required: {RECOMMENDED_MEMORY}GB)")
 
-    if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY:
+    if service == "discovery-provider":
+        click.echo(f"Storage:\t{total_storage_gb}GB\t(required: {RECOMMENDED_DISCOVERY_STORAGE_GB}GB)")
+        if total_storage_gb > RECOMMENDED_DISCOVERY_STORAGE_GB:
+            meets_storage_requirements = True
+    else:
+        click.echo(f"Storage:\t{total_storage_gb}GB\t(required: {RECOMMENDED_CONTENT_STORAGE_GB}GB)")
+        if total_storage_gb > RECOMMENDED_DISCOVERY_STORAGE_GB:
+            meets_storage_requirements = True
+
+    if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY or not meets_storage_requirements:
         click.secho("System does not meet requirements", fg="red")
     else:
         click.secho("System meets requirements", fg="green")
@@ -360,7 +377,7 @@ def upgrade(ctx, branch):
 
 
 @cli.command()
-@click.argument("cron-expression", default="0 */6 * * *")
+@click.argument("cron-expression", default=f"{random.randint(0, 60)} * * * *") # random so nodes in the network stagger upgrades
 @click.option("--remove", is_flag=True)
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
