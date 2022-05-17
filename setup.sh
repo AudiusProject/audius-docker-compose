@@ -64,7 +64,11 @@ if [[ "$1" != "" ]]; then
 		audius-cli set-config creator-node dbUrl
 		;;
 	"discovery-provider")
-		echo "Set audius_db_url for discovery-provider (Leave empty to use default)"
+		echo "Are you using an externally managed Postgres? (Y/n)"
+		if yes then
+		  echo "Please enter db url"
+		  audius-cli set-config discovery-provider audius_db_url
+		  // also as far as i know, nobody besides us uses read replica, we can probably even delete the `audius_db_url_read_replica` property in *.env. it defaults to audius_db_url
 		audius-cli set-config discovery-provider audius_db_url
 		echo "Set audius_db_read_replica for discovery-provider (Leave empty to use default)"
 		audius-cli set-config discovery-provider audius_db_url_read_replica
