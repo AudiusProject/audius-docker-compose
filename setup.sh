@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+set -e # exit on error
+
 # set current directory to script directory
 cd "$(dirname "$0")"
 
@@ -19,12 +21,13 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo systemctl start docker
 
 # limit log size in docker
-cat <<EOF | sudo tee /dev/null >/etc/docker/daemon.json
+cat <<EOF | sudo tee /etc/docker/daemon.json >/dev/null
 {
-	"max-concurrent-downloads": 20,
-	"max-concurrent-uploads": 20,
-	"max-download-queue-size": 20,
-	"max-upload-queue-size": 20
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
 }
 EOF
 
@@ -55,10 +58,29 @@ touch discovery-provider/.env
 # setup service
 if [[ "$1" != "" ]]; then
 	audius-cli set-config --required "$1"
+
+	read -p "Are you using an externally managed Postgres? [Y/n] " -n 1 -r
+	echo
+	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
+		read -p "Please enter db url: "
+
+		case "$1" in
+		"creator-node")
+			audius-cli set-config creator-node dbUrl "$REPLY"
+			;;
+		"discovery-provider")
+			audius-cli set-config discovery-provider audius_db_url "$REPLY"
+			audius-cli set-config discovery-provider audius_db_url_read_replica "$REPLY"
+			;;
+		esac
+	fi
+
 	read -p "Launch the service? [Y/n] " -n 1 -r
+	echo
 	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 		if [[ "$1" == "discovery-provider" ]]; then
 			read -p "Run seed job? [Y/n] " -n 1 -r
+			echo
 			if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 				extra_args="--seed"
 			fi
@@ -69,6 +91,7 @@ fi
 
 # reboot machine
 read -p "Reboot Machine? [Y/n] " -n 1 -r
+echo
 if [[ ! "$REPLY" =~ ^([Yy]|)$ ]]; then
 	exit 1
 fi
