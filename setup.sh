@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-set -x
-
 # set current directory to script directory
 cd "$(dirname "$0")"
 
@@ -32,6 +30,7 @@ EOF
 
 # allow current user to use docker without sudo
 sudo usermod -aG docker $USER
+exec sg docker newgrp $(id -gn)
 
 # install docker-compose
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
@@ -56,6 +55,19 @@ touch discovery-provider/.env
 # setup service
 if [[ "$1" != "" ]]; then
 	audius-cli set-config --required "$1"
+	case "$1" in
+	"creator-node")
+		echo "Set dbUrl for creator-node (Leave empty to use default)"
+		audius-cli set-config creator-node dbUrl
+		;;
+	"discovery-provider")
+		echo "Set audius_db_url for discovery-provider (Leave empty to use default)"
+		audius-cli set-config discovery-provider audius_db_url
+		echo "Set audius_db_read_replica for discovery-provider (Leave empty to use default)"
+		audius-cli set-config discovery-provider audius_db_url_read_replica
+		;;
+	esac
+
 	read -p "Launch the service? [Y/n] " -n 1 -r
 	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 		if [[ "$1" == "discovery-provider" ]]; then
