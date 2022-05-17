@@ -33,7 +33,7 @@ EOF
 
 # allow current user to use docker without sudo
 sudo usermod -aG docker $USER
-exec sg docker newgrp $(id -gn)
+sudo chmod 666 /var/run/docker.sock
 
 # install docker-compose
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
