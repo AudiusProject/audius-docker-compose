@@ -24,10 +24,11 @@ sudo systemctl start docker
 # limit log size in docker
 cat <<EOF | sudo tee /etc/docker/daemon.json >/dev/null
 {
-	"max-concurrent-downloads": 20,
-	"max-concurrent-uploads": 20,
-	"max-download-queue-size": 20,
-	"max-upload-queue-size": 20
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
 }
 EOF
 
