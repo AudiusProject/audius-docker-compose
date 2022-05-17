@@ -373,7 +373,7 @@ def pull(ctx, branch):
 def upgrade(ctx, branch):
     """Pull and restarts all running services"""
     ctx.forward(pull)
-    ctx.invoke(restart)
+    ctx.invoke(restart) # i think this should call launch (or just do docker compose up)
 
 
 @cli.command()
