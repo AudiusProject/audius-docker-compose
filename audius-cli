@@ -378,6 +378,7 @@ def upgrade(ctx, branch):
 
 
 @cli.command()
+@click.argument("service", type=service_type)
 # random so nodes in the network stagger upgrades
 @click.argument("cron-expression", default=f"{random.randint(0, 59)} * * * *")
 @click.option("--remove", is_flag=True)
@@ -391,7 +392,7 @@ def auto_upgrade(ctx, remove, cron_expression):
         if not remove:
             log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
             job = cron.new(
-                f"date >> {log_file}; /usr/local/bin/audius-cli pull >> {log_file}; /usr/local/bin/audius-cli launch >> {log_file} 2>&1",
+                f"date >> {log_file}; /usr/local/bin/audius-cli pull >> {log_file}; /usr/local/bin/audius-cli launch {service} >> {log_file} 2>&1",
                 "audius-cli auto-upgrade",
             )
 
