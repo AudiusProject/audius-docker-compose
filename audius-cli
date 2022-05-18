@@ -383,7 +383,7 @@ def upgrade(ctx, branch):
 @click.argument("cron-expression", default=f"{random.randint(0, 59)} * * * *")
 @click.option("--remove", is_flag=True)
 @click.pass_context
-def auto_upgrade(ctx, remove, cron_expression):
+def auto_upgrade(ctx, remove, service, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
         for job in cron.find_comment("audius-cli auto-upgrade"):
