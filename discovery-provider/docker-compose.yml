@@ -4,6 +4,8 @@ services:
   db:
     container_name: postgres
     restart: always
+    environment:
+      POSTGRES_DB: audius_discovery
     extends:
       file: ../common-services.yml
       service: base-db

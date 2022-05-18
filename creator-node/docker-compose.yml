@@ -6,6 +6,8 @@ services:
     extends:
       file: ../common-services.yml
       service: base-db
+    environment:
+      POSTGRES_DB: audius_creator_node
     volumes:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
