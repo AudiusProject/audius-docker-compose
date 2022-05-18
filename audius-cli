@@ -140,8 +140,9 @@ def health_check(ctx, service):
 @cli.command()
 @click.argument("service", type=service_type)
 @click.option("--seed", is_flag=True)
+@click.option("--force", is_flag=True)
 @click.pass_context
-def launch(ctx, service, seed):
+def launch(ctx, service, seed, force):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
@@ -169,7 +170,8 @@ def launch(ctx, service, seed):
     else:
         click.secho("System meets requirements", fg="green")
 
-    click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
+    if not force:
+        click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
     if seed and service == "discovery-provider":
         # make sure backend is not running
@@ -392,7 +394,7 @@ def auto_upgrade(ctx, service, cron_expression, remove):
         if not remove:
             log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
             job = cron.new(
-                f"date >> {log_file}; /usr/local/bin/audius-cli pull >> {log_file}; /usr/local/bin/audius-cli launch {service} >> {log_file} 2>&1",
+                f"date >> {log_file}; /usr/local/bin/audius-cli pull >> {log_file}; /usr/local/bin/audius-cli launch {service} --force >> {log_file} 2>&1",
                 "audius-cli auto-upgrade",
             )
 
