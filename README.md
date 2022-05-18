@@ -3,9 +3,9 @@
 Launch Audius services using docker-compose. Minimum system requirements:
 
 - Ubuntu 20.04 LTS
-- 8 vCPU (16 core recommended)
-- 16 GB RAM (32 recommended)
-- 250 GB SSD for discovery-provider or 2TB SSD for creator-node
+- 8 vCPU (16 vCPU recommended)
+- 16 GiB RAM (32 GiB recommended)
+- 256 GiB SSD for discovery-provider or 2 TiB SSD for creator-node
 
 ## Installation
 
