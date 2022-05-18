@@ -379,7 +379,7 @@ def upgrade(ctx, branch):
 
 @cli.command()
 # random so nodes in the network stagger upgrades
-@click.argument("cron-expression", default=f"{random.randint(0, 59)} */6 * * *")
+@click.argument("cron-expression", default=f"{random.randint(0, 59)} * * * *")
 @click.option("--remove", is_flag=True)
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
