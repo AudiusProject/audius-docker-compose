@@ -57,11 +57,7 @@ touch discovery-provider/.env
 
 # setup service
 if [[ "$1" != "" ]]; then
-	read -p "Setup auto upgrade? [Y/n] " -n 1 -r
-	echo
-	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
-		audius-cli auto-upgrade
-	fi
+	audius-cli auto-upgrade "$1" || true
 
 	audius-cli set-config --required "$1"
 
