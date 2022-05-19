@@ -299,10 +299,10 @@ def set_config(ctx, service, unset, required, key, value):
                         override_env_data.get(key, env_data.get(key)),
                     ),
                 )
-                if key == "logglyTags":
-                    loggly_tags = dotenv.get_key(override_env, key)
-                    loggly_env = ctx.obj["manifests_path"] / "override.env"
-                    dotenv.set_key(loggly_env, key, loggly_tags)
+                # if key == "logglyTags":
+                #     loggly_tags = dotenv.get_key(override_env, key)
+                #     loggly_env = ctx.obj["manifests_path"] / "override.env"
+                #     dotenv.set_key(loggly_env, key, loggly_tags)
             if unset and value == "":
                 dotenv.unset_key(override_env, key)
     else:

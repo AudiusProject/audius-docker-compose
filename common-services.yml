@@ -16,18 +16,14 @@ services:
       timeout: 5s
 
   logspout:
-    image: gliderlabs/logspout:v3.2.14
+    image: audius/logspout:v3.2.14
     container_name: logspout
-    environment:
-      - SYSLOG_STRUCTURED_DATA=${LOGGLY_TOKEN}@41058 tag="logspout"
-      - BACKLOG=false
     env_file:
       # requires audius-cli change
-      - override.env
+      # - override.env
       # we can try both overrides and one SHOULD be empty and the other should have what we need
       - creator-node/override.env
       - discovery-provider/override.env
-    command: multiline+syslog+tcp://logs-01.loggly.com:514
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
