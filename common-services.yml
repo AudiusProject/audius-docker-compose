@@ -22,7 +22,11 @@ services:
       - SYSLOG_STRUCTURED_DATA=${LOGGLY_TOKEN}@41058 tag="logspout"
       - BACKLOG=false
     env_file:
+      # requires audius-cli change
       - override.env
+      # we can try both overrides and one SHOULD be empty and the other should have what we need
+      - creator-node/override.env
+      - discovery-provider/override.env
     command: multiline+syslog+tcp://logs-01.loggly.com:514
     restart: always
     volumes:
