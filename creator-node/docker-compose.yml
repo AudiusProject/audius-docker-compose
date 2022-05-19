@@ -37,7 +37,7 @@ services:
       - ${NETWORK:-prod}.env
       - override.env
     environment:
-      - audiusInfraSetup="audius-docker-compose"
+      - audiusContentInfraSetup=audius-docker-compose
     networks:
       - creator-node-network
 
