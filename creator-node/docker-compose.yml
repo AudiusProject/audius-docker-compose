@@ -18,6 +18,15 @@ services:
     extends:
       file: ../common-services.yml
       service: base-cache
+    env_file:
+      - override.env
+    networks:
+      - creator-node-network
+
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
     networks:
       - creator-node-network
 
