@@ -54,7 +54,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
+    image: audius/discovery-provider:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}
     restart: always
     depends_on:
       db:
@@ -70,11 +70,13 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
+    environment:
+      - audius_discprov_infra_setup=audius-docker-compose
     networks:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-257b60f2ff0b990138d08e618b4e364e3b27b6d7}
+    image: audius/discovery-provider:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env

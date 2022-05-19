@@ -57,6 +57,12 @@ touch discovery-provider/.env
 
 # setup service
 if [[ "$1" != "" ]]; then
+	read -p "Enable auto upgrade? [Y/n] " -n 1 -r
+	echo
+	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
+		audius-cli auto-upgrade
+	fi
+
 	audius-cli set-config --required "$1"
 
 	read -p "Are you using an externally managed Postgres? [Y/n] " -n 1 -r
@@ -79,13 +85,13 @@ if [[ "$1" != "" ]]; then
 	echo
 	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 		if [[ "$1" == "discovery-provider" ]]; then
-			read -p "Run seed job? [Y/n] " -n 1 -r
+			read -p "Seed discovery db from snapshot (takes ~1 hour)? [Y/n] " -n 1 -r
 			echo
 			if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 				extra_args="--seed"
 			fi
 		fi
-		audius-cli launch $extra_args "$1"
+		audius-cli launch $extra_args "$1" # do not pass --yes so that we check for machine requirements
 	fi
 fi
 

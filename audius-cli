@@ -3,6 +3,8 @@
 import json
 import os
 import pathlib
+import random
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -13,8 +15,14 @@ import crontab
 import dotenv
 import psutil
 
+GB = 1024 ** 3
+
 RECOMMENDED_CPU_COUNT = 8
-RECOMMENDED_MEMORY = 16
+RECOMMENDED_MEMORY = 16 * GB
+RECOMMENDED_STORAGE = {
+    "creator-node": 2048 * GB,
+    "discovery-provider": 256 * GB,
+}
 
 SERVICE_PORTS = {
     "discovery-provider": "5000",
@@ -130,28 +138,40 @@ def health_check(ctx, service):
 
 
 @cli.command()
-@click.argument("service", type=service_type)
+@click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
+@click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed):
+def launch(ctx, service, seed, yes):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
 
-    total_memory = psutil.virtual_memory().total // (1024 ** 3)
+    total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
+    total_storage = shutil.disk_usage("/var/k8s").total
 
     click.echo(f"CPUs:\t{cpu_count}\t(required: {RECOMMENDED_CPU_COUNT})")
-    click.echo(f"Memory:\t{total_memory}GB\t(required: {RECOMMENDED_MEMORY}GB)")
+    click.echo(
+        f"Memory:\t{total_memory // GB}GB\t(required: {RECOMMENDED_MEMORY // GB}GB)"
+    )
+    click.echo(
+        f"Stroage:\t{total_storage // GB}GB\t(required: {RECOMMENDED_STORAGE[service] // GB}GB)"
+    )
 
-    if cpu_count < RECOMMENDED_CPU_COUNT or total_memory < RECOMMENDED_MEMORY:
+    if (
+        cpu_count < RECOMMENDED_CPU_COUNT
+        or total_memory < RECOMMENDED_MEMORY
+        or total_storage < RECOMMENDED_STORAGE[service]
+    ):
         click.secho("System does not meet requirements", fg="red")
     else:
         click.secho("System meets requirements", fg="green")
 
-    click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
+    if not yes:
+        click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
     if seed and service == "discovery-provider":
         # make sure backend is not running
@@ -219,7 +239,6 @@ def restart(ctx, service, containers):
     if service is None:
         services = ["discovery-provider", "creator-node"]
 
-    filtered = []
     for service in services:
         proc = subprocess.run(
             [
@@ -235,30 +254,27 @@ def restart(ctx, service, containers):
         )
 
         if proc.stdout:
-            filtered.append(service)
-
-    for service in services:
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / service,
-                "up",
-                "--build",
-                "--force-recreate",
-                "-d",
-                *containers,
-            ],
-        )
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / service,
+                    "up",
+                    "--build",
+                    "--force-recreate",
+                    "-d",
+                    *containers,
+                ],
+            )
 
 
 @cli.command()
+@click.option("--unset", is_flag=True)
+@click.option("--required", is_flag=True)
 @click.argument("service", type=service_type)
 @click.argument("key", required=False)
 @click.argument("value", required=False)
-@click.option("--unset", is_flag=True)
-@click.option("--required", is_flag=True)
 @click.pass_context
 def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
@@ -298,8 +314,8 @@ def set_config(ctx, service, unset, required, key, value):
 
 
 @cli.command()
-@click.argument("tag", required=False)
 @click.option("--unset", is_flag=True)
+@click.argument("tag", required=False)
 @click.pass_context
 def set_tag(ctx, unset, tag):
     """Set the commit tag"""
@@ -316,8 +332,8 @@ def set_tag(ctx, unset, tag):
 
 
 @cli.command()
-@click.argument("network", type=network_type, required=False)
 @click.option("--unset", is_flag=True)
+@click.argument("network", type=network_type, required=False)
 @click.pass_context
 def set_network(ctx, unset, network):
     """Set the deployment network"""
@@ -356,12 +372,39 @@ def pull(ctx, branch):
 def upgrade(ctx, branch):
     """Pull and restarts all running services"""
     ctx.forward(pull)
-    ctx.invoke(restart)
+
+    for service in ["creator-node", "discovery-provider"]:
+        proc = subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "ps",
+                "-q",
+                "backend",
+            ],
+            capture_output=True,
+        )
+
+        # update if service is running
+        if proc.stdout:
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / service,
+                    "up",
+                    "-d",
+                ],
+            )
 
 
 @cli.command()
-@click.argument("cron-expression", default="0 */6 * * *")
+# random so nodes in the network stagger upgrades
 @click.option("--remove", is_flag=True)
+@click.argument("cron-expression", default=f"{random.randint(0, 59)} * * * *")
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
@@ -372,7 +415,10 @@ def auto_upgrade(ctx, remove, cron_expression):
         if not remove:
             log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
             job = cron.new(
-                f"date >> {log_file}; /usr/local/bin/audius-cli upgrade >> {log_file} 2>&1",
+                (
+                    f"date >> {log_file};"
+                    f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
+                ),
                 "audius-cli auto-upgrade",
             )
 
