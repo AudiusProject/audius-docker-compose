@@ -27,6 +27,8 @@ services:
     extends:
       file: ../common-services.yml
       service: logspout
+    env_file:
+      - override.env
     networks:
       - creator-node-network
 
