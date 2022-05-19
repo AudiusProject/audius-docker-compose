@@ -87,7 +87,7 @@ if [[ "$1" != "" ]]; then
 				extra_args="--seed"
 			fi
 		fi
-		audius-cli launch $extra_args "$1" --force
+		audius-cli launch $extra_args "$1" # do not pass --yes so that we check for machine requirements
 	fi
 fi
 
