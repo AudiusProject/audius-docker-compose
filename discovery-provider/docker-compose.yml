@@ -68,6 +68,8 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
+    environment:
+      - audius_infra_setup="audius-docker-compose"
     networks:
       - discovery-provider-network
 
