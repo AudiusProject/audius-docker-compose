@@ -314,6 +314,46 @@ def set_config(ctx, service, unset, required, key, value):
 
 
 @cli.command()
+@click.argument("service", type=service_type)
+@click.pass_context
+def get_config(ctx, service):
+    proc = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / service,
+            "ps",
+            "-q",
+            "backend",
+        ],
+        capture_output=True,
+    )
+
+    # get from inside container if running otherwise fallback override.env
+    if proc.stdout:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "exec",
+                "backend",
+                "env",
+            ]
+        )
+    else:
+        env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
+        env_data = dotenv.dotenv_values(env)
+        override_env = ctx.obj["manifests_path"] / service / "override.env"
+        override_env_data = dotenv.dotenv_values(override_env)
+        current_env_data = {**env_data, **override_env_data}
+        for key, value in current_env_data.items():
+            print(f"{key}={value}")
+
+
+@cli.command()
 @click.option("--unset", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
