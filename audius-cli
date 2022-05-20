@@ -350,7 +350,7 @@ def get_config(ctx, service):
         override_env_data = dotenv.dotenv_values(override_env)
         current_env_data = {**env_data, **override_env_data}
         for key, value in current_env_data.items():
-            print(f"key={value}")
+            print(f"{key}={value}")
 
 
 @cli.command()
