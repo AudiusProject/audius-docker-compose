@@ -21,6 +21,15 @@ services:
     networks:
       - creator-node-network
 
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
+    env_file:
+      - override.env
+    networks:
+      - creator-node-network
+
   backend:
     container_name: server
     image: audius/creator-node:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}

@@ -23,6 +23,15 @@ services:
     networks:
       - discovery-provider-network
 
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0

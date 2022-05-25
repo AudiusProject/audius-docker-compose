@@ -16,3 +16,10 @@ services:
       test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
+
+  logspout:
+    image: audius/logspout:v3.2.14
+    container_name: logspout
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
