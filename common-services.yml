@@ -6,6 +6,8 @@ services:
       test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
+    ports:
+      - "5432:5432"
 
   base-cache:
     image: redis:5.0.5
