@@ -13,6 +13,8 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+    ports:
+      - "5432:5432"
 
   cache:
     container_name: redis

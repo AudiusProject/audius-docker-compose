@@ -12,6 +12,8 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
+    ports:
+      - "5432:5432"
 
   cache:
     container_name: redis
