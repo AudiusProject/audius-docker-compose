@@ -27,7 +27,7 @@ There are four required creator node environment variables, available in the cre
 The full list of variables and explanations can be found on the wiki [here](https://github.com/AudiusProject/audius-protocol/wiki/Content-Node:-Configuration-Details#required-environment-variables). Generally node operators will not need to modify any other environment variables
 
 ##### External Creator Node Postgres
-If you set a external Postgres url during setup you can skip this section.
+If you set an external Postgres url during setup you can skip this section.
 
 If you did not set an external Postgres url during setup and you want to add one now, replace the db url by running:
 ```sh
@@ -43,7 +43,7 @@ The full list of variables and explanations can be found on the wiki [here](http
 
 
 ##### External Discovery Provider Postgres Instance
-If you set a external Postgres url during setup you can skip this section.
+If you set an external Postgres url during setup you can skip this section.
 
 The below is only if using a externally managed Postgres (version 11.1+) database:
 
