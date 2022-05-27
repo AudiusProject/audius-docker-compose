@@ -14,9 +14,10 @@
 ```sh
 # to set individual environment variables
 # valid service-names are "creator-node" or "discovery-provider"
-audius-cli set-config <service-name> <key> <value>
+audius-cli set-config creator-node
+audius-cli set-config discovery-provider
 
-# to set all the required environment variables for a service
+# to set all the required environment variables for a service, use the --required flag
 audius-cli set-config --required creator-node
 audius-cli set-config --required discovery-provider
 ```
@@ -31,7 +32,7 @@ If you set an external Postgres url during setup you can skip this section.
 
 If you did not set an external Postgres url during setup and you want to add one now, replace the db url by running:
 ```sh
-audius-cli set-config creator-node backend
+audius-cli set-config creator-node
 key   : dbUrl
 value : <db url>
 ```
@@ -48,12 +49,12 @@ If you set an external Postgres url during setup you can skip this section.
 The below is only if using a externally managed Postgres (version 11.1+) database:
 
 ```sh
-audius-cli set-config discovery-provider backend
+audius-cli set-config discovery-provider
 key   : audius_db_url
 value : <audius_db_url>
 
 # If there's no read replica, enter the primary db url for both env vars.
-audius-cli set-config discovery-provider backend
+audius-cli set-config discovery-provider
 key   : audius_db_url_read_replica
 value : <audius_db_url_read_replica>
 ```
