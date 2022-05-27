@@ -1,52 +1,33 @@
 # Advanced Setup
 
+## Table of Contents
+- [Launching a new node from scratch](#launching-a-new-node-from-scratch)
+  - [Setting environment variables](#setting-environment-variables)
+  - [Creator Node](#creator-node)
+  - [Discovery Provider](#discovery-provider)
+  - [Launch](#launch)
+- [Migration from Kubernetes](#migration-from-kubernetes)
 ## Launching a new node from scratch
 
-### Setting environment varaibles
+### Setting environment variables
 
 ```sh
+# to set individual environment variables
+# valid service-names are "creator-node" or "discovery-provider"
 audius-cli set-config <service-name> <key> <value>
+
+# to set all the required environment variables for a service
+audius-cli set-config --required creator-node
+audius-cli set-config --required discovery-provider
 ```
 
 #### Creator Node
+There are four required creator node environment variables, available [here](README.md#creator-node)
+
 The full list of variables and explanations can be found on the wiki [here](https://github.com/AudiusProject/audius-protocol/wiki/Content-Node:-Configuration-Details#required-environment-variables).
 
-Some variables must be set, you can do this with the following command:
-```sh
-audius-cli set-config --required creator-node
-```
-
-Currently this breaks down into,
-
-```sh
-audius-cli set-config creator-node
-key   : spOwnerWallet
-value : <address of wallet that contains audius tokens>
-
-audius-cli set-config creator-node
-key   : delegateOwnerWallet
-value : <address of wallet that contains no tokens but that is registered on chain>
-
-audius-cli set-config creator-node
-key   : delegatePrivateKey
-value : <private key>
-
-audius-cli set-config creator-node
-key   : creatorNodeEndpoint
-value : <your service url>
-```
-**Note:** if you haven't registered the service yet, please enter the url you plan to register for `creatorNodeEndpoint`.
-
 #### Discovery Provider
-```sh
-audius-cli set-config discovery-provider
-key   : audius_delegate_owner_wallet
-value : <delegate_owner_wallet>
-
-audius-cli set-config discovery-provider
-key   : audius_delegate_private_key
-value : <delegate_private_key>
-```
+There are two required discovery provider environment variables, available [here](README.md#discovery-provider)
 
 If you are using an external managed Postgres database (version 11.1+), replace the db url with,
 ```sh
@@ -72,7 +53,11 @@ Make sure that your service exposes all the required environment variables. See 
 
 ### Launch
 ```sh
-audius-cli launch <service-name>
+audius-cli launch creator-node
+
+# or
+
+audius-cli launch discovery-provider (--seed)
 
 # Options:
 # --seed
