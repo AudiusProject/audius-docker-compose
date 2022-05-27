@@ -23,11 +23,13 @@ During installation there will be prompts for required environment variables. Th
 `delegatePrivateKey` - Private key associated with `delegateOwnerWallet`
 `spOwnerWallet` - Wallet that registered (or will register) the content node on chain
 
+If you're using an externally managed Postgres DB please see [this section](ADVANCED_SETUP.md#external-creator-node-postgres)
+
 #### Discovery Provider
 `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server
 `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
 
-If you're using an externally managed Postgres DB please see [this section](ADVANCED_SETUP.md#discovery-provider)
+If you're using an externally managed Postgres DB please see [this section](ADVANCED_SETUP.md#external-discovery-provider-postgres-instance)
 
 ## More options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
