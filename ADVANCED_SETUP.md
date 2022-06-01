@@ -80,20 +80,24 @@ audius-cli launch discovery-provider (--seed)
 
 ## Migration from Kubernetes
 
-For existing machines running audius services via kube, first run the following commands,
 ```sh
+# Clone and install related dependencies
+git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
+bash ~/audius-docker-compose/setup.sh
+
+# Get configs from k8s-manifests and set them again via set-config
+cat ~/audius-k8s-manifests/config.yaml
+audius-cli set-config <service>
+audius-cli set-tag <tag>
+
+# Remember to reconfigure firewalls and load balancers
+
+# Remove kube
 audius-cli auto-upgrade --remove
 kubectl delete --all-namespaces --all deployments
 kubectl delete --all-namespaces --all pods
 sudo kubeadm reset
 
-git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
-cd ~/audius-docker-compose
-bash setup.sh
+# Launch the service
+audius-cli launch <service>
 ```
-
-Following this, you will have to reset the keys from before, you can preview old keys with,
-```
-cat audius-k8s-manifests/config.yaml
-```
-and set them similarly to before with audius-cli
