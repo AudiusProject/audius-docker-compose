@@ -209,6 +209,16 @@ def launch(ctx, service, seed, yes):
         ],
     )
 
+    subprocess.run(
+        [
+            "docker",
+            "image",
+            "prune",
+            "--all",
+            "--force",
+        ],
+    )
+
 
 @cli.command()
 @click.argument("service", type=service_type)
@@ -267,6 +277,16 @@ def restart(ctx, service, containers):
                     *containers,
                 ],
             )
+
+    subprocess.run(
+        [
+            "docker",
+            "image",
+            "prune",
+            "--all",
+            "--force",
+        ],
+    )
 
 
 @cli.command()
@@ -439,6 +459,16 @@ def upgrade(ctx, branch):
                     "-d",
                 ],
             )
+
+    subprocess.run(
+        [
+            "docker",
+            "image",
+            "prune",
+            "--all",
+            "--force",
+        ],
+    )
 
 
 @cli.command()
