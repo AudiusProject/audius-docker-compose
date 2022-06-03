@@ -63,7 +63,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}
+    image: audius/discovery-provider:${TAG:-87783c89cb5cd9b9812857ed9a1eec63570acb27}
     restart: always
     depends_on:
       db:
@@ -85,7 +85,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}
+    image: audius/discovery-provider:${TAG:-87783c89cb5cd9b9812857ed9a1eec63570acb27}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
