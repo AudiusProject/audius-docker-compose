@@ -2,9 +2,8 @@ services:
   base-db:
     image: postgres:11.4
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
-    user: postgres
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
     ports:
