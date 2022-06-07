@@ -89,7 +89,7 @@ bash ~/audius-docker-compose/setup.sh
 cat ~/audius-k8s-manifests/config.yaml
 audius-cli set-config <service>
 
-# Remember to configure firewalls and load balancers to allow port 5000 through
+# Remember to configure firewalls and load balancers to allow the service port through
 
 # Turn off Postgres on the host. If this command returns an error it's not a problem.
 sudo systemctl stop postgresql.service
