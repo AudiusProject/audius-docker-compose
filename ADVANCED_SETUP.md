@@ -85,12 +85,14 @@ audius-cli launch discovery-provider (--seed)
 git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
 bash ~/audius-docker-compose/setup.sh
 
+# Turn off Postgres on the host. If this command returns an error it's not a problem.
+sudo systemctl stop postgresql.service
+
 # Get configs from k8s-manifests and set them again via set-config
 cat ~/audius-k8s-manifests/config.yaml
 audius-cli set-config <service>
-audius-cli set-tag <tag>
 
-# Remember to reconfigure firewalls and load balancers
+# Remember to configure firewalls and load balancers to allow port 5000 through
 
 # Remove kube
 audius-cli auto-upgrade --remove
