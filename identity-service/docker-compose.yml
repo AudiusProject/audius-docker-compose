@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: postgres
+    extends:
+      file: ../common-services.yml
+      service: base-db
+    environment:
+      POSTGRES_DB: audius_identity_service
+    volumes:
+      - /var/k8s/identity-service-db:/var/lib/postgresql/data # Use k8s location for consistency
+    networks:
+      - identity-service-network
+
+  cache:
+    container_name: redis
+    extends:
+      file: ../common-services.yml
+      service: base-cache
+    networks:
+      - identity-service-network
+
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
+    env_file:
+      - override.env
+    networks:
+      - identity-service-network
+
+  backend:
+    container_name: server
+    image: audius/identity-service:${TAG:-23d350aabedfe7e4c3a4c3bd060c2f550f695068}
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    labels:
+      autoheal: "true"
+    ports:
+      - "7000:7000"
+    env_file:
+      - ${NETWORK}.env
+      - override.env
+    networks:
+      - identity-service-network
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - AUTOHEAL_INTERVAL=10
+      - CURL_TIMEOUT=30
+
+networks:
+  identity-service-network:

@@ -22,15 +22,16 @@ RECOMMENDED_MEMORY = 16 * GB
 RECOMMENDED_STORAGE = {
     "creator-node": 2048 * GB,
     "discovery-provider": 256 * GB,
+    "identity-service": 256 * GB,
 }
 
 SERVICE_PORTS = {
     "discovery-provider": "5000",
     "creator-node": "4000",
-    "identity-server": "7000",
+    "identity-service": "7000",
 }
 
-service_type = click.Choice(["creator-node", "discovery-provider"])
+service_type = click.Choice(["creator-node", "discovery-provider", "identity-service"])
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -472,8 +473,8 @@ def upgrade(ctx, branch):
 
 
 @cli.command()
-# random so nodes in the network stagger upgrades
 @click.option("--remove", is_flag=True)
+# random so nodes in the network stagger upgrades
 @click.argument("cron-expression", default=f"{random.randint(0, 59)} * * * *")
 @click.pass_context
 def auto_upgrade(ctx, remove, cron_expression):
