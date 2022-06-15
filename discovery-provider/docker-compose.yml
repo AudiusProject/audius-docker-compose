@@ -43,7 +43,7 @@ services:
       - node.name=cluster1-node1
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms${ES_MEM:-2g} -Xmx${ES_MEM:-2g}"
     ulimits:
       memlock:
         soft: -1
@@ -56,7 +56,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
+          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1",
         ]
       interval: 10s
       timeout: 5s
@@ -104,14 +104,13 @@ services:
     image: willfarrell/autoheal
     container_name: autoheal
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
 
 networks:
   discovery-provider-network:
-
 
 volumes:
   esdata:
