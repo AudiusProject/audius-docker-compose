@@ -31,7 +31,9 @@ SERVICE_PORTS = {
     "identity-service": "7000",
 }
 
-service_type = click.Choice(["creator-node", "discovery-provider", "identity-service"])
+SERVICES = ("creator-node", "discovery-provider", "identity-service")
+
+service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -248,7 +250,7 @@ def restart(ctx, service, containers):
     """Restart a service/container"""
     services = [service]
     if service is None:
-        services = ["discovery-provider", "creator-node"]
+        services = SERVICES
 
     for service in services:
         proc = subprocess.run(
@@ -298,7 +300,7 @@ def down(ctx, service, containers):
     """Restart a service/container"""
     services = [service]
     if service is None:
-        services = ["discovery-provider", "creator-node"]
+        services = SERVICES
 
     for service in services:
         subprocess.run(
@@ -407,7 +409,7 @@ def set_tag(ctx, unset, tag):
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
 
-    for service in ["creator-node", "discovery-provider"]:
+    for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
@@ -425,7 +427,7 @@ def set_network(ctx, unset, network):
     if not unset and network is None:
         network = click.prompt(click.style("Network", bold=True))
 
-    for service in ["creator-node", "discovery-provider"]:
+    for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
@@ -458,7 +460,7 @@ def upgrade(ctx, branch):
     """Pull and restarts all running services"""
     ctx.forward(pull)
 
-    for service in ["creator-node", "discovery-provider"]:
+    for service in SERVICES:
         proc = subprocess.run(
             [
                 "docker",
