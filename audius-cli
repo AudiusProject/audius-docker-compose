@@ -312,7 +312,6 @@ def down(ctx, service, containers):
                 "down",
                 *containers,
             ],
-            capture_output=True,
         )
 
 
