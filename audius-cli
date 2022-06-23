@@ -291,6 +291,30 @@ def restart(ctx, service, containers):
 
 
 @cli.command()
+@click.argument("service", type=service_type, required=False)
+@click.argument("containers", type=container_type, nargs=-1)
+@click.pass_context
+def down(ctx, service, containers):
+    """Restart a service/container"""
+    services = [service]
+    if service is None:
+        services = ["discovery-provider", "creator-node"]
+
+    for service in services:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "down",
+                *containers,
+            ],
+            capture_output=True,
+        )
+
+
+@cli.command()
 @click.option("--unset", is_flag=True)
 @click.option("--required", is_flag=True)
 @click.argument("service", type=service_type)
