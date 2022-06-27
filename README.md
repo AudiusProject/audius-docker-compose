@@ -31,5 +31,11 @@ If you're using an externally managed Postgres DB please see [this section](ADVA
 
 If you're using an externally managed Postgres DB please see [this section](ADVANCED_SETUP.md#external-discovery-provider-postgres-instance)
 
+## SP Utilities
+This folder contains a set of scripts and utilities to manage services like:
+- Pre-registration health checks
+- Delist content scripts (for content node)
+- Automatic rewards claim script
+
 ## More options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
