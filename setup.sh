@@ -55,6 +55,28 @@ touch creator-node/.env
 touch discovery-provider/override.env
 touch discovery-provider/.env
 
+# check if ubuntu version is 20.04 or 22.04
+UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID)
+if [[ ! $UBUNTU_VERSION =~ 20.04|22.04 ]]; then
+	echo "Unsupported version of Ubuntu, please run version 20.04 or 22.04"
+	read -p "Continue with setup? [Y/n] " -n 1 -r
+	echo $REPLY
+	if [[ "$REPLY" =~ ^(Nn]|)$ ]]; then
+		exit 1
+	fi
+fi
+
+# check if ubuntu kernel version is 5.10+
+UBUNTU_KERNEL_VERSION=$(uname -r)
+if [[ ! $UBUNTU_KERNEL_VERSION =~ 5\.[1-9][0-9] ]]; then
+	echo "Unsupported version of Ubuntu kernel, please run version 5.13 or higher"
+	read -p "Continue with setup? [Y/n] " -n 1 -r
+	echo
+	if [[ "$REPLY" =~ ^([Nn]|)$ ]]; then
+		exit 1
+	fi
+fi
+
 # setup service
 if [[ "$1" != "" ]]; then
 	read -p "Enable auto upgrade? [Y/n] " -n 1 -r
