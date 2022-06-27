@@ -6,7 +6,7 @@ Usage
 
 ```bash
 ➜ pwd
-/Audius/audius-k8s-manifests/sp-utilities/discovery-provider
+/Audius/audius-docker-compose/sp-utilities/discovery-provider
 
 ➜ discoveryProviderEndpoint=https://discoveryprovider.domain.co node healthChecks.js
 ✓ Health check passed
