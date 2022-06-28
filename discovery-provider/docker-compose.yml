@@ -13,6 +13,7 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+    logging: *default-logging
 
   cache:
     container_name: redis
@@ -22,6 +23,7 @@ services:
       service: base-cache
     networks:
       - discovery-provider-network
+    logging: *default-logging
 
   logspout:
     extends:
@@ -31,6 +33,7 @@ services:
       - override.env
     networks:
       - discovery-provider-network
+    logging: *default-logging
 
   elasticsearch:
     container_name: elasticsearch
@@ -60,6 +63,7 @@ services:
         ]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
 
   backend:
     container_name: server
@@ -83,6 +87,7 @@ services:
       - audius_discprov_infra_setup=audius-docker-compose
     networks:
       - discovery-provider-network
+    logging: *default-logging
 
   seed:
     image: audius/discovery-provider:${TAG:-cfea671853e49b09d1e2c6dcff3a7be7c3c037f6}
@@ -99,6 +104,7 @@ services:
       - discovery-provider-network
     profiles:
       - seed
+    logging: *default-logging
 
   autoheal:
     image: willfarrell/autoheal
@@ -108,6 +114,7 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+    logging: *default-logging
 
 networks:
   discovery-provider-network:

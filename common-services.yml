@@ -8,6 +8,7 @@ services:
       timeout: 5s
     ports:
       - "5432:5432"
+    logging: *default-logging
 
   base-cache:
     image: redis:5.0.5
@@ -16,6 +17,7 @@ services:
       test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
 
   logspout:
     image: audius/logspout:v3.2.14
@@ -23,3 +25,12 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging: *default-logging
+
+x-logging: &default-logging
+  options:
+    max-size: 10m
+    max-file: 3
+    mode: non-blocking
+    max-buffer-size: 4m
+  driver: json-file
