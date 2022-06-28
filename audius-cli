@@ -161,7 +161,7 @@ def launch(ctx, service, seed, yes):
         f"Memory:\t{total_memory // GB}GB\t(required: {RECOMMENDED_MEMORY // GB}GB)"
     )
     click.echo(
-        f"Stroage:\t{total_storage // GB}GB\t(required: {RECOMMENDED_STORAGE[service] // GB}GB)"
+        f"Storage:\t{total_storage // GB}GB\t(required: {RECOMMENDED_STORAGE[service] // GB}GB)"
     )
 
     if (
