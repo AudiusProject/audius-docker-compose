@@ -54,7 +54,7 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
     environment:
-      - AUTOHEAL_INTERVAL=60
+      - AUTOHEAL_INTERVAL=300
       - CURL_TIMEOUT=300
 
 networks:
