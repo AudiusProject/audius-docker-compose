@@ -82,13 +82,17 @@ async function healthCheckDisk () {
   assert.deepStrictEqual(data.data.storagePath, '/file_storage')
   const [size, magnitude] = data.data.available.split(' ')
   assert.deepStrictEqual(magnitude, 'TB')
-  assert.ok(parseFloat(size) > 1.5, 'Minimum available disk space should be 1.5 TB')
+  assert.ok(parseFloat(size) > 1.5, 'Minimum available disk space should be 2 TB')
   console.log('✓ Disk health check passed')
 }
 
 // This is the heartbeat route. It should always pass
 async function healthCheckDurationHeartbeat () {
-  const randomBytes = promisify(crypto.randomBytes)
+  if (!SP_ID) {
+    console.error('This cannot be run without a valid spID. If your node is not registered and does not have an spID yet, please contact a node operator with a registered node to run this test')
+    return
+  }
+
   try {
     parseEnvVarsAndArgs()
   } catch (e) {
@@ -98,15 +102,15 @@ async function healthCheckDurationHeartbeat () {
 
   try {
     // Generate signature using local key
-    const randomBytesToSign = (await randomBytes(18)).toString()
-    const signedLocalData = generateTimestampAndSignatureForSPVerification({ spID: SP_ID }, PRIVATE_KEY)
-    // Add randomBytes to outgoing request parameters
-    const reqParam = signedLocalData
-    reqParam.randomBytes = randomBytesToSign
+    const { timestamp, signature } = generateTimestampAndSignatureForSPVerification(SP_ID, PRIVATE_KEY)
     let requestConfig = {
       url: `${CREATOR_NODE_ENDPOINT}/health_check/duration/heartbeat`,
       method: 'get',
-      params: reqParam,
+      params: {
+        spID: SP_ID,
+        timestamp,
+        signature
+      },
       responseType: 'json'
     }
     let resp = await axios(requestConfig)
@@ -119,9 +123,11 @@ async function healthCheckDurationHeartbeat () {
 
 // Test the non heartbeat route. There's a chance this could time out so handle accordingly
 async function healthCheckDuration () {
-  const randomBytes = promisify(crypto.randomBytes)
+  if (!SP_ID) {
+    console.error('This cannot be run without a valid spID. If your node is not registered and does not have an spID yet, please contact a node operator with a registered node to run this test')
+    return
+  }
   let start = Date.now()
-  let resp
 
   try {
     parseEnvVarsAndArgs()
@@ -132,18 +138,18 @@ async function healthCheckDuration () {
 
   try {
     // Generate signature using local key
-    const randomBytesToSign = (await randomBytes(18)).toString()
-    const signedLocalData = generateTimestampAndSignatureForSPVerification({ spID: SP_ID }, PRIVATE_KEY)
-    // Add randomBytes to outgoing request parameters
-    const reqParam = signedLocalData
-    reqParam.randomBytes = randomBytesToSign
+    const { timestamp, signature } = generateTimestampAndSignatureForSPVerification(SP_ID, PRIVATE_KEY)
     let requestConfig = {
       url: `${CREATOR_NODE_ENDPOINT}/health_check/duration`,
       method: 'get',
-      params: reqParam,
+      params: {
+        spID: SP_ID,
+        timestamp,
+        signature
+      },
       responseType: 'json'
     }
-    resp = await axios(requestConfig)
+    const resp = await axios(requestConfig)
     console.log('✓ Non-heartbeat duration health check passed')
   } catch (e) {
     if (e.message.includes('504')) {
@@ -157,7 +163,7 @@ async function healthCheckDuration () {
 // Test the file upload limit
 async function healthCheckFileUpload () {
   if (!SP_ID) {
-    console.error('This cannot be run without a valid spID. If your node is not registered and does not have an spID yet, please contact a node operator with a registered ndoe to run this test')
+    console.error('This cannot be run without a valid spID. If your node is not registered and does not have an spID yet, please contact a node operator with a registered node to run this test')
     return
   }
 
@@ -239,7 +245,7 @@ async function healthCheckFileUpload () {
       )
     }
 
-    console.log("Successfully got the transcode response for uuid: ", uuid)
+    // console.debug("Successfully got the transcode response for uuid: ", uuid)
 
     // clear the track data on the node
     let clearRequestConfig = {
@@ -255,9 +261,7 @@ async function healthCheckFileUpload () {
       },
       responseType: 'json'
     }
-    const clearArtifactsResp = await axios(clearRequestConfig)
-
-    if (clearArtifactsResp.status !== 200) throw new Error('Error clearing fileDir from node', clearArtifactsResp)
+    await axios(clearRequestConfig)
 
     console.log('✓ File upload health check passed')
   } catch (e) {
