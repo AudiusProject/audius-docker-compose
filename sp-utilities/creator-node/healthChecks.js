@@ -6,12 +6,19 @@ const crypto = require('crypto')
 const assert = require('assert')
 
 const { promisify } = require('util')
-const { generateTimestampAndSignature } = require('./apiSigning')
+const { generateTimestampAndSignatureForSPVerification } = require('./apiSigning')
 
 const web3 = new Web3()
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
+const SP_ID = process.env.spId
+
+async function wait (milliseconds) {
+  await new Promise((resolve) =>
+    setTimeout(resolve, milliseconds)
+  )
+}
 
 /**
  * Parses the environment variables and command line args
@@ -63,19 +70,6 @@ async function healthCheckDB () {
   console.log('✓ DB health check passed')
 }
 
-async function healthCheckIPFS () {
-  let requestConfig = {
-    url: `${CREATOR_NODE_ENDPOINT}/health_check/ipfs`,
-    method: 'get',
-    responseType: 'json'
-  }
-  let resp = await axios(requestConfig)
-  let data = resp.data
-  assert.deepStrictEqual(resp.status, 200)
-  assert.deepStrictEqual(data.data.hash.includes('Qm'), true)
-  console.log('✓ IPFS health check passed')
-}
-
 async function healthCheckDisk () {
   let requestConfig = {
     url: `${CREATOR_NODE_ENDPOINT}/disk_check`,
@@ -105,7 +99,7 @@ async function healthCheckDurationHeartbeat () {
   try {
     // Generate signature using local key
     const randomBytesToSign = (await randomBytes(18)).toString()
-    const signedLocalData = generateTimestampAndSignature({ randomBytesToSign }, PRIVATE_KEY)
+    const signedLocalData = generateTimestampAndSignatureForSPVerification({ spID: SP_ID }, PRIVATE_KEY)
     // Add randomBytes to outgoing request parameters
     const reqParam = signedLocalData
     reqParam.randomBytes = randomBytesToSign
@@ -139,7 +133,7 @@ async function healthCheckDuration () {
   try {
     // Generate signature using local key
     const randomBytesToSign = (await randomBytes(18)).toString()
-    const signedLocalData = generateTimestampAndSignature({ randomBytesToSign }, PRIVATE_KEY)
+    const signedLocalData = generateTimestampAndSignatureForSPVerification({ spID: SP_ID }, PRIVATE_KEY)
     // Add randomBytes to outgoing request parameters
     const reqParam = signedLocalData
     reqParam.randomBytes = randomBytesToSign
@@ -162,8 +156,10 @@ async function healthCheckDuration () {
 
 // Test the file upload limit
 async function healthCheckFileUpload () {
-  const randomBytes = promisify(crypto.randomBytes)
-  let resp
+  if (!SP_ID) {
+    console.error('This cannot be run without a valid spID. If your node is not registered and does not have an spID yet, please contact a node operator with a registered ndoe to run this test')
+    return
+  }
 
   try {
     parseEnvVarsAndArgs()
@@ -174,11 +170,7 @@ async function healthCheckFileUpload () {
 
   try {
     // Generate signature using local key
-    const randomBytesToSign = (await randomBytes(18)).toString()
-    const signedLocalData = generateTimestampAndSignature({ randomBytesToSign }, PRIVATE_KEY)
-    // Add randomBytes to outgoing request parameters
-    const reqParam = signedLocalData
-    reqParam.randomBytes = randomBytesToSign
+    const { timestamp, signature } = generateTimestampAndSignatureForSPVerification(SP_ID, PRIVATE_KEY)
 
     let sampleTrack = new FormData()
     sampleTrack.append('file', (await axios({
@@ -191,17 +183,85 @@ async function healthCheckFileUpload () {
       headers: {
         ...sampleTrack.getHeaders()
       },
-      url: `${CREATOR_NODE_ENDPOINT}/health_check/fileupload`,
+      url: `${CREATOR_NODE_ENDPOINT}/transcode_and_segment`,
       method: 'post',
-      params: reqParam,
+      params: {
+        spID: SP_ID,
+        timestamp,
+        signature
+      },
       responseType: 'json',
       data: sampleTrack,
       maxContentLength: Infinity,
       maxBodyLength: Infinity
     }
-    resp = await axios(requestConfig)
+    let transcodeResp = await axios(requestConfig)
+    const uuid = transcodeResp.data.data.uuid
+
+    const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+    const POLL_STATUS_INTERVAL = 3000 // 3s
+    let TRANSCODE_STATE = { successful: false, data: null }
+
+    // this is pulled directly from pollProcessingStatus in libs/services/creatorNode/CreatorNode.ts
+    const start = Date.now()
+    while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
+      try {
+        const processingStatusResp = await axios({
+          url: `${CREATOR_NODE_ENDPOINT}/async_processing_status`,
+          params: {
+            uuid
+          },
+          method: 'get'
+        })
+        const { status } = processingStatusResp.data.data
+
+        if (status && status === 'DONE') {
+          TRANSCODE_STATE.successful = true
+          TRANSCODE_STATE.data = processingStatusResp.data.data
+          break
+        }
+        if (status && status === 'FAILED') {
+          console.error(`Track content async upload failed: uuid=${uuid}, error=`, processingStatusResp)
+        }
+      } catch (e) {
+        // Catch errors here and swallow them. Errors don't signify that the track
+        // upload has failed, just that we were unable to establish a connection to the node.
+        // This allows polling to retry
+        console.error(`Failed to poll for processing status, ${e}`)
+      }
+
+      await wait(POLL_STATUS_INTERVAL)
+    }
+
+    if (!TRANSCODE_STATE.successful) {
+      throw new Error(
+        `Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`
+      )
+    }
+
+    console.log("Successfully got the transcode response for uuid: ", uuid)
+
+    // clear the track data on the node
+    let clearRequestConfig = {
+      url: `${CREATOR_NODE_ENDPOINT}/clear_transcode_and_segment_artifacts`,
+      method: 'post',
+      params: {
+        spID: SP_ID,
+        timestamp,
+        signature
+      },
+      data: {
+        fileDir: TRANSCODE_STATE.data.resp.fileDir
+      },
+      responseType: 'json'
+    }
+    const clearArtifactsResp = await axios(clearRequestConfig)
+
+    if (clearArtifactsResp.status !== 200) throw new Error('Error clearing fileDir from node', clearArtifactsResp)
+
     console.log('✓ File upload health check passed')
   } catch (e) {
+    console.error(e)
     throw new Error(`File upload health check errored with error message: "${e.message}".`)
   }
 }
@@ -216,7 +276,6 @@ async function run () {
   try {
     console.log(`Starting tests now. This may take a few minutes.`)
     await healthCheck()
-    await healthCheckIPFS()
     await healthCheckDB()
     await healthCheckDisk()
     await healthCheckDurationHeartbeat()
