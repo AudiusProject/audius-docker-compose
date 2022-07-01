@@ -246,6 +246,29 @@ async function healthCheckFileUpload () {
     }
 
     // console.debug("Successfully got the transcode response for uuid: ", uuid)
+    // console.debug(JSON.stringify(TRANSCODE_STATE))
+
+    // fetch a track segment
+    const segmentFileName = TRANSCODE_STATE.data.resp.segmentFileNames[0]
+    const fileNameNoExtension = TRANSCODE_STATE.data.resp.fileName.split('.')[0]
+
+    const { timestamp: timestamp2, signature: signature2 } = generateTimestampAndSignatureForSPVerification(SP_ID, PRIVATE_KEY)
+    const fetchSegmentResp = await axios({
+      url: `${CREATOR_NODE_ENDPOINT}/transcode_and_segment`,
+      method: 'get',
+      params: {
+        fileName: segmentFileName,
+        fileType: 'segment',
+        uuid: fileNameNoExtension,
+        timestamp: timestamp2,
+        signature: signature2,
+        spID: SP_ID
+      },
+      responseType: 'stream',
+      timeout: 10_000 // 10s
+    })
+
+    assert.deepStrictEqual(fetchSegmentResp.headers['content-length'], '254552')
 
     // clear the track data on the node
     let clearRequestConfig = {
