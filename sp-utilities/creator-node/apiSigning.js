@@ -23,7 +23,13 @@ const sortKeys = x => {
   return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
+const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
+  const spIdInt = parseInt(spID, 10)
+  return generateTimestampAndSignature({ spID: spIdInt }, privateKey)
+}
+
 module.exports = {
   generateTimestampAndSignature,
-  sortKeys
+  sortKeys,
+  generateTimestampAndSignatureForSPVerification
 }
