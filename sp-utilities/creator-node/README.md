@@ -15,7 +15,10 @@ To run this script, go to the sp-utilities/creator-node/ folder and run the comm
 /Audius/audius-docker-compose/sp-utilities/creator-node
 
 # entering creatorNodeEndpoint and delegatePrivateKey sends those values as env vars to the script without having to export to your terminal
-➜ creatorNodeEndpoint=https://creatornode.domain.co delegatePrivateKey=5e468bc1b395e2eb8f3c90ef897406087b0599d139f6ca0060ba85dcc0dce8dc node healthChecks.js
+➜ export creatorNodeEndpoint=https://creatornode.domain.co
+➜ export delegatePrivateKey=5e468bc1b395e2eb8f3c90ef897406087b0599d139f6ca0060ba85dcc0dce8dc
+➜ export spID=1 # if your node is not registered, set this env var to empty
+➜ node healthChecks.js
 Starting tests now. This may take a few minutes.
 ✓ Health check passed
 ✓ DB health check passed
