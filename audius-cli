@@ -408,6 +408,26 @@ def set_tag(ctx, unset, tag):
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
 
+    if not unset:
+        try:
+            for commit in json.load(
+                urllib.request.urlopen(
+                    f"https://api.github.com/repos/AudiusProject/audius-protocol/commits?sha={tag}&per_page=10"
+                )
+            ):
+                short_message = commit["commit"]["message"].split("\n")[0]
+                click.echo(
+                    f"{click.style(commit['sha'][:8], bold=True, fg='yellow')}: "
+                    f"[{click.style(commit['commit']['author']['name'], bold=True, fg='blue')}] "
+                    f"{short_message}"
+                )
+        except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
+            click.secho("Failed to get commit messages", fg="red")
+
+        click.confirm(
+            click.style("Do you want to continue?", bold=True), abort=True, default=True
+        )
+
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
