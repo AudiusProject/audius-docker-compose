@@ -176,6 +176,16 @@ def launch(ctx, service, seed, yes):
     if not yes:
         click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / service,
+            "pull",
+        ],
+    )
+
     if seed and service == "discovery-provider":
         # make sure backend is not running
         subprocess.run(
@@ -495,6 +505,16 @@ def upgrade(ctx, branch):
 
         # update if service is running
         if proc.stdout:
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / service,
+                    "pull",
+                ],
+            )
+
             subprocess.run(
                 [
                     "docker",
