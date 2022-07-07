@@ -8,6 +8,9 @@ services:
       timeout: 5s
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   base-cache:
     image: redis:5.0.5
