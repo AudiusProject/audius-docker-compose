@@ -56,7 +56,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1",
+          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
         ]
       interval: 10s
       timeout: 5s
@@ -123,11 +123,38 @@ services:
     depends_on:
       - network-monitoring-db
       - network-monitoring-push-gateway
-    networks:
-      - discovery-provider-network
+
+  chain:
+    image: nethermind/nethermind:1.10.17
+    container_name: chain
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    environment:
+      - NETHERMIND_INITCONFIG_STORERECEIPTS=true
+      - NETHERMIND_INITCONFIG_ENABLEUNSECUREDDEVWALLET=true
+      - NETHERMIND_INITCONFIG_ISMINING=true
+      - NETHERMIND_INITCONFIG_CHAINSPECPATH=/config/spec.json
+      - NETHERMIND_INITCONFIG_BASEDBPATH=nethermind_db/clique
+      - NETHERMIND_NETWORKCONFIG_P2PPORT=30300
+      - NETHERMIND_NETWORKCONFIG_DISCOVERYPORT=30300
+      - NETHERMIND_JSONRPCCONFIG_HOST=0.0.0.0
+      - NETHERMIND_JSONRPCCONFIG_ENABLED=true
+      - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
+    volumes:
+      - ./chain/spec.json:/config/spec.json
+      - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
+      - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
+    labels:
+      autoheal: "true"
+    ports:
+      - "30300:30300"
+      - "30300:30300/udp"
+      - "8545:8545"
 
 networks:
   discovery-provider-network:
+
 
 volumes:
   esdata:
