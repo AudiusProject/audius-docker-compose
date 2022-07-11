@@ -208,7 +208,7 @@ def launch(ctx, service, seed, network_monitoring, yes):
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "run",
-                "network-monitoring",
+                "seed",
             ],
         )
 
@@ -223,7 +223,7 @@ def launch(ctx, service, seed, network_monitoring, yes):
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "up",
                 "-d",
-                "chain",
+                "network-monitoring",
             ],
         )
         return
