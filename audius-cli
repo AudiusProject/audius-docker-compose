@@ -33,6 +33,10 @@ SERVICE_PORTS = {
 
 SERVICES = ("creator-node", "discovery-provider", "identity-service")
 
+# Used for updating chainspec
+EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
+EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
 service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
@@ -143,9 +147,10 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
+@click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, yes):
+def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
@@ -210,6 +215,22 @@ def launch(ctx, service, seed, yes):
                 "seed",
             ],
         )
+
+    if chain and service == "discovery-provider":
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--env-file",
+                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "up",
+                "-d",
+                "chain",
+            ],
+        )
+        return
 
     subprocess.run(
         [
@@ -559,6 +580,36 @@ def auto_upgrade(ctx, remove, cron_expression):
             )
 
             job.setall(cron_expression)
+
+
+@cli.command()
+@click.pass_context
+def update_chainspec_set_genesis(ctx):
+    """
+    Sets the genesis address in the chainspec with the appropriate
+    keys for sealing blocks from the override.env.
+    This command isonly intended to be run by the genesis validator
+    of the network.
+    """
+    # Get signer from override.env
+    override_env = ctx.obj["manifests_path"] / "discovery-provider" / "override.env"
+    override_env_data = dotenv.dotenv_values(override_env)
+    signer = override_env_data.get("audius_delegate_owner_wallet")
+    signer = signer.replace("0x", "")  # trim 0x from pubkey
+
+    # Compute extra data
+    extra_data = f"{EXTRA_VANITY}{signer}{EXTRA_SEAL}"
+    print("Genesis EXTRA_DATA:")
+    print(extra_data)
+
+    # Update chainspec
+    spec = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
+    spec_data = json.load(open(spec))
+    spec_data["genesis"]["extraData"] = extra_data
+    with open(spec, "w") as f:
+        json.dump(spec_data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print("spec.json updated")
 
 
 if __name__ == "__main__":
