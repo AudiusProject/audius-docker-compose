@@ -114,6 +114,8 @@ services:
     container_name: pushgateway
     ports:
       - 9091:9091
+    networks:
+      - discovery-provider-network
   
   network-monitoring:
     image: audius/network_monitoring
@@ -121,6 +123,8 @@ services:
     depends_on:
       - network-monitoring-db
       - network-monitoring-push-gateway
+    networks:
+      - discovery-provider-network
 
 networks:
   discovery-provider-network:
