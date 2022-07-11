@@ -138,8 +138,6 @@ services:
       - "8545:8545"
     networks:
       - discovery-provider-network
-    profiles:
-      - chain
 
 networks:
   discovery-provider-network:
