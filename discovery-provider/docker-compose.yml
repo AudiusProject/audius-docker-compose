@@ -109,6 +109,19 @@ services:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
 
+  network-monitoring-push-gateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    ports:
+      - 9091:9091
+  
+  network-monitoring:
+    image: audius/network_monitoring
+    container_name: network_monitoring
+    depends_on:
+      - network-monitoring-db
+      - network-monitoring-push-gateway
+
 networks:
   discovery-provider-network:
 
