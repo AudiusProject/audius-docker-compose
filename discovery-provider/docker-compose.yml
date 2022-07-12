@@ -116,19 +116,6 @@ services:
       - 9091:9091
     networks:
       - discovery-provider-network
-  
-  network-monitoring:
-    image: audius/network_monitoring
-    container_name: network_monitoring
-    environment:
-      - SQL_LOGGING=false
-    labels:
-      - autoheal
-    networks:
-      - discovery-provider-network
-    depends_on:
-      - network-monitoring-db
-      - network-monitoring-push-gateway
 
   network-monitoring-db:
     container_name: network_monitoring_postgres
@@ -144,6 +131,19 @@ services:
       - /var/k8s/network-monitoring-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+
+  network-monitoring:
+    image: audius/discovery-provider/plugins/network_monitoring
+    container_name: network_monitoring
+    environment:
+      - SQL_LOGGING=false
+    labels:
+      - autoheal
+    networks:
+      - discovery-provider-network
+    depends_on:
+      - network-monitoring-db
+      - network-monitoring-push-gateway
 
   chain:
     image: nethermind/nethermind:1.10.17
