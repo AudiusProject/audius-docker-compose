@@ -150,6 +150,7 @@ def health_check(ctx, service):
 @click.option("--network-monitoring", is_flag=True)
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
+@click.pass_context
 def launch(ctx, service, seed, network_monitoring, chain, yes):
     """Launch the service"""
     try:
