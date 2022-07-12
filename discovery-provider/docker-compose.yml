@@ -120,9 +120,30 @@ services:
   network-monitoring:
     image: audius/network_monitoring
     container_name: network_monitoring
+    environment:
+      - SQL_LOGGING=false
+    labels:
+      - autoheal
+    networks:
+      - discovery-provider-network
     depends_on:
       - network-monitoring-db
       - network-monitoring-push-gateway
+
+  network-monitoring-db:
+    container_name: network_monitoring_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: audius_network_monitoring
+    extends:
+      file: ../common-services.yml
+      service: base-db
+    ports:
+      - "5444:5432"
+    volumes:
+      - /var/k8s/network-monitoring-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
+    networks:
+      - discovery-provider-network
 
   chain:
     image: nethermind/nethermind:1.10.17
