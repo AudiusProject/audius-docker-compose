@@ -151,6 +151,8 @@ services:
       - "30300:30300"
       - "30300:30300/udp"
       - "8545:8545"
+    networks:
+      - discovery-provider-network
 
 networks:
   discovery-provider-network:
