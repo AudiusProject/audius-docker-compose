@@ -32,7 +32,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-39c143df95a48ea2dd0378ac0d4521ec96b09f9d}
+    image: audius/creator-node:${TAG:-51e84282ce876659d3ecb5560ea9430762118453}
     depends_on:
       db:
         condition: service_healthy
