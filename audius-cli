@@ -147,10 +147,11 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
+@click.option("--network-monitoring", is_flag=True)
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, network_monitoring, chain, yes):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
@@ -215,6 +216,22 @@ def launch(ctx, service, seed, chain, yes):
                 "seed",
             ],
         )
+
+    if network_monitoring and service == "discovery-provider":
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--env-file",
+                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "up",
+                "-d",
+                "network-monitoring",
+            ],
+        )
+        return
 
     if chain and service == "discovery-provider":
         subprocess.run(
