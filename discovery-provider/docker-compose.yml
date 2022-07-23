@@ -63,7 +63,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-51e84282ce876659d3ecb5560ea9430762118453}
+    image: audius/discovery-provider:${TAG:-b86fadac61ee14434208072c87c1592fc9e91148}
     restart: always
     depends_on:
       db:
