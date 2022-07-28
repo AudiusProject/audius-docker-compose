@@ -125,7 +125,7 @@ services:
       - NETHERMIND_NETWORKCONFIG_DISCOVERYPORT=30300
       - NETHERMIND_JSONRPCCONFIG_HOST=0.0.0.0
       - NETHERMIND_JSONRPCCONFIG_ENABLED=true
-      - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
+      # - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
     volumes:
       - ./chain/spec.json:/config/spec.json
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
@@ -138,6 +138,8 @@ services:
       - "8545:8545"
     networks:
       - discovery-provider-network
+    profiles:
+      - chain
 
 networks:
   discovery-provider-network:
