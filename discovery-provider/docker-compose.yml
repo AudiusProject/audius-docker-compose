@@ -140,6 +140,21 @@ services:
       - discovery-provider-network
     profiles:
       - chain
+  
+  nats:
+    image: nats
+    command: -c /nats-server.conf
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+    ports:
+      - 4222:4222
+      - 4242:4242
+      - 8222:8222
+    volumes:
+      - natsdata:/data
+      - ./nats/nats.conf:/nats-server.conf
 
 networks:
   discovery-provider-network:
@@ -147,3 +162,4 @@ networks:
 
 volumes:
   esdata:
+  natsdata:
