@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon -e ts",
     "start": "vite-node src/server.ts",
-    "generate": "vite-node src/generateNatsConfig.ts",
+    "generate": "vite-node src/client.ts",
     "test": "tsc"
   },
   "keywords": [],
