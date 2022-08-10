@@ -10,4 +10,5 @@ export type ServiceProvider = {
 export type PeerInfo = {
   ip: string
   nkey: string
+  host?: string
 }

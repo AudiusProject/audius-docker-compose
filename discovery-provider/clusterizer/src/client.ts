@@ -85,9 +85,14 @@ async function demo() {
       // skip self
       if (server.delegateOwnerWallet == wallet) return
       try {
-        const peerInfo = await getPeerInfo(server)
-        if (!peerInfo) console.log(server.endpoint, 'no response')
-        return peerInfo?.data
+        const peerRequest = await getPeerInfo(server)
+        if (!peerRequest) {
+          console.log(server.endpoint, 'no response')
+          return
+        }
+        const peerInfo = peerRequest.data
+        peerInfo.host = server.endpoint
+        return peerInfo
       } catch (e: any) {
         console.warn(`failed on ${server.endpoint}`, e.message)
       }

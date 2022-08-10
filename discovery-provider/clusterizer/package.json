@@ -6,6 +6,7 @@
     "dev": "nodemon -e ts",
     "start": "vite-node src/server.ts",
     "generate": "vite-node src/client.ts",
+    "pub": "vite-node src/natsTestPublish.ts",
     "test": "tsc"
   },
   "keywords": [],
@@ -25,6 +26,7 @@
     "fastify": "^4.4.0",
     "micro-aes-gcm": "^0.3.3",
     "micro-eth-signer": "^0.5.0",
+    "nats": "^2.7.1",
     "nkeys.js": "^1.0.3",
     "undici": "^5.8.2",
     "web3": "^1.7.5"

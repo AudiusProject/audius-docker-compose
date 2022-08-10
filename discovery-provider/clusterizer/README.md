@@ -14,4 +14,7 @@ cat nats/generated.conf
 
 docker compose restart nats
 docker logs nats
+
+# soon nats should be up... so instead of restart, can send reload signal to pid 1:
+docker compose exec nats nats-server --signal reload=1
 ```
