@@ -1,3 +1,4 @@
+import { promises } from 'fs'
 import { PeerInfo } from './types'
 
 function buildNatsConfig(peers: PeerInfo[]) {
@@ -41,8 +42,8 @@ monitor_port: 8222
 `
 }
 
-console.log(
-  buildNatsConfig([
+async function generateNatsConfig() {
+  const config = buildNatsConfig([
     {
       ip: '1.1',
       nkey: 'U123',
@@ -56,4 +57,8 @@ console.log(
       nkey: 'U125',
     },
   ])
-)
+
+  await promises.writeFile('/nats_config/generated.conf', config, 'utf8')
+}
+
+generateNatsConfig()

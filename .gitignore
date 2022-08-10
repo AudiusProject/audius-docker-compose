@@ -2,6 +2,7 @@
 node_modules
 local-storage
 .DS_Store
+discovery-provider/nats/generated.conf
 
 override.env
 auto-upgrade.log

@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "dev": "nodemon -e ts",
-    "start": "vite-node src/basic.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "vite-node src/server.ts",
+    "generate": "vite-node src/generateNatsConfig.ts",
+    "test": "tsc"
   },
   "keywords": [],
   "author": "Steve Perkins",

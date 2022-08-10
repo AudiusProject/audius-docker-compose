@@ -1,3 +1,26 @@
-// would be env var
-export const myPrivateKeyHex =
-  '694f8183269ff090ad94dd4d33b7788d5c4cf7deb8918432ea46bbdf05a09b9c'
+import * as secp from '@noble/secp256k1'
+import { base64 } from '@scure/base'
+import { Address, hexToBytes } from 'micro-eth-signer'
+import { Prefix, fromSeed } from 'nkeys.js'
+import { Codec } from 'nkeys.js/lib/codec'
+import { ChantCodec } from './codec'
+
+export function getConfig() {
+  if (!process.env.audius_delegate_private_key) {
+    console.error(`audius_delegate_private_key is required`)
+    process.exit(1)
+  }
+
+  const privateKey = hexToBytes(process.env.audius_delegate_private_key)
+  const publicKey = secp.getPublicKey(privateKey)
+  const wallet = Address.fromPublicKey(publicKey)
+  console.log(` wallet is: `, wallet)
+
+  const seed = Codec.encodeSeed(Prefix.User, privateKey)
+  const nkey = fromSeed(seed)
+  console.log(` nkey is: `, nkey.getPublicKey())
+
+  const codec = new ChantCodec(privateKey)
+
+  return { publicKey, wallet, nkey, codec }
+}

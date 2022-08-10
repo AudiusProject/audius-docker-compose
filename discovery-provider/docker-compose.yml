@@ -164,6 +164,8 @@ services:
       - discovery-provider-network
     env_file:
       - override.env
+    volumes:
+      - ./nats:/nats_config
   
   nats:
     image: nats

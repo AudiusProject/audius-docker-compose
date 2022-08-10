@@ -1,63 +1,59 @@
 import { request } from 'undici'
 import Fastify from 'fastify'
-import { Address, hexToBytes } from 'micro-eth-signer'
-import { ChantCodec } from './codec'
-import { myPrivateKeyHex } from './config'
-import * as secp from '@noble/secp256k1'
+import { Address } from 'micro-eth-signer'
+import { getConfig } from './config'
 import { base64 } from '@scure/base'
 import { PeerInfo } from './types'
-import { fromSeed, Prefix } from 'nkeys.js'
-import { Codec } from 'nkeys.js/lib/codec'
+import { getDiscoveryNodeList } from './discoveryNodes'
 const fastify = Fastify({
   logger: true,
 })
 
-// TODO: config
-const privateKey = hexToBytes(myPrivateKeyHex)
-const publicKey = secp.getPublicKey(privateKey)
-
-const seed = Codec.encodeSeed(Prefix.User, privateKey)
-const nkey = fromSeed(seed)
-console.log(` nkey is: `, nkey.getPublicKey())
-
-const codec = new ChantCodec(privateKey)
+const { codec, publicKey, nkey } = getConfig()
 
 // ROUTES
-fastify.get('/', async function (request, reply) {
-  const ip = await ip2()
-  reply.send({ hello: 'world100', name: 'dave', ip })
+fastify.get('/clusterizer', async function (request, resp) {
+  resp.send(base64.encode(publicKey))
 })
 
-fastify.get('/pubkey', function (req, resp) {
-  resp.send({ publicKeyBase64: base64.encode(publicKey) })
-})
+fastify.post('/clusterizer', async function (req, resp) {
+  // todo: reuse across requests
+  // todo: prod config
+  const stagingNodes = await getDiscoveryNodeList(false)
 
-fastify.post('/swap', async function (req, resp) {
   try {
     const raw = base64.decode(req.body as string)
     const unsigned = await codec.decode(raw)
     if (unsigned) {
       const wallet = Address.fromPublicKey(unsigned.publicKey)
 
-      // verify wallet is in list of known wallets
-      console.log('todo: verify wallet is in list of known wallets')
+      // verify wallet is in list of known service provider
+      const sp = stagingNodes.find((n) => n.delegateOwnerWallet == wallet)
+      if (!sp) {
+        return resp
+          .status(400)
+          .send(`wallet ${wallet} not found in service provider list`)
+      }
 
-      // add peer info for wallet
-      const peerInfo = unsigned.data as PeerInfo
-      console.log('todo: add peer info for wallet', peerInfo)
-
-      // send our peer info
-
-      resp.send({ wallet, data: unsigned.data })
+      // send peer our info
+      const ip = await ip2()
+      const ourInfo: PeerInfo = {
+        ip: ip,
+        nkey: nkey.getPublicKey(),
+      }
+      const encrypted = await codec.encode(ourInfo, {
+        encPublicKey: unsigned.publicKey,
+      })
+      resp.send(base64.encode(encrypted))
     }
   } catch (e: any) {
     fastify.log.info(e.message, 'invalid message')
-    resp.status(400).send({ error: 'invliad message' })
+    resp.status(400).send('invliad message')
   }
 })
 
 // Run the server!
-fastify.listen({ port: 3000 }, function (err, address) {
+fastify.listen({ host: '0.0.0.0', port: 8925 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)
@@ -76,10 +72,3 @@ async function ip1() {
   const ip = await body.text()
   return ip
 }
-
-async function main() {
-  await ip1()
-  await ip2()
-}
-
-// main()

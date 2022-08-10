@@ -16,7 +16,18 @@ const prodConfig = {
   ownerWallet: '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5',
 }
 
-export async function getDiscoveryNodeList(isProd: boolean) {
+type ServiceProvider = {
+  owner: string
+  endpoint: string
+  spID: number
+  type: string
+  blockNumber: number
+  delegateOwnerWallet: string
+}
+
+export async function getDiscoveryNodeList(
+  isProd: boolean
+): Promise<ServiceProvider[]> {
   const ethWeb3Config = isProd ? prodConfig : stageConfig
   const libs = new Audius({ ethWeb3Config })
   await libs.init()
@@ -31,9 +42,15 @@ export async function getDiscoveryNodeList(isProd: boolean) {
   //   'utf8'
   // )
 
+  // for testing
+  // TODO: remove this
+  discoveryNodes.push({
+    delegateOwnerWallet: '0xE6fc4Fb469FD5348B9977cB050B9c0BcE5f0264e',
+  })
+
   return discoveryNodes
 }
 
-Promise.all([getDiscoveryNodeList(false), getDiscoveryNodeList(true)]).then(
-  () => process.exit(0)
-)
+// Promise.all([getDiscoveryNodeList(false), getDiscoveryNodeList(true)]).then(
+//   () => process.exit(0)
+// )
