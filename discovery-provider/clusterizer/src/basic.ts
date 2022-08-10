@@ -25,6 +25,10 @@ const nkey = fromSeed(seed)
 console.log(` nkey is: `, nkey.getPublicKey())
 
 // ROUTES
+fastify.get('/', function (req, resp) {
+  resp.send({ index: true })
+})
+
 fastify.get('/clusterizer', async function (request, reply) {
   const ip = await ip2()
   reply.send({
@@ -37,8 +41,12 @@ fastify.get('/pubkey', function (req, resp) {
   resp.send({ publicKeyBase64: base64.encode(publicKey) })
 })
 
+fastify.get('*', function (req, resp) {
+  resp.send({ wildcard: true, url: req.url })
+})
+
 // Run the server!
-fastify.listen({ port: 8925 }, function (err, address) {
+fastify.listen({ host: '0.0.0.0', port: 8925 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)

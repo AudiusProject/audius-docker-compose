@@ -158,7 +158,10 @@ services:
       - caddy_config:/config
   
   clusterizer:
+    container_name: clusterizer
     build: clusterizer
+    networks:
+      - discovery-provider-network
     env_file:
       - override.env
   
