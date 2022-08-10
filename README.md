@@ -37,5 +37,12 @@ This folder contains a set of scripts and utilities to manage services like:
 - Delist content scripts (for content node)
 - Automatic rewards claim script
 
+## Logging
+Logging is enabled by default to stream logs to a logging service for ease of debugging. This should generally be left on by default for any registered node. In order to turn off logging run:
+ ```
+ audius-cli set-config creator-node|discovery-node audius_loggly_disable true
+ audius-cli launch creator-node|discovery-node
+ ```
+
 ## More options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
