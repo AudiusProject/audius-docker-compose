@@ -74,8 +74,8 @@ services:
         condition: service_healthy
     labels:
       autoheal: "true"
-    ports:
-      - "5000:5000"
+    # ports:
+    #   - "5000:5000"
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
@@ -141,6 +141,27 @@ services:
     profiles:
       - chain
   
+  # copied from graphql branch
+  caddy:
+    image: caddy
+    container_name: caddy
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    ports:
+      - 80:80
+      - 443:443
+      - 5000:5000
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+  
+  clusterizer:
+    build: clusterizer
+    env_file:
+      - override.env
+  
   nats:
     image: nats
     container_name: nats
@@ -165,3 +186,5 @@ networks:
 volumes:
   esdata:
   natsdata:
+  caddy_data:
+  caddy_config:

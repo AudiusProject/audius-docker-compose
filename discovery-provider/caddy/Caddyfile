@@ -1,0 +1,5 @@
+{$caddy_host::5000}
+
+reverse_proxy /clusterizer clusterizer:8925
+
+reverse_proxy backend:5000

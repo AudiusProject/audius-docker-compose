@@ -1,3 +1,8 @@
+# temporary for clusterizer testing
+node_modules
+local-storage
+.DS_Store
+
 override.env
 auto-upgrade.log
 
