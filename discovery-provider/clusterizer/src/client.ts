@@ -82,8 +82,6 @@ async function demo() {
 
   const peers = await Promise.all(
     servers.map(async (server) => {
-      // skip self
-      if (server.delegateOwnerWallet == wallet) return
       try {
         const peerRequest = await getPeerInfo(server)
         if (!peerRequest) {

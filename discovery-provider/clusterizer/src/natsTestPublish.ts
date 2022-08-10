@@ -6,7 +6,7 @@ const { codec, nkey } = getConfig()
 async function main() {
   const nc = await connect({
     servers: 'nats:4222',
-    authenticator: nkeyAuthenticator(() => nkey.getPrivateKey()),
+    authenticator: nkeyAuthenticator(nkey.getSeed()),
   })
   const sc = StringCodec()
 
