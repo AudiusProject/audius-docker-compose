@@ -1,12 +1,14 @@
 import * as secp from '@noble/secp256k1'
 import { base64 } from '@scure/base'
+import { promises } from 'fs'
 import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
+import { buildNatsConfig } from './buildNatsConfig'
 import { getConfig } from './config'
 import { getDiscoveryNodeList } from './discoveryNodes'
-import { PeerInfo } from './types'
+import { PeerInfo, ServiceProvider } from './types'
 
-const { codec, publicKey, nkey } = getConfig()
+const { codec, wallet } = getConfig()
 
 async function newKeypair() {
   const privateKey = secp.utils.randomPrivateKey()
@@ -19,7 +21,7 @@ async function newKeypair() {
   console.log({ privateKeyHex, publicKeyHex, wallet })
 }
 
-async function getFriendPublicKey(host: string) {
+async function getPeerPublicKey(host: string) {
   const { statusCode, body } = await request(`${host}/clusterizer`, {
     headers: {
       'content-type': 'text/plain',
@@ -32,9 +34,10 @@ async function getFriendPublicKey(host: string) {
   return base64.decode(b64)
 }
 
-async function getFriendServerInfo(host: string) {
+async function getPeerInfo(server: ServiceProvider) {
   // first get server public key
-  const friendPublicKey = await getFriendPublicKey(host)
+  const host = server.endpoint
+  const friendPublicKey = await getPeerPublicKey(host)
 
   // we _could_ preemptively send our connection details...
   // but for now we'll use a string
@@ -58,7 +61,15 @@ async function getFriendServerInfo(host: string) {
   if (clear) {
     const data = clear.data as PeerInfo
     const wallet = Address.fromPublicKey(clear.publicKey)
-    // todo: verify wallet matches the expected one for this host
+    if (wallet != server.delegateOwnerWallet) {
+      console.log(
+        server.endpoint,
+        server.delegateOwnerWallet,
+        'signed by unexpected wallet address',
+        data
+      )
+      return
+    }
     return { wallet, data }
   }
 }
@@ -68,16 +79,25 @@ async function getFriendServerInfo(host: string) {
 
 async function demo() {
   const servers = await getDiscoveryNodeList(false)
-  for (let server of servers) {
-    console.log('----------------')
-    console.log(server)
-    try {
-      const deets = await getFriendServerInfo(server.endpoint)
-      console.log(deets)
-    } catch (e: any) {
-      console.warn(`failed on ${server.endpoint}`, e.message)
-    }
-  }
+
+  const peers = await Promise.all(
+    servers.map(async (server) => {
+      // skip self
+      if (server.delegateOwnerWallet == wallet) return
+      try {
+        const peerInfo = await getPeerInfo(server)
+        if (!peerInfo) console.log(server.endpoint, 'no response')
+        return peerInfo?.data
+      } catch (e: any) {
+        console.warn(`failed on ${server.endpoint}`, e.message)
+      }
+    })
+  )
+
+  const validPeers = peers.filter(Boolean)
+  const config = buildNatsConfig(validPeers as PeerInfo[])
+  console.log(config)
+  await promises.writeFile('/nats/generated.conf', config, 'utf8')
 }
 
 demo()

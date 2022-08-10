@@ -1,4 +1,5 @@
 import { promises } from 'fs'
+import { ServiceProvider } from './types'
 
 const Audius = require('@audius/libs')
 
@@ -14,15 +15,6 @@ const prodConfig = {
   registryAddress: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
   providers: 'https://eth.audius.co',
   ownerWallet: '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5',
-}
-
-type ServiceProvider = {
-  owner: string
-  endpoint: string
-  spID: number
-  type: string
-  blockNumber: number
-  delegateOwnerWallet: string
 }
 
 export async function getDiscoveryNodeList(

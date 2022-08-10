@@ -165,12 +165,12 @@ services:
     env_file:
       - override.env
     volumes:
-      - ./nats:/nats_config
+      - ./nats:/nats
   
   nats:
     image: nats
     container_name: nats
-    command: -c /nats-server.conf
+    command: -c /nats/generated.conf
     env_file:
       - override.env
     networks:
@@ -182,7 +182,7 @@ services:
       - 8222:8222
     volumes:
       - natsdata:/data
-      - ./nats/nats-${NETWORK:-prod}.conf:/nats-server.conf
+      - ./nats:/nats
 
 networks:
   discovery-provider-network:

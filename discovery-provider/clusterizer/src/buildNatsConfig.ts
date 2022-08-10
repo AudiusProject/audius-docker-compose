@@ -1,7 +1,6 @@
-import { promises } from 'fs'
 import { PeerInfo } from './types'
 
-function buildNatsConfig(peers: PeerInfo[]) {
+export function buildNatsConfig(peers: PeerInfo[]) {
   return `
 server_name: $audius_delegate_owner_wallet
 
@@ -41,24 +40,3 @@ ${peers
 monitor_port: 8222
 `
 }
-
-async function generateNatsConfig() {
-  const config = buildNatsConfig([
-    {
-      ip: '1.1',
-      nkey: 'U123',
-    },
-    {
-      ip: '1.2',
-      nkey: 'U125',
-    },
-    {
-      ip: '1.2',
-      nkey: 'U125',
-    },
-  ])
-
-  await promises.writeFile('/nats_config/generated.conf', config, 'utf8')
-}
-
-generateNatsConfig()
