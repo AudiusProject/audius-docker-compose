@@ -21,7 +21,7 @@ services:
       timeout: 5s
 
   logspout:
-    image: audius/logspout:v3.2.14-1
+    image: audius/logspout:v3.2.14
     container_name: logspout
     restart: always
     volumes:
