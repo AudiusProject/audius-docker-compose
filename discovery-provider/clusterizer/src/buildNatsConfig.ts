@@ -33,7 +33,12 @@ authorization: {
 
   # todo: remove
   ADMIN = {
-    publish = ">"
+    publish = {
+      deny: [
+        "$JS.API.STREAM.UPDATE.*"
+        "$JS.API.STREAM.DELETE.*"
+      ]
+    }
     subscribe = ">"
   }
   users: [
