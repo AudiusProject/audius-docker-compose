@@ -1,29 +1,29 @@
-import { request } from 'undici'
-import Fastify from 'fastify'
-import { Address } from 'micro-eth-signer'
-import { getConfig } from './config'
 import { base64 } from '@scure/base'
-import { PeerInfo } from './types'
+import bodyParser from 'body-parser'
+import express from 'express'
+import { Address } from 'micro-eth-signer'
+import { request } from 'undici'
+import { contentType, getConfig } from './config'
 import { getDiscoveryNodeList } from './discoveryNodes'
-const fastify = Fastify({
-  logger: true,
-})
+import { DiscoveryPeer } from './types'
+
+const app = express()
+const port = process.env.PORT || 8925
+app.use(bodyParser.raw({ type: contentType }))
 
 const { codec, publicKey, nkey } = getConfig()
 
-// ROUTES
-fastify.get('/clusterizer', async function (request, resp) {
+app.get('/', (req, resp) => {
   resp.send(base64.encode(publicKey))
 })
 
-fastify.post('/clusterizer', async function (req, resp) {
+app.post('/clusterizer', async function (req, resp) {
   // todo: reuse across requests
   // todo: prod config
   const stagingNodes = await getDiscoveryNodeList(false)
 
   try {
-    const raw = base64.decode(req.body as string)
-    const unsigned = await codec.decode(raw)
+    const unsigned = await codec.decode(req.body)
     if (unsigned) {
       const wallet = Address.fromPublicKey(unsigned.publicKey)
 
@@ -37,7 +37,7 @@ fastify.post('/clusterizer', async function (req, resp) {
 
       // send peer our info
       const ip = await ip2()
-      const ourInfo: PeerInfo = {
+      const ourInfo: DiscoveryPeer = {
         ip: ip,
         nkey: nkey.getPublicKey(),
       }
@@ -47,17 +47,28 @@ fastify.post('/clusterizer', async function (req, resp) {
       resp.send(base64.encode(encrypted))
     }
   } catch (e: any) {
-    fastify.log.info(e.message, 'invalid message')
+    console.log(e.message, 'invalid message')
     resp.status(400).send('invliad message')
   }
 })
 
-// Run the server!
-fastify.listen({ host: '0.0.0.0', port: 8925 }, function (err, address) {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
+app.post('/clusterizer/op', async (req, res) => {
+  try {
+    const raw = req.body as Uint8Array
+    const unsigned = await codec.decode(raw)
+    if (unsigned) {
+      console.log(raw)
+      console.log(unsigned)
+      // put message into nats
+      return res.end(raw)
+    }
+  } catch (e) {}
+
+  res.status(400).send('bad request')
+})
+
+app.listen(port, () => {
+  console.log(`[server]: Server is running at https://localhost:${port}`)
 })
 
 async function ip2() {

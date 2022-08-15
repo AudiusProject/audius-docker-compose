@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
-  "include": ["src"],
+  "include": ["src", "scratch"],
   "exclude": ["node_modules"]
 }

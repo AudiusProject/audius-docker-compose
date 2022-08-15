@@ -1,6 +1,6 @@
-import { PeerInfo } from './types'
+import { DiscoveryPeer } from './types'
 
-export function buildNatsConfig(peers: PeerInfo[]) {
+export function buildNatsConfig(peers: DiscoveryPeer[]) {
   return `
 server_name: $audius_delegate_owner_wallet
 

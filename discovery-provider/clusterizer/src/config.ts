@@ -24,3 +24,5 @@ export function getConfig() {
 
   return { publicKey, wallet, nkey, codec }
 }
+
+export const contentType = 'application/x-audius-msg'

@@ -7,7 +7,7 @@ export type ServiceProvider = {
   delegateOwnerWallet: string
 }
 
-export type PeerInfo = {
+export type DiscoveryPeer = {
   ip: string
   nkey: string
   host?: string
