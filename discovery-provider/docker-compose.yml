@@ -158,8 +158,8 @@ services:
       - caddy_config:/config
   
   clusterizer:
+    image: audius/wip-cluster:latest
     container_name: clusterizer
-    build: clusterizer
     networks:
       - discovery-provider-network
     env_file:

@@ -18,6 +18,10 @@ jetstream {
 cluster {
   name: C1
   listen: 0.0.0.0:6222
+  authorization {
+    user: 7eee1f87
+    password: e380342b14ce42520cc9602f
+  }
   routes: [
 ${peers.map((p) => `nats://${p.ip}:6222 # ${p.host} `).join('\n')}
   ]

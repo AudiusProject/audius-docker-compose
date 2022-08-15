@@ -17,6 +17,10 @@ app.get('/', (req, resp) => {
   resp.send(base64.encode(publicKey))
 })
 
+app.get('/clusterizer', (req, resp) => {
+  resp.send(base64.encode(publicKey))
+})
+
 app.post('/clusterizer', async function (req, resp) {
   // todo: reuse across requests
   // todo: prod config
