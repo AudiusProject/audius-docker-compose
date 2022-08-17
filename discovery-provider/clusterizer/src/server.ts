@@ -2,16 +2,42 @@ import { base64 } from '@scure/base'
 import bodyParser from 'body-parser'
 import express from 'express'
 import { Address } from 'micro-eth-signer'
+import { connect, nkeyAuthenticator, usernamePasswordAuthenticator } from 'nats'
 import { request } from 'undici'
-import { contentType, getConfig } from './config'
+
+import { contentType, getConfig, jetstreamSubject, natsHost } from './config'
 import { getDiscoveryNodeList } from './discoveryNodes'
+import { startJetstreamListener } from './natsListener'
 import { DiscoveryPeer } from './types'
 
 const app = express()
 const port = process.env.PORT || 8925
 app.use(bodyParser.raw({ type: contentType }))
 
-const { codec, publicKey, nkey } = getConfig()
+const { codec, publicKey, nkey, wallet } = getConfig()
+
+const natsPromise = connect({
+  servers: natsHost,
+  // authenticator: usernamePasswordAuthenticator('public', 'public'),
+  authenticator: nkeyAuthenticator(nkey.getSeed()),
+}).then(async (nats) => {
+  // ensure jetstream
+  const jsm = await nats.jetstreamManager()
+
+  const created = await jsm.streams.add({
+    name: jetstreamSubject,
+    subjects: [jetstreamSubject],
+    num_replicas: 3,
+    deny_delete: true,
+    deny_purge: true,
+  })
+  console.log('jetstream created', created)
+
+  // start in separate "thread"
+  startJetstreamListener(nats, codec, `consumer999:${wallet}`)
+
+  return nats
+})
 
 app.get('/', (req, resp) => {
   resp.send(base64.encode(publicKey))
@@ -48,7 +74,7 @@ app.post('/clusterizer', async function (req, resp) {
       const encrypted = await codec.encode(ourInfo, {
         encPublicKey: unsigned.publicKey,
       })
-      resp.send(base64.encode(encrypted))
+      resp.end(encrypted)
     }
   } catch (e: any) {
     console.log(e.message, 'invalid message')
@@ -57,16 +83,22 @@ app.post('/clusterizer', async function (req, resp) {
 })
 
 app.post('/clusterizer/op', async (req, res) => {
+  const nats = await natsPromise
+  const jetstream = nats.jetstream()
+
   try {
     const raw = req.body as Uint8Array
     const unsigned = await codec.decode(raw)
     if (unsigned) {
-      console.log(raw)
-      console.log(unsigned)
+      // TODO: validate op
       // put message into nats
-      return res.end(raw)
+      const receipt = await jetstream.publish(jetstreamSubject, raw)
+      return res.json(receipt)
     }
-  } catch (e) {}
+  } catch (e) {
+    // todo: jetstream error should be a 500
+    console.log(e)
+  }
 
   res.status(400).send('bad request')
 })

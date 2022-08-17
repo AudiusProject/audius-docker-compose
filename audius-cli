@@ -55,7 +55,8 @@ def cli(ctx):
     """A tool for managing audius services"""
     ctx.ensure_object(dict)
     ctx.obj["manifests_path"] = pathlib.Path(
-        os.getenv("MANIFESTS_PATH", os.path.dirname(os.path.realpath(__file__)))
+        os.getenv("MANIFESTS_PATH", os.path.dirname(
+            os.path.realpath(__file__)))
     )
 
 
@@ -64,7 +65,8 @@ def cli(ctx):
 @click.pass_context
 def check_config(ctx, service):
     """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
+    env = ctx.obj["manifests_path"] / service / \
+        f"{get_network(ctx, service)}.env"
     override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
@@ -179,7 +181,8 @@ def launch(ctx, service, seed, chain, yes):
         click.secho("System meets requirements", fg="green")
 
     if not yes:
-        click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
+        click.confirm(click.style(
+            "Do you want to continue?", bold=True), abort=True)
 
     subprocess.run(
         [
@@ -222,7 +225,8 @@ def launch(ctx, service, seed, chain, yes):
                 "docker",
                 "compose",
                 "--env-file",
-                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+                ctx.obj["manifests_path"] /
+                "discovery-provider" / "override.env",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "up",
@@ -356,10 +360,12 @@ def down(ctx, service, containers):
 def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
     if required and (key or value):
-        click.secho("--required cannot be used when key or value is set", fg="red")
+        click.secho(
+            "--required cannot be used when key or value is set", fg="red")
         sys.exit(1)
 
-    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
+    env = ctx.obj["manifests_path"] / service / \
+        f"{get_network(ctx, service)}.env"
     env_data = dotenv.dotenv_values(env)
 
     override_env = ctx.obj["manifests_path"] / service / "override.env"
@@ -421,7 +427,8 @@ def get_config(ctx, service):
             ]
         )
     else:
-        env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
+        env = ctx.obj["manifests_path"] / service / \
+            f"{get_network(ctx, service)}.env"
         env_data = dotenv.dotenv_values(env)
         override_env = ctx.obj["manifests_path"] / service / "override.env"
         override_env_data = dotenv.dotenv_values(override_env)
@@ -492,12 +499,14 @@ def set_network(ctx, unset, network):
 def pull(ctx, branch):
     """Pull latest updates from remote"""
     try:
-        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "fetch"], check=True,
+                       cwd=ctx.obj["manifests_path"])
         if branch:
             subprocess.run(
                 ["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"]
             )
-        subprocess.run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "pull"], check=True,
+                       cwd=ctx.obj["manifests_path"])
     except subprocess.CalledProcessError:
         click.secho("Could not pull", fg="red")
         sys.exit(1)
@@ -592,7 +601,8 @@ def update_chainspec_set_genesis(ctx):
     of the network.
     """
     # Get signer from override.env
-    override_env = ctx.obj["manifests_path"] / "discovery-provider" / "override.env"
+    override_env = ctx.obj["manifests_path"] / \
+        "discovery-provider" / "override.env"
     override_env_data = dotenv.dotenv_values(override_env)
     signer = override_env_data.get("audius_delegate_owner_wallet")
     signer = signer.replace("0x", "")  # trim 0x from pubkey
@@ -603,13 +613,49 @@ def update_chainspec_set_genesis(ctx):
     print(extra_data)
 
     # Update chainspec
-    spec = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
+    spec = ctx.obj["manifests_path"] / \
+        "discovery-provider" / "chain" / "spec.json"
     spec_data = json.load(open(spec))
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     print("spec.json updated")
+
+
+@cli.command()
+@click.pass_context
+def clusterize(ctx):
+    print("clusterizing")
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "run",
+            "clusterizer",
+            "npm",
+            "run",
+            "generate",
+        ],
+    )
+
+    print("restarting nats")
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "restart",
+            "nats",
+        ],
+    )
 
 
 if __name__ == "__main__":

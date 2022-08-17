@@ -1,4 +1,3 @@
-import { promises } from 'fs'
 import { ServiceProvider } from './types'
 
 const Audius = require('@audius/libs')
@@ -27,22 +26,11 @@ export async function getDiscoveryNodeList(
   const discoveryNodes = await libs.ServiceProvider.listDiscoveryProviders()
   console.log(discoveryNodes)
 
-  // const outfile = isProd ? 'discovery_prod.json' : 'discovery_stage.json'
-  // await promises.writeFile(
-  //   outfile,
-  //   JSON.stringify(discoveryNodes, undefined, 2),
-  //   'utf8'
-  // )
-
   // for testing
   // TODO: remove this
-  discoveryNodes.push({
-    delegateOwnerWallet: '0xE6fc4Fb469FD5348B9977cB050B9c0BcE5f0264e',
-  })
+  // discoveryNodes.push({
+  //   delegateOwnerWallet: '0xE6fc4Fb469FD5348B9977cB050B9c0BcE5f0264e',
+  // })
 
   return discoveryNodes
 }
-
-// Promise.all([getDiscoveryNodeList(false), getDiscoveryNodeList(true)]).then(
-//   () => process.exit(0)
-// )

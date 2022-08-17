@@ -1,5 +1,5 @@
 import { connect, JSONCodec, nkeyAuthenticator, StringCodec } from 'nats'
-import { getConfig } from './config'
+import { getConfig } from '../src/config'
 
 const { wallet, nkey } = getConfig()
 

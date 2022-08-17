@@ -12,3 +12,9 @@ export type DiscoveryPeer = {
   nkey: string
   host?: string
 }
+
+export type RPC = {
+  id?: string
+  method: string
+  params: any
+}

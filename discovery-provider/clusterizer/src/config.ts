@@ -1,5 +1,4 @@
 import * as secp from '@noble/secp256k1'
-import { base64 } from '@scure/base'
 import { Address, hexToBytes } from 'micro-eth-signer'
 import { Prefix, fromSeed } from 'nkeys.js'
 import { Codec } from 'nkeys.js/lib/codec'
@@ -26,3 +25,7 @@ export function getConfig() {
 }
 
 export const contentType = 'application/x-audius-msg'
+
+export const natsHost = 'localhost:4222'
+
+export const jetstreamSubject = 'audius_jetstream1'
