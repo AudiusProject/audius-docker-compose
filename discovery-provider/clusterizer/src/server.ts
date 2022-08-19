@@ -2,12 +2,11 @@ import { base64 } from '@scure/base'
 import bodyParser from 'body-parser'
 import express from 'express'
 import { Address } from 'micro-eth-signer'
-import { connect, nkeyAuthenticator, usernamePasswordAuthenticator } from 'nats'
 import { request } from 'undici'
 
 import { contentType, getConfig, jetstreamSubject, natsHost } from './config'
-import { getDiscoveryNodeList } from './discoveryNodes'
-import { startJetstreamListener } from './natsListener'
+import { theGraphFetcher } from './discoveryNodes2'
+import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
 import { DiscoveryPeer } from './types'
 
 const app = express()
@@ -16,28 +15,7 @@ app.use(bodyParser.raw({ type: contentType }))
 
 const { codec, publicKey, nkey, wallet } = getConfig()
 
-const natsPromise = connect({
-  servers: natsHost,
-  // authenticator: usernamePasswordAuthenticator('public', 'public'),
-  authenticator: nkeyAuthenticator(nkey.getSeed()),
-}).then(async (nats) => {
-  // ensure jetstream
-  const jsm = await nats.jetstreamManager()
-
-  const created = await jsm.streams.add({
-    name: jetstreamSubject,
-    subjects: [jetstreamSubject],
-    num_replicas: 3,
-    deny_delete: true,
-    deny_purge: true,
-  })
-  console.log('jetstream created', created)
-
-  // start in separate "thread"
-  startJetstreamListener(nats, codec, `consumer999:${wallet}`)
-
-  return nats
-})
+startNatsBabysitter()
 
 app.get('/', (req, resp) => {
   resp.send(base64.encode(publicKey))
@@ -50,7 +28,8 @@ app.get('/clusterizer', (req, resp) => {
 app.post('/clusterizer', async function (req, resp) {
   // todo: reuse across requests
   // todo: prod config
-  const stagingNodes = await getDiscoveryNodeList(false)
+  // const stagingNodes = await getDiscoveryNodeList(false)
+  const stagingNodes = await theGraphFetcher('staging', 'discovery-node')
 
   try {
     const unsigned = await codec.decode(req.body)
@@ -83,7 +62,10 @@ app.post('/clusterizer', async function (req, resp) {
 })
 
 app.post('/clusterizer/op', async (req, res) => {
-  const nats = await natsPromise
+  const nats = getNatsClient()
+  if (!nats) {
+    return res.status(500).send('no nats connection')
+  }
   const jetstream = nats.jetstream()
 
   try {

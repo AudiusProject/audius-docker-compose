@@ -156,33 +156,28 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    profiles:
+      - nats
   
   clusterizer:
-    image: audius/wip-cluster:latest
+    # image: audius/wip-cluster:latest
+    build: ./clusterizer
+    platform: "linux/amd64"
     container_name: clusterizer
     networks:
       - discovery-provider-network
     env_file:
+      - ${NETWORK:-prod}.env
       - override.env
-    volumes:
-      - ./nats:/nats
-  
-  nats:
-    image: nats
-    container_name: nats
-    command: -c /nats/generated.conf
-    env_file:
-      - override.env
-    networks:
-      - discovery-provider-network
+    # volumes:
+    #   - ./nats:/nats
     ports:
       - 4222:4222
-      - 4242:4242
       - 6222:6222
-      - 8222:8222
-    volumes:
-      - natsdata:/data
-      - ./nats:/nats
+      - 8925:8925
+    profiles:
+      - nats
+
 
 networks:
   discovery-provider-network:

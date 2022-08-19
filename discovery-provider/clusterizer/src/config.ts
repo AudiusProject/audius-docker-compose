@@ -28,4 +28,7 @@ export const contentType = 'application/x-audius-msg'
 
 export const natsHost = 'localhost:4222'
 
+// also in ecosystem.config.cjs
+export const natsConfFile = '/etc/nats.conf'
+
 export const jetstreamSubject = 'audius_jetstream1'

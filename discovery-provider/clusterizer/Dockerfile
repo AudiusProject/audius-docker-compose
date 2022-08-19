@@ -1,13 +1,29 @@
 # syntax=docker/dockerfile:1
-FROM alpine:3.16
+FROM node:alpine
 
-RUN apk add --update make g++ python3 nodejs npm curl
+
+WORKDIR /tmp
+RUN apk add --update curl &&\
+  wget https://github.com/nats-io/nats-server/releases/download/v2.8.4/nats-server-v2.8.4-linux-amd64.zip &&\
+  unzip nats-server-v2.8.4-linux-amd64.zip &&\
+  mv nats-server-v2.8.4-linux-amd64/nats-server /bin &&\
+  wget https://github.com/nats-io/natscli/releases/download/v0.0.33/nats-0.0.33-linux-amd64.zip &&\
+  unzip nats-0.0.33-linux-amd64.zip &&\
+  mv nats-0.0.33-linux-amd64/nats /bin &&\
+  wget https://github.com/nats-io/nsc/releases/download/2.7.2/nsc-linux-amd64.zip &&\
+  unzip nsc-linux-amd64.zip &&\
+  mv nsc /bin
+
+
+
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install && npm install -g pm2
 
 COPY . .
 
+RUN npm run tsc
+
 EXPOSE 8925
-CMD npm run start
+CMD pm2-runtime ecosystem.config.cjs --only clusterizer

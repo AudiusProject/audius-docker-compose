@@ -2,21 +2,19 @@ import { base64 } from '@scure/base'
 import { promises } from 'fs'
 import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
-import { contentType, getConfig } from './config'
-import { getDiscoveryNodeList } from './discoveryNodes'
+import { contentType, getConfig, natsConfFile } from './config'
+import { theGraphFetcher } from './discoveryNodes2'
 import { DiscoveryPeer, ServiceProvider } from './types'
 
 const { codec } = getConfig()
 
 // entrypoint
-writeNatsConfig()
+// writeNatsConfig()
 
 // gets list of all peer servers
 // calls each one to get IP + nkey
 // writes config file
-async function writeNatsConfig() {
-  const servers = await getDiscoveryNodeList(false)
-
+export async function writeNatsConfig(servers: ServiceProvider[]) {
   const peers = await Promise.all(
     servers.map(async (server) => {
       try {
@@ -37,7 +35,7 @@ async function writeNatsConfig() {
   const validPeers = peers.filter(Boolean) as DiscoveryPeer[]
   const config = buildNatsConfig(validPeers)
   console.log(config)
-  await promises.writeFile('/nats/generated.conf', config, 'utf8')
+  await promises.writeFile(natsConfFile, config, 'utf8')
 }
 
 async function getPeerPublicKey(host: string) {
