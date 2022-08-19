@@ -156,13 +156,13 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    profiles:
-      - nats
+    # profiles:
+    #   - nats
   
   clusterizer:
-    # image: audius/wip-cluster:latest
-    build: ./clusterizer
-    platform: "linux/amd64"
+    image: audius/wip-cluster:latest
+    # build: ./clusterizer
+    # platform: "linux/amd64"
     container_name: clusterizer
     networks:
       - discovery-provider-network
@@ -175,8 +175,8 @@ services:
       - 4222:4222
       - 6222:6222
       - 8925:8925
-    profiles:
-      - nats
+    # profiles:
+    #   - nats
 
 
 networks:
