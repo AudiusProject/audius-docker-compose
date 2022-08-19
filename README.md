@@ -26,6 +26,7 @@ During installation there will be prompts for required environment variables. Th
 If you're using an externally managed Postgres DB please see [this section](ADVANCED_SETUP.md#external-creator-node-postgres)
 
 #### Discovery Provider
+`audius_discprov_url` - The DNS of the discovery node. If you haven't registered the service yet, please enter the url you plan to register.\
 `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server\
 `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
 
