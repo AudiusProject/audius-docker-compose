@@ -1,9 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'nats-server',
+      name: 'nats2',
       script: 'nats-server -c /etc/nats.conf',
       exec_interpreter: 'none',
+      exec_mode: 'fork_mode',
     },
     {
       name: 'clusterizer',

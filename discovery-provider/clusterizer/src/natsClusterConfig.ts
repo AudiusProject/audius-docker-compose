@@ -3,10 +3,10 @@ import { promises } from 'fs'
 import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
 import { contentType, getConfig, natsConfFile } from './config'
-import { theGraphFetcher } from './discoveryNodes2'
+import { compareWallets, theGraphFetcher } from './discoveryNodes2'
 import { DiscoveryPeer, ServiceProvider } from './types'
 
-const { codec } = getConfig()
+const { codec, wallet } = getConfig()
 
 // entrypoint
 // writeNatsConfig()
@@ -25,6 +25,8 @@ export async function writeNatsConfig(servers: ServiceProvider[]) {
         }
         const peerInfo = peerRequest.data
         peerInfo.host = server.endpoint
+        peerInfo.wallet = server.delegateOwnerWallet
+        peerInfo.isSelf = compareWallets(wallet, server.delegateOwnerWallet)
         return peerInfo
       } catch (e: any) {
         console.warn(`failed on ${server.endpoint}`, e.message)
@@ -76,7 +78,7 @@ async function getPeerInfo(server: ServiceProvider) {
   if (clear) {
     const data = clear.data as DiscoveryPeer
     const wallet = Address.fromPublicKey(clear.publicKey)
-    if (wallet != server.delegateOwnerWallet) {
+    if (!compareWallets(server.delegateOwnerWallet, wallet)) {
       console.log(
         server.endpoint,
         server.delegateOwnerWallet,
@@ -114,8 +116,15 @@ cluster {
     user: eee1f87
     password: e380342b14ce42520cc9602f
   }
+  
+
   routes: [
-${peers.map((p) => `nats://${p.ip}:6222 # ${p.host} `).join('\n')}
+${peers
+  .filter((p) => !p.isSelf)
+  .map(
+    (p) => `nats://eee1f87:e380342b14ce42520cc9602f@${p.ip}:6222 # ${p.host} `
+  )
+  .join('\n')}
   ]
 }
 
@@ -141,7 +150,10 @@ authorization: {
 {user: test, password: test, permissions: $DISCOVERY_NODE} # todo: remove
 {user: admin, password: admin, permissions: $ADMIN} # todo: remove
 ${peers
-  .map((p) => `{nkey: ${p.nkey}, permissions: $DISCOVERY_NODE} # ${p.host} `)
+  .map(
+    (p) =>
+      `{nkey: ${p.nkey}, permissions: $DISCOVERY_NODE} # ${p.ip} ${p.host} ${p.wallet} `
+  )
   .join('\n')}
   ]
 }

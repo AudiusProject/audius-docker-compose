@@ -1,10 +1,13 @@
-import { connect, NatsConnection } from 'nats'
-import pm2, { restart } from 'pm2'
-import { natsHost } from './config'
+import { exec } from 'child_process'
+import { connect, JSONCodec, NatsConnection, nkeyAuthenticator } from 'nats'
+import { getConfig, natsHost } from './config'
 import { theGraphFetcher } from './discoveryNodes2'
 import { writeNatsConfig } from './natsClusterConfig'
 
 let natsClient: NatsConnection | undefined
+
+const jc = JSONCodec()
+const { nkey, wallet } = getConfig()
 
 export async function startNatsBabysitter() {
   while (true) {
@@ -27,14 +30,22 @@ export function getNatsClient() {
 }
 
 async function dialNats(servers: string[]) {
+  if (natsClient) {
+    console.log('natsClient already exists... skipping')
+    return
+  }
+  console.log('dialing nats...')
   natsClient = await connect({
-    servers: natsHost,
+    servers: 'localhost:4222',
     // authenticator: usernamePasswordAuthenticator('public', 'public'),
-    // authenticator: nkeyAuthenticator(nkey.getSeed()),
+    authenticator: nkeyAuthenticator(nkey.getSeed()),
   })
     .then(async (nats) => {
       setInterval(() => {
-        nats.publish('hello')
+        nats.publish(
+          'testing.hello',
+          jc.encode({ wallet, nkey: nkey.getPublicKey() })
+        )
       }, 2000)
 
       // ensure jetstream
@@ -63,12 +74,13 @@ async function dialNats(servers: string[]) {
 
 async function restartNats() {
   return new Promise((resolve, reject) => {
-    pm2.start('nats-server', (err, ok) => {
+    exec(`pm2 start ecosystem.config.cjs --only nats2`, (err, ok) => {
       if (err) {
         return reject(err)
       }
       // wait a second to ensure nats booted
       setTimeout(() => {
+        console.log(ok)
         resolve(ok)
       }, 1000)
     })

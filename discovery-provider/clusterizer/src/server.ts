@@ -5,7 +5,7 @@ import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
 
 import { contentType, getConfig, jetstreamSubject, natsHost } from './config'
-import { theGraphFetcher } from './discoveryNodes2'
+import { compareWallets, theGraphFetcher } from './discoveryNodes2'
 import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
 import { DiscoveryPeer } from './types'
 
@@ -37,7 +37,9 @@ app.post('/clusterizer', async function (req, resp) {
       const wallet = Address.fromPublicKey(unsigned.publicKey)
 
       // verify wallet is in list of known service provider
-      const sp = stagingNodes.find((n) => n.delegateOwnerWallet == wallet)
+      const sp = stagingNodes.find((n) =>
+        compareWallets(n.delegateOwnerWallet, wallet)
+      )
       if (!sp) {
         return resp
           .status(400)

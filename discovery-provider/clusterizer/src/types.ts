@@ -10,7 +10,9 @@ export type ServiceProvider = {
 export type DiscoveryPeer = {
   ip: string
   nkey: string
+  wallet?: string
   host?: string
+  isSelf?: boolean
 }
 
 export type RPC = {

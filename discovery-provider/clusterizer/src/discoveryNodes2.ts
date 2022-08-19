@@ -34,3 +34,9 @@ export const theGraphFetcher = (
     const sps: ServiceProvider[] = data.data.serviceNodes
     return sps
   })
+
+// the graph has wallets lowercase'd...
+// which seems questionable to me
+export function compareWallets(a: string, b: string) {
+  return a.toLowerCase() == b.toLowerCase()
+}
