@@ -3,7 +3,7 @@ import { promises } from 'fs'
 import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
 import { contentType, getConfig, natsConfFile } from './config'
-import { compareWallets, theGraphFetcher } from './discoveryNodes2'
+import { compareWallets } from './getDiscoveryPeers'
 import { DiscoveryPeer, ServiceProvider } from './types'
 
 const { codec, wallet } = getConfig()

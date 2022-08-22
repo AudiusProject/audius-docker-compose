@@ -23,7 +23,8 @@ RUN npm install && npm install -g pm2
 
 COPY . .
 
-RUN npm run tsc
+# TODO: for fast "local" iteration
+# RUN npm run tsc
 
 EXPOSE 8925
 CMD pm2-runtime ecosystem.config.cjs --only clusterizer

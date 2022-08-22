@@ -1,30 +1,24 @@
+
+### Local test cluster
+
 ```
-# build + push locally for now
+npm run tsc && docker compose -f test-cluster.yml up --build
+```
+
+* Currently doing tsc outside of docker build for faster iteration.
+  Dockerfile and .dockerignore has `TODO: for fast "local" iteration` comments.
+
+### Deploy to staging
+
+```
+npm run tsc
 DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-cluster:latest
 docker push audius/wip-cluster:latest
 
-# update nats branch
-cd audius-docker-compose/discovery-provider
-git checkout nats
-git pull
-
-# build local clusterizer container
-audius-cli launch discovery-provider
-
-# run client, view result
-docker exec clusterizer npm run generate
-cat nats/generated.conf
-
-docker compose restart nats
-docker logs nats
-
-# if nats is up, can instead send reload signal to pid 1:
-docker compose exec nats nats-server --signal reload=1
-
-# publish some test values
-# you can run this on stage 2, 3, 5 and you'll see values print from peers
-docker exec clusterizer npm run pub
+bash scripts/deploy.sh
 ```
+
+
 
 ## TODO
 

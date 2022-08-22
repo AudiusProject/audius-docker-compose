@@ -5,7 +5,8 @@ import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
 
 import { contentType, getConfig, jetstreamSubject, natsHost } from './config'
-import { compareWallets, theGraphFetcher } from './discoveryNodes2'
+import { compareWallets, getDiscoveryPeers } from './getDiscoveryPeers'
+import { getPublicIpAddress } from './getPublicIp'
 import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
 import { DiscoveryPeer } from './types'
 
@@ -27,9 +28,7 @@ app.get('/clusterizer', (req, resp) => {
 
 app.post('/clusterizer', async function (req, resp) {
   // todo: reuse across requests
-  // todo: prod config
-  // const stagingNodes = await getDiscoveryNodeList(false)
-  const stagingNodes = await theGraphFetcher('staging', 'discovery-node')
+  const discoveryPeers = await getDiscoveryPeers()
 
   try {
     const unsigned = await codec.decode(req.body)
@@ -37,7 +36,7 @@ app.post('/clusterizer', async function (req, resp) {
       const wallet = Address.fromPublicKey(unsigned.publicKey)
 
       // verify wallet is in list of known service provider
-      const sp = stagingNodes.find((n) =>
+      const sp = discoveryPeers.find((n) =>
         compareWallets(n.delegateOwnerWallet, wallet)
       )
       if (!sp) {
@@ -47,7 +46,7 @@ app.post('/clusterizer', async function (req, resp) {
       }
 
       // send peer our info
-      const ip = await ip2()
+      const ip = await getPublicIpAddress()
       const ourInfo: DiscoveryPeer = {
         ip: ip,
         nkey: nkey.getPublicKey(),
@@ -90,16 +89,3 @@ app.post('/clusterizer/op', async (req, res) => {
 app.listen(port, () => {
   console.log(`[server]: Server is running at https://localhost:${port}`)
 })
-
-async function ip2() {
-  const { body } = await request('http://ip-api.com/json')
-  const data = await body.json()
-  const ip = data.query
-  return ip
-}
-
-async function ip1() {
-  const { body } = await request('http://ifconfig.me')
-  const ip = await body.text()
-  return ip
-}

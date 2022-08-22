@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
 import { connect, JSONCodec, NatsConnection, nkeyAuthenticator } from 'nats'
 import { getConfig, natsHost } from './config'
-import { theGraphFetcher } from './discoveryNodes2'
+import { getDiscoveryPeers } from './getDiscoveryPeers'
 import { writeNatsConfig } from './natsClusterConfig'
 
 let natsClient: NatsConnection | undefined
@@ -11,7 +11,7 @@ const { nkey, wallet } = getConfig()
 
 export async function startNatsBabysitter() {
   while (true) {
-    const servers = await theGraphFetcher('staging', 'discovery-node')
+    const servers = await getDiscoveryPeers()
     const hostnames = servers.map((s) => new URL(s.endpoint).hostname)
 
     // todo: should only restart if the config changed

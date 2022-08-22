@@ -2,4 +2,6 @@ node_modules
 local-storage
 scratch
 .env
-build
+
+# TODO: for fast "local" iteration
+# build

@@ -1,10 +1,12 @@
 export type ServiceProvider = {
-  owner: string
   endpoint: string
-  spID: number
-  type: string
-  blockNumber: number
   delegateOwnerWallet: string
+
+  // other stuff we're not using:
+  // owner: string
+  // spID: number
+  // type: string
+  // blockNumber: number
 }
 
 export type DiscoveryPeer = {
