@@ -335,7 +335,7 @@ def restart(ctx, service, containers):
 @click.argument("containers", type=container_type, nargs=-1)
 @click.pass_context
 def down(ctx, service, containers):
-    """Restart a service/container"""
+    """Stops a service/container"""
     services = [service]
     if service is None:
         services = SERVICES
@@ -524,7 +524,7 @@ def pull(ctx, branch):
 @click.argument("branch", required=False)
 @click.pass_context
 def upgrade(ctx, branch):
-    """Pull and restarts all running services"""
+    """Pulls from latest source and re-launches all running services"""
     ctx.forward(pull)
 
     for service in SERVICES:
