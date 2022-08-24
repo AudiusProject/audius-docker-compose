@@ -11,11 +11,7 @@ npm run tsc && docker compose -f test-cluster.yml up --build
 ### Deploy to staging
 
 ```
-npm run tsc
-DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-cluster:latest
-docker push audius/wip-cluster:latest
-
-bash scripts/deploy.sh
+source scripts/deploy.sh
 ```
 
 

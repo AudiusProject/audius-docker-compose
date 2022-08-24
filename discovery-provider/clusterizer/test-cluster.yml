@@ -1,9 +1,10 @@
 services:
   clusterizer1:
+    container_name: cz1
     build: .
     platform: 'linux/amd64'
     environment:
-      NETWORK: test
+      audius_discprov_env: test
       HOST: clusterizer1
       audius_delegate_owner_wallet: '0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F'
       audius_delegate_private_key: '293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238'
@@ -11,21 +12,25 @@ services:
       - 4222:4222
       - 6222:6222
       - 8925:8925
+    volumes:
+      - ./scratch:/scratch
 
   clusterizer2:
+    container_name: cz2
     build: .
     platform: 'linux/amd64'
     environment:
-      NETWORK: test
+      audius_discprov_env: test
       HOST: clusterizer2
       audius_delegate_owner_wallet: '0x90b8d2655A7C268d0fA31758A714e583AE54489D'
       audius_delegate_private_key: '1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc'
 
   clusterizer3:
+    container_name: cz3
     build: .
     platform: 'linux/amd64'
     environment:
-      NETWORK: test
+      audius_discprov_env: test
       HOST: clusterizer3
       audius_delegate_owner_wallet: '0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B'
       audius_delegate_private_key: '12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c'

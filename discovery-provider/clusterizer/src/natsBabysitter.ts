@@ -1,27 +1,51 @@
-import { exec } from 'child_process'
+import { exec as execCallback } from 'child_process'
 import { connect, JSONCodec, NatsConnection, nkeyAuthenticator } from 'nats'
-import { getConfig, natsHost } from './config'
-import { getDiscoveryPeers } from './getDiscoveryPeers'
+import util from 'node:util'
+import { getConfig } from './config'
+import { getAnnotatedDiscoveryPeers } from './getDiscoveryPeers'
 import { writeNatsConfig } from './natsClusterConfig'
 
+const exec = util.promisify(execCallback)
+
 let natsClient: NatsConnection | undefined
+
+// use json for crappy array deep equal
+let lastPeersJson = ''
+let noDiffCounter = 0
 
 const jc = JSONCodec()
 const { nkey, wallet } = getConfig()
 
 export async function startNatsBabysitter() {
   while (true) {
-    const servers = await getDiscoveryPeers()
-    const hostnames = servers.map((s) => new URL(s.endpoint).hostname)
+    const peers = await getAnnotatedDiscoveryPeers()
+    const peersJson = JSON.stringify(peers)
 
-    // todo: should only restart if the config changed
-    await writeNatsConfig(servers)
+    // if no changes, linear backoff up to 10 minutes
+    if (lastPeersJson == peersJson) {
+      noDiffCounter++
+      const sleepMinutes = Math.min(noDiffCounter, 10)
+      await sleep(1000 * 60 * sleepMinutes)
+      continue
+    }
 
-    await restartNats()
+    if (peers.length == 0) {
+      console.log('------------ NO PEERS!!')
+      await sleep(1000 * 10)
+      continue
+    }
 
+    console.log({ msg: 'updating nats config', peerCount: peers.length })
+    await writeNatsConfig(peers)
+    await reloadNats()
+
+    const hostnames = peers.map((s) => s.ip)
     await dialNats(hostnames)
 
-    await sleep(1000 * 60 * 5)
+    // while things are changing, update every minute
+    noDiffCounter = 0
+    lastPeersJson = peersJson
+    await sleep(1000 * 60)
   }
 }
 
@@ -30,14 +54,15 @@ export function getNatsClient() {
 }
 
 async function dialNats(servers: string[]) {
+  // TODO: this is a dumb race condition...
+  // TODO: better nats client stuff
   if (natsClient) {
     console.log('natsClient already exists... skipping')
     return
   }
-  console.log('dialing nats...')
+  console.log({ msg: 'creating nats client', servers })
   natsClient = await connect({
-    servers: 'localhost:4222',
-    // authenticator: usernamePasswordAuthenticator('public', 'public'),
+    servers,
     authenticator: nkeyAuthenticator(nkey.getSeed()),
   })
     .then(async (nats) => {
@@ -72,19 +97,28 @@ async function dialNats(servers: string[]) {
     })
 }
 
+let natsStarted = false
+
+async function reloadNats() {
+  if (!natsStarted) {
+    return restartNats()
+  }
+
+  try {
+    const { stdout, stderr } = await exec(`nats-server --signal reload`)
+    console.log('reload nats OK', stdout, stderr)
+  } catch (e) {
+    console.log('reload nats ERR', e)
+  }
+  await sleep(1000)
+}
+
 async function restartNats() {
-  return new Promise((resolve, reject) => {
-    exec(`pm2 start ecosystem.config.cjs --only nats2`, (err, ok) => {
-      if (err) {
-        return reject(err)
-      }
-      // wait a second to ensure nats booted
-      setTimeout(() => {
-        console.log(ok)
-        resolve(ok)
-      }, 1000)
-    })
-  })
+  const { stdout, stderr } = await exec(
+    `pm2 start ecosystem.config.cjs --only nats2`
+  )
+  natsStarted = true
+  await sleep(1000)
 }
 
 async function sleep(ms: number) {

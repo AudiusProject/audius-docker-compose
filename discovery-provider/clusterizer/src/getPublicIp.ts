@@ -1,7 +1,7 @@
 import { request } from 'undici'
 
 export async function getPublicIpAddress() {
-  if (process.env.NETWORK == 'test') {
+  if (process.env.audius_discprov_env == 'test') {
     return process.env.HOST
   }
   const { body } = await request('http://ip-api.com/json')

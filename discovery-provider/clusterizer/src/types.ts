@@ -9,12 +9,17 @@ export type ServiceProvider = {
   // blockNumber: number
 }
 
+export type CurrentServerInfo = {
+  ip: string
+  nkey: string
+}
+
 export type DiscoveryPeer = {
   ip: string
   nkey: string
-  wallet?: string
-  host?: string
-  isSelf?: boolean
+  wallet: string
+  host: string
+  isSelf: boolean
 }
 
 export type RPC = {

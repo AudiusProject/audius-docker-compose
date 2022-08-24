@@ -1,15 +1,46 @@
-import { fetch } from 'undici'
-import { ServiceProvider } from './types'
+import { base64 } from '@scure/base'
+import { Address } from 'micro-eth-signer'
+import { fetch, request } from 'undici'
+import { contentType, getConfig } from './config'
+import { DiscoveryPeer, ServiceProvider } from './types'
 
-export function getDiscoveryPeers() {
-  switch (process.env.NETWORK) {
+const { codec, wallet } = getConfig()
+
+export async function getDiscoveryPeers(): Promise<ServiceProvider[]> {
+  switch (process.env.audius_discprov_env) {
     case 'test':
       return Promise.resolve(testDiscoveryList)
-    case 'staging':
+    case 'stage':
       return getServiceProviders('staging', 'discovery-node')
     default:
       return getServiceProviders('prod', 'discovery-node')
   }
+}
+
+export async function getAnnotatedDiscoveryPeers() {
+  const sps = await getDiscoveryPeers()
+  const maybePeers = await Promise.all(
+    sps.map(async (server) => {
+      try {
+        const peerRequest = await getPeerInfo(server)
+        if (!peerRequest) {
+          console.log(server.endpoint, 'no response')
+          return
+        }
+        const peerInfo = peerRequest.data
+        peerInfo.host = server.endpoint
+        peerInfo.wallet = server.delegateOwnerWallet
+        peerInfo.isSelf = compareWallets(wallet, server.delegateOwnerWallet)
+        return peerInfo
+      } catch (e: any) {
+        console.warn(`failed on ${server.endpoint}`, e.message)
+      }
+    })
+  )
+
+  const peers = maybePeers.filter(Boolean) as DiscoveryPeer[]
+  peers.sort((a, b) => (a.wallet < b.wallet ? -1 : 1))
+  return peers
 }
 
 async function getServiceProviders(
@@ -68,4 +99,55 @@ const testDiscoveryList: ServiceProvider[] = [
 // which seems questionable to me
 export function compareWallets(a: string, b: string) {
   return a.toLowerCase() == b.toLowerCase()
+}
+
+async function getPeerPublicKey(host: string) {
+  const { statusCode, body } = await request(`${host}/clusterizer`)
+  const b64 = await body.text()
+  if (statusCode != 200) {
+    throw new Error(`${statusCode}: ${b64}`)
+  }
+  return base64.decode(b64)
+}
+
+// calls out to a single peer server
+//
+async function getPeerInfo(server: ServiceProvider) {
+  // first get server public key
+  const host = server.endpoint
+  const friendPublicKey = await getPeerPublicKey(host)
+
+  // we _could_ preemptively send our connection details...
+  // but for now we'll use a string
+  const msg = 'please send me your deets!'
+  const signed = await codec.encode(msg, { encPublicKey: friendPublicKey })
+  const { statusCode, body } = await request(`${host}/clusterizer`, {
+    method: 'POST',
+    headers: {
+      'content-type': contentType,
+    },
+    body: signed,
+  })
+
+  if (statusCode != 200) {
+    const txt = await body.text()
+    throw new Error(`${statusCode}: ${txt}`)
+  }
+
+  const buf2 = new Uint8Array(await body.arrayBuffer())
+  const clear = await codec.decode(buf2)
+  if (clear) {
+    const data = clear.data as DiscoveryPeer
+    const wallet = Address.fromPublicKey(clear.publicKey)
+    if (!compareWallets(server.delegateOwnerWallet, wallet)) {
+      console.log(
+        server.endpoint,
+        server.delegateOwnerWallet,
+        'signed by unexpected wallet address',
+        data
+      )
+      return
+    }
+    return { wallet, data }
+  }
 }

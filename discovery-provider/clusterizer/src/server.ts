@@ -2,20 +2,20 @@ import { base64 } from '@scure/base'
 import bodyParser from 'body-parser'
 import express from 'express'
 import { Address } from 'micro-eth-signer'
-import { request } from 'undici'
 
-import { contentType, getConfig, jetstreamSubject, natsHost } from './config'
+import { contentType, getConfig, jetstreamSubject } from './config'
 import { compareWallets, getDiscoveryPeers } from './getDiscoveryPeers'
 import { getPublicIpAddress } from './getPublicIp'
 import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
-import { DiscoveryPeer } from './types'
+import { CurrentServerInfo } from './types'
 
 const app = express()
 const port = process.env.PORT || 8925
 app.use(bodyParser.raw({ type: contentType }))
 
-const { codec, publicKey, nkey, wallet } = getConfig()
+const { codec, publicKey, wallet, nkey } = getConfig()
 
+// start in separate "thread"
 startNatsBabysitter()
 
 app.get('/', (req, resp) => {
@@ -47,7 +47,7 @@ app.post('/clusterizer', async function (req, resp) {
 
       // send peer our info
       const ip = await getPublicIpAddress()
-      const ourInfo: DiscoveryPeer = {
+      const ourInfo: CurrentServerInfo = {
         ip: ip,
         nkey: nkey.getPublicKey(),
       }
@@ -87,5 +87,10 @@ app.post('/clusterizer/op', async (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at https://localhost:${port}`)
+  console.log({
+    msg: 'stargin server',
+    port,
+    wallet,
+    nkey: nkey.getPublicKey(),
+  })
 })

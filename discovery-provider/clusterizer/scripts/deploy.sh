@@ -1,3 +1,10 @@
+#!/bin/bash
+set -e
+
+nvm use
+npm i
+npm run tsc
+
 DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-cluster:latest
 docker push audius/wip-cluster:latest
 

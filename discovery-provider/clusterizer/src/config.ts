@@ -13,11 +13,9 @@ export function getConfig() {
   const privateKey = hexToBytes(process.env.audius_delegate_private_key)
   const publicKey = secp.getPublicKey(privateKey)
   const wallet = Address.fromPublicKey(publicKey)
-  console.log(` wallet is: `, wallet)
 
   const seed = Codec.encodeSeed(Prefix.User, privateKey)
   const nkey = fromSeed(seed)
-  console.log(` nkey is: `, nkey.getPublicKey())
 
   const codec = new ChantCodec(privateKey)
 
@@ -25,8 +23,6 @@ export function getConfig() {
 }
 
 export const contentType = 'application/x-audius-msg'
-
-export const natsHost = 'localhost:4222'
 
 // also in ecosystem.config.cjs
 export const natsConfFile = '/etc/nats.conf'
