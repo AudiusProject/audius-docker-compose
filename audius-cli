@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 import os
 import pathlib
 import random
@@ -56,6 +57,12 @@ def cli(ctx):
     ctx.ensure_object(dict)
     ctx.obj["manifests_path"] = pathlib.Path(
         os.getenv("MANIFESTS_PATH", os.path.dirname(os.path.realpath(__file__)))
+    )
+
+    logging.basicConfig(
+        filename=ctx.obj["manifests_path"] / "audius-cli.log",
+        level=logging.INFO,
+        format="%(asctime)s:%(levelname)s:%(message)s",
     )
 
 
@@ -366,17 +373,17 @@ def set_config(ctx, service, unset, required, key, value):
     override_env_data = dotenv.dotenv_values(override_env)
 
     if required:
+        logging.info("audius-cli set-config required")
         for key, value in env_data.items():
             if not unset and value == "":
-                dotenv.set_key(
-                    override_env,
-                    key,
-                    click.prompt(
-                        click.style(key, bold=True),
-                        override_env_data.get(key, env_data.get(key)),
-                    ),
+                value = click.prompt(
+                    click.style(key, bold=True),
+                    override_env_data.get(key, env_data.get(key)),
                 )
+                logging.info(f"> audius-cli set-config key={key!r} value={value!r}")
+                dotenv.set_key(override_env, key, value)
             if unset and value == "":
+                logging.info(f"> audius-cli set-config unset key={key!r}")
                 dotenv.unset_key(override_env, key)
     else:
         if key is None:
@@ -385,8 +392,10 @@ def set_config(ctx, service, unset, required, key, value):
             value = click.prompt(click.style("Value", bold=True))
 
         if unset:
+            logging.info(f"audius-cli set-config unset key={key!r}")
             dotenv.unset_key(override_env, key)
         else:
+            logging.info(f"audius-cli set-config key={key!r} value={value!r}")
             dotenv.set_key(override_env, key, value)
 
 
@@ -459,12 +468,15 @@ def set_tag(ctx, unset, tag):
             click.style("Do you want to continue?", bold=True), abort=True, default=True
         )
 
+    logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
+            logging.info(f"> audius-cli set-tag unset service={service!r}")
             dotenv.unset_key(env_file, "TAG")
         else:
+            logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, "TAG", tag)
 
 
@@ -477,12 +489,17 @@ def set_network(ctx, unset, network):
     if not unset and network is None:
         network = click.prompt(click.style("Network", bold=True))
 
+    logging.info(f"audius-cli set-network network={network!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
+            logging.info(f"> audius-cli set-network unset service={service!r}")
             dotenv.unset_key(env_file, "NETWORK")
         else:
+            logging.info(
+                f"> audius-cli set-network service={service!r} network={network!r}"
+            )
             dotenv.set_key(env_file, "NETWORK", network)
 
 
