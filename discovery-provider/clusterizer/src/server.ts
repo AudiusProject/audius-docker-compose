@@ -4,8 +4,11 @@ import express from 'express'
 import { Address } from 'micro-eth-signer'
 
 import { contentType, getConfig, jetstreamSubject } from './config'
-import { compareWallets, getDiscoveryPeers } from './getDiscoveryPeers'
-import { getPublicIpAddress } from './getPublicIp'
+import {
+  compareWallets,
+  getCurrentServerInfo,
+  getRegisteredDiscoveryNodes,
+} from './peering'
 import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
 import { CurrentServerInfo } from './types'
 
@@ -28,15 +31,17 @@ app.get('/clusterizer', (req, resp) => {
 
 app.post('/clusterizer', async function (req, resp) {
   // todo: reuse across requests
-  const discoveryPeers = await getDiscoveryPeers()
+  const registeredNodes = await getRegisteredDiscoveryNodes()
 
   try {
     const unsigned = await codec.decode(req.body)
     if (unsigned) {
       const wallet = Address.fromPublicKey(unsigned.publicKey)
+      const theirInfo = unsigned.data as CurrentServerInfo
+      // console.log({ theirInfo })
 
       // verify wallet is in list of known service provider
-      const sp = discoveryPeers.find((n) =>
+      const sp = registeredNodes.find((n) =>
         compareWallets(n.delegateOwnerWallet, wallet)
       )
       if (!sp) {
@@ -46,11 +51,7 @@ app.post('/clusterizer', async function (req, resp) {
       }
 
       // send peer our info
-      const ip = await getPublicIpAddress()
-      const ourInfo: CurrentServerInfo = {
-        ip: ip,
-        nkey: nkey.getPublicKey(),
-      }
+      const ourInfo = await getCurrentServerInfo()
       const encrypted = await codec.encode(ourInfo, {
         encPublicKey: unsigned.publicKey,
       })
@@ -62,11 +63,20 @@ app.post('/clusterizer', async function (req, resp) {
   }
 })
 
+app.get('/clusterizer/messages', async (req, res) => {
+  // pubkey middleware would:
+  //   recover public key from the request
+  //     either post body, or maybe some header
+  //   check pubkey table
+  //   forward message if new
+})
+
 app.post('/clusterizer/op', async (req, res) => {
   const nats = getNatsClient()
   if (!nats) {
     return res.status(500).send('no nats connection')
   }
+  console.log('using', nats.getServer())
   const jetstream = nats.jetstream()
 
   try {
@@ -78,9 +88,9 @@ app.post('/clusterizer/op', async (req, res) => {
       const receipt = await jetstream.publish(jetstreamSubject, raw)
       return res.json(receipt)
     }
-  } catch (e) {
-    // todo: jetstream error should be a 500
+  } catch (e: any) {
     console.log(e)
+    return res.status(502).send(e.message)
   }
 
   res.status(400).send('bad request')
@@ -88,7 +98,7 @@ app.post('/clusterizer/op', async (req, res) => {
 
 app.listen(port, () => {
   console.log({
-    msg: 'stargin server',
+    msg: 'start express server',
     port,
     wallet,
     nkey: nkey.getPublicKey(),

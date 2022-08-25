@@ -44,25 +44,11 @@ ${peers
 
 authorization: {
   DISCOVERY_NODE = {
-    publish: [
-      "testing.>"
-    ]
-    subscribe: ["PUBLIC.>", "_INBOX.>", "testing.>"]
-  }
-
-  # todo: remove
-  ADMIN = {
-    publish = {
-      deny: [
-        "$JS.API.STREAM.UPDATE.*"
-        "$JS.API.STREAM.DELETE.*"
-      ]
-    }
+    publish = ">"
     subscribe = ">"
   }
+
   users: [
-{user: test, password: test, permissions: $DISCOVERY_NODE} # todo: remove
-{user: admin, password: admin, permissions: $ADMIN} # todo: remove
 ${peers
   .map(
     (p) =>

@@ -1,6 +1,6 @@
 node_modules
 local-storage
-scratch
+wip
 .env
 
 # TODO: for fast "local" iteration

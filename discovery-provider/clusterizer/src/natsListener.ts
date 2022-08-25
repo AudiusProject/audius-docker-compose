@@ -1,7 +1,9 @@
+import { base64 } from '@scure/base'
 import { Address } from 'micro-eth-signer'
 import { consumerOpts, createInbox, NatsConnection } from 'nats'
 import { ChantCodec } from './codec'
 import { jetstreamSubject } from './config'
+import { PubkeyTable, RpclogTable } from './db'
 import { RPC } from './types'
 
 export async function startJetstreamListener(
@@ -28,25 +30,31 @@ export async function startJetstreamListener(
     const rpc = decoded.data
     const fromWallet = Address.fromPublicKey(decoded.publicKey)
 
+    // collect the pubkey
+    await PubkeyTable()
+      .insert({
+        wallet: fromWallet,
+        pubkey: base64.encode(decoded.publicKey),
+      })
+      .onConflict()
+      .ignore()
+
+    // apply changes
+    // for now this just records the input to the rpclog table
     try {
-      // await db.rpcLog.create({
-      //   data: {
-      //     cuid: rpc.id!,
-      //     wallet: fromWallet,
-      //     method: rpc.method,
-      //     params: rpc.params,
-      //     jetstream_seq: m.info.streamSequence,
-      //     jetstream_ts: new Date(m.info.timestampNanos / 1000000),
-      //     processed_at: new Date(),
-      //   },
-      // })
+      await RpclogTable()
+        .insert({
+          cuid: rpc.id!,
+          wallet: fromWallet,
+          method: rpc.method,
+          params: rpc.params,
+          jetstream_seq: m.info.streamSequence,
+          // jetstream_ts: new Date(m.info.timestampNanos / 1000000),
+          // processed_at: new Date(),
+        })
+        .onConflict()
+        .ignore()
     } catch (e) {
-      // if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      //   if (e.code === 'P2002') {
-      //     console.log('unique violation... skipping')
-      //     continue
-      //   }
-      // }
       console.log('failed', e)
     }
   }

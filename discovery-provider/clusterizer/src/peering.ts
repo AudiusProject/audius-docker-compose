@@ -2,11 +2,32 @@ import { base64 } from '@scure/base'
 import { Address } from 'micro-eth-signer'
 import { fetch, request } from 'undici'
 import { contentType, getConfig } from './config'
-import { DiscoveryPeer, ServiceProvider } from './types'
+import { CurrentServerInfo, DiscoveryPeer, ServiceProvider } from './types'
 
-const { codec, wallet } = getConfig()
+const { codec, wallet, nkey } = getConfig()
 
-export async function getDiscoveryPeers(): Promise<ServiceProvider[]> {
+export async function getCurrentServerInfo() {
+  const ip = await getPublicIpAddress()
+  const ourInfo: CurrentServerInfo = {
+    ip: ip,
+    nkey: nkey.getPublicKey(),
+  }
+  return ourInfo
+}
+
+export async function getPublicIpAddress() {
+  if (process.env.audius_discprov_env == 'test') {
+    return process.env.HOST
+  }
+  const { body } = await request('http://ip-api.com/json')
+  const data = await body.json()
+  const ip = data.query
+  return ip
+}
+
+export async function getRegisteredDiscoveryNodes(): Promise<
+  ServiceProvider[]
+> {
   switch (process.env.audius_discprov_env) {
     case 'test':
       return Promise.resolve(testDiscoveryList)
@@ -18,7 +39,7 @@ export async function getDiscoveryPeers(): Promise<ServiceProvider[]> {
 }
 
 export async function getAnnotatedDiscoveryPeers() {
-  const sps = await getDiscoveryPeers()
+  const sps = await getRegisteredDiscoveryNodes()
   const maybePeers = await Promise.all(
     sps.map(async (server) => {
       try {
@@ -119,8 +140,8 @@ async function getPeerInfo(server: ServiceProvider) {
 
   // we _could_ preemptively send our connection details...
   // but for now we'll use a string
-  const msg = 'please send me your deets!'
-  const signed = await codec.encode(msg, { encPublicKey: friendPublicKey })
+  const ourInfo = await getCurrentServerInfo()
+  const signed = await codec.encode(ourInfo, { encPublicKey: friendPublicKey })
   const { statusCode, body } = await request(`${host}/clusterizer`, {
     method: 'POST',
     headers: {

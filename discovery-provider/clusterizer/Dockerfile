@@ -12,8 +12,10 @@ RUN apk add --update curl &&\
   mv nats-0.0.33-linux-amd64/nats /bin &&\
   wget https://github.com/nats-io/nsc/releases/download/2.7.2/nsc-linux-amd64.zip &&\
   unzip nsc-linux-amd64.zip &&\
-  mv nsc /bin
-
+  mv nsc /bin &&\
+  wget https://github.com/nats-io/prometheus-nats-exporter/releases/download/v0.10.0/prometheus-nats-exporter-v0.10.0-linux-amd64.zip &&\
+  unzip prometheus-nats-exporter-v0.10.0-linux-amd64.zip &&\
+  mv prometheus-nats-exporter-v0.10.0-linux-amd64/prometheus-nats-exporter /bin
 
 
 
