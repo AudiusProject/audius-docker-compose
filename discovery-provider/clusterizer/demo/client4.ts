@@ -1,10 +1,11 @@
 import cuid from 'cuid'
+import { Address } from 'micro-eth-signer'
 import { request } from 'undici'
 import { ChantCodec } from '../src/codec'
 import { contentType, getConfig } from '../src/config'
 import { RPC } from '../src/types'
 
-const { codec } = getConfig()
+const { codec, wallet } = getConfig()
 
 class OpClient {
   constructor(private codec: ChantCodec, private endpoint: string) {}
@@ -20,13 +21,17 @@ class OpClient {
       body: signed,
     })
 
-    const result = await body.text()
+    const result = await body.json()
     console.log(statusCode, result)
     return result
   }
 }
 
 const opClient = new OpClient(codec, 'http://127.0.0.1:8925/clusterizer/op')
+const queryClient = new OpClient(
+  codec,
+  'http://127.0.0.1:8925/clusterizer/query'
+)
 
 async function dm() {
   const msg = {
@@ -34,11 +39,16 @@ async function dm() {
     method: 'dm.send',
     params: {
       sentAt: new Date(),
-      toWallet: '0x123',
-      text: 'hello there 2',
+      toWallet: wallet,
+      message: 'hello there 2',
     },
   }
   await opClient.send(msg)
+
+  const inbox = await queryClient.send({
+    method: 'dm.get',
+  })
+  console.log({ inbox })
 }
 
 async function playlist() {

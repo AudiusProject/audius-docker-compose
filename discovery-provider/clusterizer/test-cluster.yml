@@ -25,6 +25,7 @@ services:
       - 6222:6222
       - 8925:8925
     volumes:
+      - ./demo:/demo
       - ./scratch:/scratch
       - ./src:/app/src
     depends_on:

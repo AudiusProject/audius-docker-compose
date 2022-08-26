@@ -1,19 +1,22 @@
 import { base64 } from '@scure/base'
 import bodyParser from 'body-parser'
-import express from 'express'
+import express, { response } from 'express'
 import { Address } from 'micro-eth-signer'
 
+import cors from 'cors'
 import { contentType, getConfig, jetstreamSubject } from './config'
+import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
 import {
   compareWallets,
   getCurrentServerInfo,
   getRegisteredDiscoveryNodes,
 } from './peering'
-import { getNatsClient, startNatsBabysitter } from './natsBabysitter'
-import { CurrentServerInfo } from './types'
+import { CurrentServerInfo, RPC } from './types'
+import { RpclogTable } from './db'
 
 const app = express()
 const port = process.env.PORT || 8925
+app.use(cors())
 app.use(bodyParser.raw({ type: contentType }))
 
 const { codec, publicKey, wallet, nkey } = getConfig()
@@ -63,12 +66,27 @@ app.post('/clusterizer', async function (req, resp) {
   }
 })
 
-app.get('/clusterizer/messages', async (req, res) => {
-  // pubkey middleware would:
-  //   recover public key from the request
-  //     either post body, or maybe some header
-  //   check pubkey table
-  //   forward message if new
+app.post('/clusterizer/query', async (req, resp) => {
+  try {
+    const raw = req.body as Uint8Array
+    const unsigned = await codec.decode<RPC>(raw)
+    if (unsigned) {
+      const rpc = unsigned.data
+      const wallet = Address.fromPublicKey(unsigned.publicKey)
+
+      switch (rpc.method) {
+        case 'dm.get':
+          // TODO: this should just return DMs for `wallet`
+          // not all the dms in the db
+          const allDms = await RpclogTable().where('method', 'dm.send')
+          resp.json(allDms)
+          break
+      }
+    }
+  } catch (e) {
+    console.log('bad request', e)
+  }
+  return resp.status(400).send('invalid query')
 })
 
 app.post('/clusterizer/op', async (req, res) => {

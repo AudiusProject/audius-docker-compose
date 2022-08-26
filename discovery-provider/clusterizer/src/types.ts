@@ -25,5 +25,5 @@ export type DiscoveryPeer = {
 export type RPC = {
   id?: string
   method: string
-  params: any
+  params?: any
 }
