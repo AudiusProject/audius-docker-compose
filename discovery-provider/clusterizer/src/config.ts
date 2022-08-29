@@ -36,9 +36,9 @@ export function getConfig() {
 export const contentType = 'application/x-audius-msg'
 
 // also in ecosystem.config.cjs
-export const natsConfFile = '/etc/nats.conf'
+export const natsConfFile = '/nats/server.conf'
 
-export const jetstreamSubject = 'audius_jetstream1'
+export const jetstreamSubject = 'audius_jetstream2'
 
 //
 // helpers

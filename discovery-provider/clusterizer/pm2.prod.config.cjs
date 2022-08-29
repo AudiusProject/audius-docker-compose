@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'nats2',
-      script: 'nats-server -c /etc/nats.conf --pid /tmp/nats.pid',
+      script: 'nats-server -c /nats/server.conf --pid /tmp/nats.pid',
       exec_interpreter: 'none',
       exec_mode: 'fork_mode',
       restart_delay: 3000,

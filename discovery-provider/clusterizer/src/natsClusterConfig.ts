@@ -7,7 +7,15 @@ import { DiscoveryPeer } from './types'
 // writes config file
 export async function writeNatsConfig(peers: DiscoveryPeer[]) {
   const config = buildNatsConfig(peers)
+  const oldConfig = await promises.readFile(natsConfFile, 'utf8')
+  if (config == oldConfig) return false
+
+  // this is a bit too clever... skip nats update if old version is longer than new version?
+  // TODO: should be more structured storage of peers config
+  if (config.length < oldConfig.length) return false
+
   await promises.writeFile(natsConfFile, config, 'utf8')
+  return true
 }
 
 //

@@ -34,6 +34,7 @@ const queryClient = new OpClient(
 )
 
 async function dm() {
+  console.log('sending rpc...')
   const msg = {
     id: cuid(),
     method: 'dm.send',
@@ -45,10 +46,10 @@ async function dm() {
   }
   await opClient.send(msg)
 
-  const inbox = await queryClient.send({
-    method: 'dm.get',
-  })
-  console.log({ inbox })
+  // const inbox = await queryClient.send({
+  //   method: 'dm.get',
+  // })
+  // console.log({ inbox })
 }
 
 async function playlist() {
@@ -65,5 +66,11 @@ async function playlist() {
   await opClient.send(msg)
 }
 
-dm()
-playlist()
+async function main() {
+  while (true) {
+    await dm()
+    await playlist()
+  }
+}
+
+main()

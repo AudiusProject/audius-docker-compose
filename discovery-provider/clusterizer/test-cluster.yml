@@ -12,7 +12,7 @@ services:
   clusterizer1:
     container_name: cz1
     build: .
-    command: npm run dev
+    command: pm2-runtime pm2.dev.config.cjs
     platform: 'linux/amd64'
     environment:
       audius_discprov_env: test
@@ -28,13 +28,14 @@ services:
       - ./demo:/demo
       - ./scratch:/scratch
       - ./src:/app/src
+      - data_cz1:/nats
     depends_on:
       - czdb
 
   clusterizer2:
     container_name: cz2
     build: .
-    command: npm run dev
+    command: pm2-runtime pm2.dev.config.cjs
     platform: 'linux/amd64'
     depends_on:
       - czdb
@@ -46,11 +47,12 @@ services:
       audius_db_url: 'postgresql://postgres:postgres@czdb:5432/cz2'
     volumes:
       - ./src:/app/src
+      - data_cz2:/nats
 
   clusterizer3:
     container_name: cz3
     build: .
-    command: npm run dev
+    command: pm2-runtime pm2.dev.config.cjs
     platform: 'linux/amd64'
     depends_on:
       - czdb
@@ -62,3 +64,9 @@ services:
       audius_db_url: 'postgresql://postgres:postgres@czdb:5432/cz3'
     volumes:
       - ./src:/app/src
+      - data_cz3:/nats
+
+volumes:
+  data_cz1:
+  data_cz2:
+  data_cz3:

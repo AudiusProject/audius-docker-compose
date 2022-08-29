@@ -29,4 +29,4 @@ COPY . .
 # RUN npm run tsc
 
 EXPOSE 8925
-CMD pm2-runtime ecosystem.config.cjs --only clusterizer
+CMD pm2-runtime pm2.prod.config.cjs

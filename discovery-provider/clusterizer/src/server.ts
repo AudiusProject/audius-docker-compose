@@ -13,6 +13,7 @@ import {
 } from './peering'
 import { CurrentServerInfo, RPC } from './types'
 import { RpclogTable } from './db'
+import { sleep } from './junk'
 
 const app = express()
 const port = process.env.PORT || 8925
@@ -79,8 +80,7 @@ app.post('/clusterizer/query', async (req, resp) => {
           // TODO: this should just return DMs for `wallet`
           // not all the dms in the db
           const allDms = await RpclogTable().where('method', 'dm.send')
-          resp.json(allDms)
-          break
+          return resp.json(allDms)
       }
     }
   } catch (e) {
@@ -90,28 +90,32 @@ app.post('/clusterizer/query', async (req, resp) => {
 })
 
 app.post('/clusterizer/op', async (req, res) => {
-  const nats = getNatsClient()
-  if (!nats) {
-    return res.status(500).send('no nats connection')
+  const raw = req.body as Uint8Array
+  const unsigned = await codec.decode(raw)
+  if (!unsigned) {
+    return res.status(400).send('bad request')
   }
-  console.log('using', nats.getServer())
-  const jetstream = nats.jetstream()
 
-  try {
-    const raw = req.body as Uint8Array
-    const unsigned = await codec.decode(raw)
-    if (unsigned) {
-      // TODO: validate op
-      // put message into nats
-      const receipt = await jetstream.publish(jetstreamSubject, raw)
-      return res.json(receipt)
+  let errMsg = 'unknown error'
+  for (let attempt = 1; attempt < 8; attempt++) {
+    const nats = await getNatsClient()
+    if (!nats) {
+      errMsg = 'no nats'
+    } else {
+      try {
+        const jetstream = nats.jetstream()
+        const receipt = await jetstream.publish(jetstreamSubject, raw)
+        return res.json(receipt)
+      } catch (e: any) {
+        errMsg = e.message
+      }
     }
-  } catch (e: any) {
-    console.log(e)
-    return res.status(502).send(e.message)
+
+    console.log({ attempts: attempt, errMsg })
+    await sleep(200 * attempt)
   }
 
-  res.status(400).send('bad request')
+  res.status(502).send(errMsg)
 })
 
 app.listen(port, () => {

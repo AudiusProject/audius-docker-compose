@@ -3,30 +3,31 @@ import { getConfig, jetstreamSubject } from './config'
 import { getAnnotatedDiscoveryPeers } from './peering'
 import { writeNatsConfig } from './natsClusterConfig'
 import { startJetstreamListener } from './natsListener'
-import { exec } from './junk'
+import { exec, sleep } from './junk'
 import { DiscoveryPeer } from './types'
 
-let natsClient: NatsConnection | undefined
+let natsPromise: Promise<NatsConnection> | undefined
 
-// use json for crappy array deep equal
-let lastPeersJson = ''
 let noDiffCounter = 0
 
-const jc = JSONCodec()
 const { nkey, wallet, codec } = getConfig()
 
 export async function startNatsBabysitter() {
   while (true) {
     const peers = await getAnnotatedDiscoveryPeers()
-    const peersJson = JSON.stringify(peers)
+
+    // TODO: should keep a persistent list of peers
+    // that should be "add only" type of thing
+    const changed = await writeNatsConfig(peers)
 
     // if no changes, linear backoff up to x minutes
-    if (lastPeersJson == peersJson) {
+    if (!changed) {
       // ensure nats client
       // todo: make client less hacky
       await dialNats(peers)
 
       noDiffCounter++
+      console.log('nodiff', noDiffCounter)
       const sleepMinutes = Math.min(noDiffCounter, 3)
       await sleep(1000 * 60 * sleepMinutes)
       continue
@@ -39,7 +40,6 @@ export async function startNatsBabysitter() {
     }
 
     console.log({ msg: 'updating nats config', peerCount: peers.length })
-    await writeNatsConfig(peers)
     await reloadNats()
 
     // nats client trash
@@ -48,56 +48,49 @@ export async function startNatsBabysitter() {
 
     // while things are changing, update every minute
     noDiffCounter = 0
-    lastPeersJson = peersJson
     await sleep(1000 * 60)
   }
 }
 
-export function getNatsClient() {
-  return natsClient
+export async function getNatsClient() {
+  return natsPromise
 }
 
 async function dialNats(peers: DiscoveryPeer[]) {
-  // TODO: this is a dumb race condition...
-  // TODO: better nats client stuff
-  if (natsClient) {
-    console.log('natsClient already exists...... skipping')
+  if (natsPromise) {
     return
   }
   const servers = peers.map((s) => s.ip)
   console.log({ msg: 'creating nats client', servers })
-  natsClient = await connect({
+  natsPromise = connect({
     servers,
     authenticator: nkeyAuthenticator(nkey.getSeed()),
-    // debug: true,
+  }).then(async (nats) => {
+    await ensureJetstream(nats)
+
+    // start in separate "thread"
+    startJetstreamListener(nats, codec, `consumer999:${wallet}`)
+
+    return nats
   })
-    .then(async (nats) => {
-      try {
-        // ensure jetstream
-        const jsm = await nats.jetstreamManager({ timeout: 20000 })
+}
 
-        const created = await jsm.streams.add({
-          name: jetstreamSubject,
-          subjects: [jetstreamSubject],
-          num_replicas: 3,
-          deny_delete: true,
-          deny_purge: true,
-        })
-        console.log('jetstream created')
-      } catch (e) {
-        console.log('create jetstream failed', e)
-      }
+async function ensureJetstream(nats: NatsConnection) {
+  try {
+    // ensure jetstream
+    const jsm = await nats.jetstreamManager({ timeout: 20000 })
 
-      // // start in separate "thread"
-      startJetstreamListener(nats, codec, `consumer999:${wallet}`)
-
-      return nats
+    const created = await jsm.streams.add({
+      name: jetstreamSubject,
+      subjects: [jetstreamSubject],
+      num_replicas: 3,
+      deny_delete: true,
+      deny_purge: true,
     })
-    .catch((err) => {
-      console.log('dial nats failed', err)
-      console.log('probably need to: generate config file + restart local nats')
-      return undefined
-    })
+    console.log('jetstream created')
+  } catch (e) {
+    console.log('create jetstream failed', e)
+  }
 }
 
 async function reloadNats() {
@@ -116,8 +109,4 @@ async function restartNats() {
   )
   console.log('started nats')
   await sleep(3000)
-}
-
-async function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms))
 }
