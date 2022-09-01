@@ -30,6 +30,7 @@ cat <<EOF | sudo tee /etc/docker/daemon.json >/dev/null
   }
 }
 EOF
+sudo systemctl restart docker
 
 # allow current user to use docker without sudo
 sudo usermod -aG docker $USER
@@ -40,6 +41,23 @@ DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
 mkdir -p $DOCKER_CONFIG/cli-plugins
 curl -SL https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
 chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+
+# install Elastic Agent
+(
+	cd /tmp
+	ELASTIC_AGENT_URL=$(echo aHR0cHM6Ly84MTRhMTcyMzVkMDA0ZDEyYmIzMTVlOGQ0NjZlMzJlMy5mbGVldC51cy1jZW50cmFsMS5nY3AuY2xvdWQuZXMuaW86NDQzCg== | base64 -d)
+	ELASTIC_AGENT_TOKEN=$(echo YlVoRlIzWTBRVUpPWkdaamRVVjZWbDlzVUdZNlYwMTJUMDlpUmkxUlpIVkdNV0ZRVDBKdFIzTjJRUT09Cg== | base64 -d)
+
+	# install Elastic Agent
+	ELASTIC_AGENT_VERSION=elastic-agent-8.2.0-linux-x86_64
+	curl -L -O \
+		https://artifacts.elastic.co/downloads/beats/elastic-agent/${ELASTIC_AGENT_VERSION}.tar.gz
+	tar xzvf ${ELASTIC_AGENT_VERSION}.tar.gz
+	cd ${ELASTIC_AGENT_VERSION}
+	sudo ./elastic-agent install -f \
+		--url=${ELASTIC_AGENT_URL} \
+		--enrollment-token=${ELASTIC_AGENT_TOKEN}
+)
 
 # create directories for volumes
 sudo mkdir -p /var/k8s
