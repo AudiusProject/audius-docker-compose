@@ -14,6 +14,7 @@ import {
 import { CurrentServerInfo, RPC } from './types'
 import { RpclogTable } from './db'
 import { sleep } from './junk'
+import { getWalletPublicKey } from './recover'
 
 const app = express()
 const port = process.env.PORT || 8925
@@ -31,6 +32,11 @@ app.get('/', (req, resp) => {
 
 app.get('/clusterizer', (req, resp) => {
   resp.send(base64.encode(publicKey))
+})
+
+app.get('/clusterizer/pubkey/:wallet', async (req, resp) => {
+  const pubkey = await getWalletPublicKey(req.params.wallet)
+  resp.send(pubkey)
 })
 
 app.post('/clusterizer', async function (req, resp) {

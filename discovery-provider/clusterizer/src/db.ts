@@ -1,6 +1,6 @@
 import knex, { Knex } from 'knex'
 
-const pg = knex({
+export const pg = knex({
   client: 'pg',
   connection: process.env.audius_db_url,
   searchPath: ['public'],
@@ -42,6 +42,8 @@ export type Rpclog = {
 export const PubkeyTable = () => pg<Pubkey>('pubkeys')
 export const RpclogTable = () => pg<Rpclog>('rpclog')
 
-migrate().then((ok) => {
-  console.log('did migration')
-})
+if (process.env.audius_db_run_migrations) {
+  migrate().then((ok) => {
+    console.log('ran migrations')
+  })
+}

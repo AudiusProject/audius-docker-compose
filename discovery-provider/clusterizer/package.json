@@ -24,6 +24,9 @@
     "vitest": "^0.22.0"
   },
   "dependencies": {
+    "@audius/sdk": "^1.0.1",
+    "@ethereumjs/util": "^8.0.0",
+    "@metamask/eth-sig-util": "^4.0.1",
     "@msgpack/msgpack": "^2.7.2",
     "@noble/secp256k1": "^1.6.3",
     "@scure/base": "^1.1.1",
@@ -39,6 +42,7 @@
     "pg": "^8.7.3",
     "pm2": "^5.2.0",
     "undici": "^5.8.2",
+    "web3": "^1.7.5",
     "zod": "^3.18.0"
   }
 }
