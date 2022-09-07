@@ -5,15 +5,16 @@ import {
   publicToAddress,
 } from '@ethereumjs/util'
 import { SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util'
-import { base64 } from '@scure/base'
+import { base64, hex } from '@scure/base'
 import Web3 from 'web3'
 import type { Transaction } from 'web3-core'
+import { add0x, Decoder, strip0x } from 'micro-web3'
 import { pg, PubkeyTable } from './db'
 
-const { libs } = require('@audius/sdk')
-const AudiusABIDecoder = libs.AudiusABIDecoder
-
 const isStage = process.env.audius_discprov_env == 'stage'
+
+// const { libs } = require('@audius/sdk')
+// const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const config = isStage
   ? {
@@ -28,6 +29,37 @@ const config = isStage
     }
 
 const web3 = new Web3(config.gateway)
+const decoder = new Decoder()
+decoder.add('UserFactory', [
+  {
+    inputs: [
+      {
+        name: '_owner',
+        type: 'address',
+      },
+      {
+        name: '_handle',
+        type: 'bytes16',
+      },
+      {
+        name: '_nonce',
+        type: 'bytes32',
+      },
+      {
+        name: '_subjectSig',
+        type: 'bytes',
+      },
+    ],
+    name: 'addUser',
+    outputs: [
+      {
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    type: 'function',
+  },
+])
 
 export async function getWalletPublicKey(wallet: string) {
   const existing = await PubkeyTable().where('wallet', wallet).first()
@@ -60,9 +92,14 @@ async function recoverPublicKey(wallet: string) {
   }
 
   for (const user of userRows) {
+    // console.log(user.wallet, user.handle, user.blocknumber, user.txhash)
     if (user.txhash?.startsWith('0x')) {
+      // console.time('web3.eth.getTransaction')
       const tx = await web3.eth.getTransaction(user.txhash)
+      // console.timeEnd('web3.eth.getTransaction')
+      // console.time('tryTransaction')
       const pubkey = await tryTransaction(tx)
+      // console.timeEnd('tryTransaction')
       if (pubkey) return pubkey
     }
 
@@ -71,7 +108,9 @@ async function recoverPublicKey(wallet: string) {
     if (user.blocknumber) {
       const block = await web3.eth.getBlock(user.blocknumber)
       for (const txhash of block.transactions) {
+        // console.time('web3.eth.getTransaction')
         const tx = await web3.eth.getTransaction(txhash)
+        // console.timeEnd('web3.eth.getTransaction')
         const pubkey = await tryTransaction(tx)
         if (pubkey) return pubkey
       }
@@ -83,12 +122,34 @@ async function recoverPublicKey(wallet: string) {
 
 async function tryTransaction(tx: Transaction) {
   try {
-    const decodedABI = AudiusABIDecoder.decodeMethod('UserFactory', tx.input)
+    if (!tx.input) return
 
-    const params: Record<string, string> = {}
-    for (const p of decodedABI.params) {
-      params[p.name] = p.value
+    // {
+    //   const decodedABI = AudiusABIDecoder.decodeMethod('UserFactory', tx.input)
+    //   const params: Record<string, string> = {}
+    //   for (const p of decodedABI.params) {
+    //     params[p.name] = p.value
+    //   }
+    //   const pubkey = recoverSignatureFromAddUserCall(params as AddUserParams)
+    //   return pubkey
+    // }
+
+    const decodedABI = decoder.decode(
+      'UserFactory',
+      hex.decode(strip0x(tx.input)),
+      {}
+    )
+    if (!decodedABI) return
+
+    const signatureInfo = Array.isArray(decodedABI) ? decodedABI[0] : decodedABI
+    const params = signatureInfo.value as any
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value instanceof Uint8Array) {
+        params[key] = add0x(hex.encode(value))
+      }
     }
+    console.log(params)
 
     const pubkey = recoverSignatureFromAddUserCall(params as AddUserParams)
     return pubkey
@@ -201,12 +262,26 @@ function recoverSignatureFromAddUserCall(params: AddUserParams) {
   return publicKey
 }
 
-// async function demo() {
-//   for (let i = 1; i < 11; i++) {
-//     console.log('-------------------', i)
-//     const pubkey = await recoverPublicKey(i)
-//     console.log(i, pubkey)
-//   }
-// }
+const testWallets = `
+0xb5f6a1b59feac1453cb9e768b8f0cf7fc172dca3
+0x78b2443d008656ce227cb47a29f0da28ae5f2c33
+0xb3cf6b24e90a908ed25539f958a6bb1923949c1e
+0x176e3b1c349907e8fd04545f7188b9d0d80efde3
+0xa14b08a2777f268604fd440621f3f244e76c710b
+0x700da142d5f7686f73b712bca19a05824847fcee
+0xacb25fb1c00de798021946da4784f2236b3bcb70
+0xd16741e9ee3d6009b59e55e1a7e0e0dbba8aed3e
+0xa9da020b2fc1bb4e67717bc9120f289e46222e62
+0xd38729a3b7bb4b615050ff559996e0384760faa4
+`
+
+async function demo() {
+  for (const wally of testWallets.trim().split('\n')) {
+    if (!wally) continue
+    console.log('-------------------', wally)
+    const pubkey = await recoverPublicKey(wally)
+    console.log(wally, pubkey)
+  }
+}
 
 // demo()
