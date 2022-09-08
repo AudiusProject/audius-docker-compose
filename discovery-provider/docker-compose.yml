@@ -32,6 +32,24 @@ services:
     networks:
       - discovery-provider-network
 
+  filebeat:
+    extends:
+      file: ../common-services.yml
+      service: filebeat
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+
+  metricbeat:
+    extends:
+      file: ../common-services.yml
+      service: metricbeat
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
@@ -62,7 +80,7 @@ services:
       timeout: 5s
 
   backend:
-    container_name: server
+    container_name: discovery-provider
     image: audius/discovery-provider:${TAG:-046808de17bc10aba88e5f1eb04e10c92f2afe45}
     restart: always
     depends_on:

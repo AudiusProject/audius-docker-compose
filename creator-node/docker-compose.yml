@@ -30,8 +30,26 @@ services:
     networks:
       - creator-node-network
 
+  filebeat:
+    extends:
+      file: ../common-services.yml
+      service: filebeat
+    env_file:
+      - override.env
+    networks:
+      - creator-node-network
+
+  metricbeat:
+    extends:
+      file: ../common-services.yml
+      service: metricbeat
+    env_file:
+      - override.env
+    networks:
+      - creator-node-network
+
   backend:
-    container_name: server
+    container_name: creator-node
     image: audius/creator-node:${TAG:-046808de17bc10aba88e5f1eb04e10c92f2afe45}
     depends_on:
       db:

@@ -30,8 +30,26 @@ services:
     networks:
       - identity-service-network
 
+  filebeat:
+    extends:
+      file: ../common-services.yml
+      service: filebeat
+    env_file:
+      - override.env
+    networks:
+      - identity-service-network
+
+  metricbeat:
+    extends:
+      file: ../common-services.yml
+      service: metricbeat
+    env_file:
+      - override.env
+    networks:
+      - identity-service-network
+
   backend:
-    container_name: server
+    container_name: identity-service
     image: audius/identity-service:${TAG:-046808de17bc10aba88e5f1eb04e10c92f2afe45}
     depends_on:
       db:
