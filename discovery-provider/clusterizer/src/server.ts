@@ -83,9 +83,10 @@ app.post('/clusterizer/query', async (req, resp) => {
 
       switch (rpc.method) {
         case 'dm.get':
-          // TODO: this should just return DMs for `wallet`
-          // not all the dms in the db
-          const allDms = await RpclogTable().where('method', 'dm.send')
+          // todo: suboptimal: there is no index on toWallet
+          const allDms = await RpclogTable()
+            .where('method', 'dm.send')
+            .whereRaw(`params->>'toWallet' = ?`, [wallet])
           return resp.json(allDms)
       }
     }

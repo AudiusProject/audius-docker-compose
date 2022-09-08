@@ -29,4 +29,5 @@ COPY . .
 # RUN npm run tsc
 
 EXPOSE 8925
+VOLUME /nats
 CMD pm2-runtime pm2.prod.config.cjs
