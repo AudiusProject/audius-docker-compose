@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 import os
 import pathlib
 import random
@@ -55,8 +56,13 @@ def cli(ctx):
     """A tool for managing audius services"""
     ctx.ensure_object(dict)
     ctx.obj["manifests_path"] = pathlib.Path(
-        os.getenv("MANIFESTS_PATH", os.path.dirname(
-            os.path.realpath(__file__)))
+        os.getenv("MANIFESTS_PATH", os.path.dirname(os.path.realpath(__file__)))
+    )
+
+    logging.basicConfig(
+        filename=ctx.obj["manifests_path"] / "audius-cli.log",
+        level=logging.INFO,
+        format="%(asctime)s:%(levelname)s:%(message)s",
     )
 
 
@@ -65,8 +71,7 @@ def cli(ctx):
 @click.pass_context
 def check_config(ctx, service):
     """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / \
-        f"{get_network(ctx, service)}.env"
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     override_env = ctx.obj["manifests_path"] / service / "override.env"
 
     env_data = dotenv.dotenv_values(env)
@@ -181,8 +186,7 @@ def launch(ctx, service, seed, chain, yes):
         click.secho("System meets requirements", fg="green")
 
     if not yes:
-        click.confirm(click.style(
-            "Do you want to continue?", bold=True), abort=True)
+        click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
     subprocess.run(
         [
@@ -225,8 +229,7 @@ def launch(ctx, service, seed, chain, yes):
                 "docker",
                 "compose",
                 "--env-file",
-                ctx.obj["manifests_path"] /
-                "discovery-provider" / "override.env",
+                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "up",
@@ -332,7 +335,7 @@ def restart(ctx, service, containers):
 @click.argument("containers", type=container_type, nargs=-1)
 @click.pass_context
 def down(ctx, service, containers):
-    """Restart a service/container"""
+    """Stops a service/container"""
     services = [service]
     if service is None:
         services = SERVICES
@@ -360,29 +363,27 @@ def down(ctx, service, containers):
 def set_config(ctx, service, unset, required, key, value):
     """Set a config value"""
     if required and (key or value):
-        click.secho(
-            "--required cannot be used when key or value is set", fg="red")
+        click.secho("--required cannot be used when key or value is set", fg="red")
         sys.exit(1)
 
-    env = ctx.obj["manifests_path"] / service / \
-        f"{get_network(ctx, service)}.env"
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     env_data = dotenv.dotenv_values(env)
 
     override_env = ctx.obj["manifests_path"] / service / "override.env"
     override_env_data = dotenv.dotenv_values(override_env)
 
     if required:
+        logging.info("audius-cli set-config required")
         for key, value in env_data.items():
             if not unset and value == "":
-                dotenv.set_key(
-                    override_env,
-                    key,
-                    click.prompt(
-                        click.style(key, bold=True),
-                        override_env_data.get(key, env_data.get(key)),
-                    ),
+                value = click.prompt(
+                    click.style(key, bold=True),
+                    override_env_data.get(key, env_data.get(key)),
                 )
+                logging.info(f"> audius-cli set-config key={key!r} value={value!r}")
+                dotenv.set_key(override_env, key, value)
             if unset and value == "":
+                logging.info(f"> audius-cli set-config unset key={key!r}")
                 dotenv.unset_key(override_env, key)
     else:
         if key is None:
@@ -391,8 +392,10 @@ def set_config(ctx, service, unset, required, key, value):
             value = click.prompt(click.style("Value", bold=True))
 
         if unset:
+            logging.info(f"audius-cli set-config unset key={key!r}")
             dotenv.unset_key(override_env, key)
         else:
+            logging.info(f"audius-cli set-config key={key!r} value={value!r}")
             dotenv.set_key(override_env, key, value)
 
 
@@ -427,8 +430,7 @@ def get_config(ctx, service):
             ]
         )
     else:
-        env = ctx.obj["manifests_path"] / service / \
-            f"{get_network(ctx, service)}.env"
+        env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
         env_data = dotenv.dotenv_values(env)
         override_env = ctx.obj["manifests_path"] / service / "override.env"
         override_env_data = dotenv.dotenv_values(override_env)
@@ -466,12 +468,15 @@ def set_tag(ctx, unset, tag):
             click.style("Do you want to continue?", bold=True), abort=True, default=True
         )
 
+    logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
+            logging.info(f"> audius-cli set-tag unset service={service!r}")
             dotenv.unset_key(env_file, "TAG")
         else:
+            logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, "TAG", tag)
 
 
@@ -484,12 +489,17 @@ def set_network(ctx, unset, network):
     if not unset and network is None:
         network = click.prompt(click.style("Network", bold=True))
 
+    logging.info(f"audius-cli set-network network={network!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
 
         if unset:
+            logging.info(f"> audius-cli set-network unset service={service!r}")
             dotenv.unset_key(env_file, "NETWORK")
         else:
+            logging.info(
+                f"> audius-cli set-network service={service!r} network={network!r}"
+            )
             dotenv.set_key(env_file, "NETWORK", network)
 
 
@@ -499,14 +509,12 @@ def set_network(ctx, unset, network):
 def pull(ctx, branch):
     """Pull latest updates from remote"""
     try:
-        subprocess.run(["git", "fetch"], check=True,
-                       cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
         if branch:
             subprocess.run(
                 ["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"]
             )
-        subprocess.run(["git", "pull"], check=True,
-                       cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
     except subprocess.CalledProcessError:
         click.secho("Could not pull", fg="red")
         sys.exit(1)
@@ -516,7 +524,7 @@ def pull(ctx, branch):
 @click.argument("branch", required=False)
 @click.pass_context
 def upgrade(ctx, branch):
-    """Pull and restarts all running services"""
+    """Pulls from latest source and re-launches all running services"""
     ctx.forward(pull)
 
     for service in SERVICES:
@@ -601,8 +609,7 @@ def update_chainspec_set_genesis(ctx):
     of the network.
     """
     # Get signer from override.env
-    override_env = ctx.obj["manifests_path"] / \
-        "discovery-provider" / "override.env"
+    override_env = ctx.obj["manifests_path"] / "discovery-provider" / "override.env"
     override_env_data = dotenv.dotenv_values(override_env)
     signer = override_env_data.get("audius_delegate_owner_wallet")
     signer = signer.replace("0x", "")  # trim 0x from pubkey
@@ -613,49 +620,13 @@ def update_chainspec_set_genesis(ctx):
     print(extra_data)
 
     # Update chainspec
-    spec = ctx.obj["manifests_path"] / \
-        "discovery-provider" / "chain" / "spec.json"
+    spec = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
     spec_data = json.load(open(spec))
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     print("spec.json updated")
-
-
-@cli.command()
-@click.pass_context
-def clusterize(ctx):
-    print("clusterizing")
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--env-file",
-            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "run",
-            "clusterizer",
-            "npm",
-            "run",
-            "generate",
-        ],
-    )
-
-    print("restarting nats")
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--env-file",
-            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "restart",
-            "nats",
-        ],
-    )
 
 
 if __name__ == "__main__":
