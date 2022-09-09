@@ -41,8 +41,8 @@ This folder contains a set of scripts and utilities to manage services like:
 ## Logging
 Logging is enabled by default to stream logs to a logging service for ease of debugging. It's strongly recommended to keep logging enabled. However, if there's a reason to turn logging off, it can be disabled with:
  ```
- audius-cli set-config creator-node|discovery-node audius_loggly_disable true
- audius-cli launch creator-node|discovery-node
+ audius-cli set-config creator-node|discovery-provider audius_loggly_disable true
+ audius-cli launch creator-node|discovery-provider
  ```
 
 ## More options
