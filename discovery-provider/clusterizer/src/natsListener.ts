@@ -4,6 +4,7 @@ import { consumerOpts, createInbox, NatsConnection } from 'nats'
 import { ChantCodec } from './codec'
 import { jetstreamSubject } from './config'
 import { PubkeyTable, RpclogTable } from './db'
+import { compareWallets, getRegisteredDiscoveryNodes } from './peering'
 import { RPC } from './types'
 
 export async function startJetstreamListener(
@@ -30,6 +31,37 @@ export async function startJetstreamListener(
     const rpc = decoded.data
     const fromWallet = Address.fromPublicKey(decoded.publicKey)
 
+    /// "attest" RPCs are special... they come from peer discovery providers
+    /// atm everything is on a single jetstream topic and we handle attest here
+    /// we could have a dedicated topic for attest specifically
+    if (rpc.method.startsWith('attest')) {
+      const registeredNodes = await getRegisteredDiscoveryNodes()
+      const sp = registeredNodes.find((n) =>
+        compareWallets(n.delegateOwnerWallet, fromWallet)
+      )
+      if (!sp) {
+        console.warn(`skipping attest from non-registered wallet ${fromWallet}`)
+        continue
+      }
+
+      switch (rpc.method) {
+        case 'attest.publicKey':
+          // TODO: SCHEMA: should validate rpc.params to be:
+          // { wallet: string, pubkey: string }
+          try {
+            await PubkeyTable().insert(rpc.params).onConflict().ignore()
+          } catch (e) {
+            console.error('failed', rpc.method, e)
+          }
+          break
+        default:
+          console.warn(`unknown attest rpc method: ${rpc.method}`)
+      }
+
+      continue
+    }
+
+    /// typical "user" RPC
     // collect the pubkey
     await PubkeyTable()
       .insert({

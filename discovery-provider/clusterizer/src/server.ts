@@ -36,6 +36,9 @@ app.get('/clusterizer', (req, resp) => {
 
 app.get('/clusterizer/pubkey/:wallet', async (req, resp) => {
   const pubkey = await getWalletPublicKey(req.params.wallet)
+  if (!pubkey) {
+    resp.status(404)
+  }
   resp.send(pubkey)
 })
 

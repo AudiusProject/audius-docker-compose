@@ -8,6 +8,9 @@ export const pg = knex({
 
 async function migrate() {
   await pg.raw(`
+    -- DEV MDOE !!!!
+    drop table if exists pubkeys;
+
     create table if not exists pubkeys (
       wallet text primary key,
       pubkey text

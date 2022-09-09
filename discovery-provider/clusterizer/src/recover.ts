@@ -10,11 +10,11 @@ import Web3 from 'web3'
 import type { Transaction } from 'web3-core'
 import { add0x, Decoder, strip0x } from 'micro-web3'
 import { pg, PubkeyTable } from './db'
+import { getNatsClient } from './natsBabysitter'
+import { getConfig, jetstreamSubject } from './config'
+import * as secp from '@noble/secp256k1'
 
 const isStage = process.env.audius_discprov_env == 'stage'
-
-// const { libs } = require('@audius/sdk')
-// const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const config = isStage
   ? {
@@ -68,16 +68,27 @@ export async function getWalletPublicKey(wallet: string) {
   // if miss, recover
   const pubkeyBuffer = await recoverPublicKey(wallet)
   if (pubkeyBuffer) {
-    const pubkeyB64 = base64.encode(pubkeyBuffer)
-    await PubkeyTable()
-      .insert({
-        wallet,
-        pubkey: pubkeyB64,
-      })
-      .onConflict()
-      .ignore()
+    const publicKeyBase64 = base64.encode(pubkeyBuffer)
 
-    return pubkeyB64
+    // attest to peers this recovered key
+    const { codec } = getConfig()
+    const nats = await getNatsClient()
+    if (nats) {
+      // TODO: SCHEMA:
+      const payload = await codec.encode({
+        method: 'attest.publicKey',
+        params: {
+          wallet,
+          pubkey: publicKeyBase64,
+        },
+      })
+      const receipt = await nats.jetstream().publish(jetstreamSubject, payload)
+      console.log('attest.publicKey', receipt)
+    } else {
+      console.warn(`no nats: unable to attest public key to peers`)
+    }
+
+    return publicKeyBase64
   }
 }
 
@@ -124,16 +135,6 @@ async function tryTransaction(tx: Transaction) {
   try {
     if (!tx.input) return
 
-    // {
-    //   const decodedABI = AudiusABIDecoder.decodeMethod('UserFactory', tx.input)
-    //   const params: Record<string, string> = {}
-    //   for (const p of decodedABI.params) {
-    //     params[p.name] = p.value
-    //   }
-    //   const pubkey = recoverSignatureFromAddUserCall(params as AddUserParams)
-    //   return pubkey
-    // }
-
     const decodedABI = decoder.decode(
       'UserFactory',
       hex.decode(strip0x(tx.input)),
@@ -152,7 +153,17 @@ async function tryTransaction(tx: Transaction) {
     console.log(params)
 
     const pubkey = recoverSignatureFromAddUserCall(params as AddUserParams)
-    return pubkey
+
+    // add 4 byte prefix to recovered public key
+    // ethereum's weirdo signature conventions chops this off, so re-add so that getSharedSecret can work:
+    // see: https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L34-L67
+    if (pubkey.length == 64) {
+      return secp.utils.concatBytes(new Uint8Array([4]), pubkey)
+    } else if (pubkey.length == 65) {
+      return pubkey
+    } else {
+      console.error(`pubkey wrong length: expected 65, got ${pubkey.length}`)
+    }
   } catch (e) {
     // console.log('nope:', e)
   }
