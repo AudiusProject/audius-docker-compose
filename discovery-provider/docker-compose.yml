@@ -81,7 +81,7 @@ services:
       - override.env
     environment:
       - audius_discprov_infra_setup=audius-docker-compose
-      - audius_no_workers=false
+      - audius_no_workers=true
       - audius_db_run_migrations=false
     networks:
       - discovery-provider-network
