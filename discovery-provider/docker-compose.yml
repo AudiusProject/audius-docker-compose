@@ -87,6 +87,7 @@ services:
       - discovery-provider-network
 
   indexer:
+    container_name: indexer
     image: audius/discovery-provider:${TAG:-c54dc44721ad3c8352f0cec56b94002cffe9512a}
     restart: always
     depends_on:
