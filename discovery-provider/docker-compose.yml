@@ -62,6 +62,7 @@ services:
       timeout: 5s
 
   backend:
+    container_name: server
     image: audius/discovery-provider:${TAG:-c54dc44721ad3c8352f0cec56b94002cffe9512a}
     restart: always
     depends_on:
