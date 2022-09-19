@@ -11,6 +11,7 @@ Per JSON RPC, an RPC call might look like:
 ```ts
 const comment_id = cuid()
 {
+  id: `track_comment.add.${comment_id}`,
   method: 'track_comment.add',
   params: {
     comment_id,
@@ -21,10 +22,13 @@ const comment_id = cuid()
 }
 ```
 
+> `id` field is optional in JSON RPC spec, but is currently required by the `rpclog` table, so must be specified.  The intent of `id` field is to uniquely identify operation so that duplicate messages with the same ID can be skipped.
+
 maybe later:
 
 ```ts
 {
+  id: cuid(),
   method: 'track_comment.update',
   params: {
     comment_id,
@@ -37,8 +41,8 @@ finally:
 
 ```ts
 {
-  id: commentId,
-  method: 'track_comment.delete,
+  id: `track_comment.delete.${comment_id}`,
+  method: 'track_comment.delete',
   params: {
     comment_id,
   }
@@ -60,6 +64,7 @@ Eventually we should have a nice client with schema + validator + http client st
 
   const comment_id = cuid()
   const signed = codec.encode({
+    id: `track_comment.add.${comment_id}`,
     method: 'track_comment.add',
     params: {
       comment_id,
@@ -86,6 +91,13 @@ After running code you can do this on any staging discovery database:
 
 ```
 select * from rpclog where method = 'track_comment.add';
+```
+
+If events are not making it, view logs:
+
+```
+ssh stage-discovery-2
+docker logs -f clusterizer
 ```
 
 ## 4. Write further processing code
