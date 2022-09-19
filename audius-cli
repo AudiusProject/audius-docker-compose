@@ -134,7 +134,7 @@ def health_check(ctx, service):
                     f"Block difference ({block_diff}) is greater than maximum healthy block difference ({max_block_diff})",
                     fg="yellow",
                 )
-        elif service == "identity":
+        elif service == "identity-service":
             healthy = response["healthy"]
 
         if healthy and partial:
