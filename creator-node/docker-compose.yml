@@ -12,6 +12,14 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 4m
+      driver: json-file
+
 
   cache:
     container_name: redis
@@ -20,6 +28,13 @@ services:
       service: base-cache
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 4m
+      driver: json-file
 
   logspout:
     extends:
@@ -29,6 +44,13 @@ services:
       - override.env
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 4m
+      driver: json-file
 
   backend:
     container_name: server
@@ -51,6 +73,13 @@ services:
       - audiusContentInfraSetup=audius-docker-compose
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 4m
+      driver: json-file
 
   autoheal:
     image: willfarrell/autoheal
@@ -60,6 +89,13 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 4m
+      driver: json-file
 
 networks:
   creator-node-network:
