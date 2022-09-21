@@ -605,17 +605,16 @@ def update_chainspec_set_genesis(ctx):
     """
     Sets the genesis address in the chainspec with the appropriate
     keys for sealing blocks from the override.env.
-    This command isonly intended to be run by the genesis validator
+    This command is only intended to be run by the genesis validator
     of the network.
     """
     # Get signer from override.env
-    override_env = ctx.obj["manifests_path"] / "discovery-provider" / "override.env"
-    override_env_data = dotenv.dotenv_values(override_env)
-    signer = override_env_data.get("audius_delegate_owner_wallet")
-    signer = signer.replace("0x", "")  # trim 0x from pubkey
+    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
+    env_data = dotenv.dotenv_values(env)
+    signers = env_data.get("audius_genesis_signers")
 
     # Compute extra data
-    extra_data = f"{EXTRA_VANITY}{signer}{EXTRA_SEAL}"
+    extra_data = f"{EXTRA_VANITY}{signers}{EXTRA_SEAL}"
     print("Genesis EXTRA_DATA:")
     print(extra_data)
 
@@ -627,6 +626,26 @@ def update_chainspec_set_genesis(ctx):
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     print("spec.json updated")
+
+
+@cli.command()
+@click.pass_context
+def update_static_peers(ctx):
+    """
+    Sets the static peers in the chain directory with the peers
+    specified in the relevant network env file.
+    """
+    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
+    env_data = dotenv.dotenv_values(env)
+    peers = env_data.get("audius_static_peers")
+    data = peers.split(",")
+
+    static_peers_file = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-peers.json"
+    with open(static_peers_file, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print("static-peers.json updated")
+
 
 
 if __name__ == "__main__":
