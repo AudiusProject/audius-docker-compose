@@ -224,7 +224,7 @@ def launch(ctx, service, seed, chain, yes):
         )
 
     if chain and service == "discovery-provider":
-        _update_chainspec(ctx)
+        ctx.invoke(update_chainspec)
         subprocess.run(
             [
                 "docker",
@@ -607,10 +607,6 @@ def update_chainspec(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables.
     """
-    _update_chainspec(ctx)
-
-
-def _update_chainspec(ctx):
     env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
     env_data = dotenv.dotenv_values(env)
 
@@ -619,8 +615,8 @@ def _update_chainspec(ctx):
 
     # Compute extra data
     extra_data = f"{EXTRA_VANITY}{signers}{EXTRA_SEAL}"
-    print("Genesis EXTRA_DATA:")
-    print(extra_data)
+    click.secho("Genesis EXTRA_DATA:", bold=True)
+    click.secho(extra_data)
 
     # Update chainspec
     spec_input = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec_template.json"
@@ -630,17 +626,19 @@ def _update_chainspec(ctx):
     with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print("spec.json updated")
+    click.secho("spec.json updated", fg="green")
 
     # Get peers from env
-    peers = env_data.get("audius_static_nodes")
-    data = peers.split(",")
+    peers_str = env_data.get("audius_static_nodes")
+    peers = peers_str.split(",")
+    click.secho("Static Nodes:", bold=True)
+    click.secho(peers)
 
     static_peers_file = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
     with open(static_peers_file, "w") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print("static-nodes.json updated")
+    click.secho("static-nodes.json updated", fg="green")
 
 
 if __name__ == "__main__":
