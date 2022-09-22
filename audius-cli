@@ -224,8 +224,7 @@ def launch(ctx, service, seed, chain, yes):
         )
 
     if chain and service == "discovery-provider":
-        update_chainspec_set_genesis(ctx)
-        update_static_nodes(ctx)
+        _update_chainspec(ctx)
         subprocess.run(
             [
                 "docker",
@@ -603,14 +602,19 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def update_chainspec_set_genesis(ctx):
+def update_chainspec(ctx):
     """
-    Sets the genesis address in the chainspec with the appropriate
-    genesis keys for sealing blocks.
+    Prepares the discovery chainspec and static nodes, pulling from
+    relevant environment variables.
     """
-    # Get signer from override.env
+    _update_chainspec(ctx)
+
+
+def _update_chainspec(ctx):
     env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
     env_data = dotenv.dotenv_values(env)
+
+    # Get signers from env
     signers = env_data.get("audius_genesis_signers")
 
     # Compute extra data
@@ -628,16 +632,7 @@ def update_chainspec_set_genesis(ctx):
         f.write("\n")
     print("spec.json updated")
 
-
-@cli.command()
-@click.pass_context
-def update_static_nodes(ctx):
-    """
-    Sets the static peers in the chain directory with the peers
-    specified in the relevant network env file.
-    """
-    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
-    env_data = dotenv.dotenv_values(env)
+    # Get peers from env
     peers = env_data.get("audius_static_nodes")
     data = peers.split(",")
 
@@ -646,7 +641,6 @@ def update_static_nodes(ctx):
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     print("static-nodes.json updated")
-
 
 
 if __name__ == "__main__":
