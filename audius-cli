@@ -154,16 +154,15 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
-@click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, yes):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
-
+    network = get_network(ctx, service)
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total
@@ -223,7 +222,7 @@ def launch(ctx, service, seed, chain, yes):
             ],
         )
 
-    if chain and service == "discovery-provider":
+    if network == "stage" and service == "discovery-provider":
         ctx.invoke(update_chainspec)
         subprocess.run(
             [
