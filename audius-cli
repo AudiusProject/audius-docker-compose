@@ -162,7 +162,7 @@ def launch(ctx, service, seed, yes):
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
-
+    network = get_network(ctx, service)
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total
@@ -222,7 +222,7 @@ def launch(ctx, service, seed, yes):
             ],
         )
 
-    if service == "discovery-provider":
+    if network == "stage" and service == "discovery-provider":
         ctx.invoke(update_chainspec)
         subprocess.run(
             [
