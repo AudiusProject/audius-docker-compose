@@ -111,6 +111,7 @@ services:
 
   chain:
     image: nethermind/nethermind:1.14.2
+    command: --config config
     container_name: chain
     env_file:
       - ${NETWORK:-prod}.env
