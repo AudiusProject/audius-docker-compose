@@ -5,8 +5,7 @@
     "clique": {
       "params": {
         "period": 5,
-        "epoch": 30000,
-        "blockReward": "0x0"
+        "epoch": 3000
       }
     }
   },
@@ -35,7 +34,7 @@
     "maxCodeSizeTransition": "0x0",
     "maximumExtraDataSize": "0x64",
     "minGasLimit": "0x1388",
-    "networkID": "0x188c",
+    "networkID": "0x102020",
     "validateReceipts": false,
     "validateReceiptsTransition": "0xffffffffffffffff",
     "wasmActivationTransition": "0xffffffffffffffff"
@@ -49,7 +48,7 @@
     },
     "author": "0x0000000000000000000000000000000000000000",
     "difficulty": "0x1",
-    "extraData": "0x22466c6578692069732061207468696e6722202d204166726900000000000000B1dC342aDE31fD77945f5aF59520D3839D2De8750000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "extraData": "",
     "gasLimit": "0xa00000",
     "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "timestamp": "0x5bdda800"

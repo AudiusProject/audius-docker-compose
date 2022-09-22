@@ -4,3 +4,7 @@ auto-upgrade.log
 # .env files for system (tag, env management)
 discovery-provider/.env
 creator-node/.env
+
+# discovery blockchain
+discovery-provider/chain/spec.json
+discovery-provider/chain/static-nodes.json
