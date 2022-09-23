@@ -614,8 +614,6 @@ def update_chainspec(ctx):
 
     # Compute extra data
     extra_data = f"{EXTRA_VANITY}{signers}{EXTRA_SEAL}"
-    click.secho("Genesis EXTRA_DATA:", bold=True)
-    click.secho(extra_data)
 
     # Update chainspec
     spec_input = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec_template.json"
@@ -625,19 +623,15 @@ def update_chainspec(ctx):
     with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    click.secho("spec.json updated", fg="green")
 
     # Get peers from env
     peers_str = env_data.get("audius_static_nodes")
     peers = peers_str.split(",")
-    click.secho("Static Nodes:", bold=True)
-    click.secho(peers)
 
     static_peers_file = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
     with open(static_peers_file, "w") as f:
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    click.secho("static-nodes.json updated", fg="green")
 
 
 if __name__ == "__main__":
