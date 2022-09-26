@@ -237,7 +237,6 @@ def launch(ctx, service, seed, yes):
                 "chain",
             ],
         )
-        return
 
     subprocess.run(
         [
