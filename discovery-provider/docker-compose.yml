@@ -81,7 +81,7 @@ services:
 
   backend:
     container_name: discovery-provider
-    image: audius/discovery-provider:${TAG:-114330d7a52e3208b9114678d068b596962f6abd}
+    image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
     restart: always
     depends_on:
       db:
@@ -103,7 +103,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-114330d7a52e3208b9114678d068b596962f6abd}
+    image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -128,24 +128,18 @@ services:
       - CURL_TIMEOUT=30
 
   chain:
-    image: nethermind/nethermind:1.10.17
+    image: nethermind/nethermind:1.14.2
+    command: --config config
     container_name: chain
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
     environment:
-      - NETHERMIND_INITCONFIG_STORERECEIPTS=true
-      - NETHERMIND_INITCONFIG_ENABLEUNSECUREDDEVWALLET=true
-      - NETHERMIND_INITCONFIG_ISMINING=true
-      - NETHERMIND_INITCONFIG_CHAINSPECPATH=/config/spec.json
-      - NETHERMIND_INITCONFIG_BASEDBPATH=nethermind_db/clique
-      - NETHERMIND_NETWORKCONFIG_P2PPORT=30300
-      - NETHERMIND_NETWORKCONFIG_DISCOVERYPORT=30300
-      - NETHERMIND_JSONRPCCONFIG_HOST=0.0.0.0
-      - NETHERMIND_JSONRPCCONFIG_ENABLED=true
-      # - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
+      - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
     volumes:
       - ./chain/spec.json:/config/spec.json
+      - ./chain/static-nodes.json:/nethermind/Data/static-nodes.json
+      - ./chain/config.cfg:/nethermind/configs/config.cfg
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
     labels:
