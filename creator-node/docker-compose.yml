@@ -17,7 +17,7 @@ services:
         max-size: 10m
         max-file: 3
         mode: non-blocking
-        max-buffer-size: 4m
+        max-buffer-size: 100m
       driver: json-file
 
 
