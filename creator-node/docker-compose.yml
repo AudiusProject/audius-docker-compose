@@ -12,14 +12,6 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
 
   cache:
     container_name: redis
@@ -28,13 +20,6 @@ services:
       service: base-cache
     networks:
       - creator-node-network
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
 
   logspout:
     extends:
@@ -44,13 +29,6 @@ services:
       - override.env
     networks:
       - creator-node-network
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
 
   backend:
     container_name: server
