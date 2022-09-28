@@ -51,6 +51,13 @@ services:
       - audiusContentInfraSetup=audius-docker-compose
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   autoheal:
     image: willfarrell/autoheal
@@ -60,6 +67,13 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
 networks:
   creator-node-network:
