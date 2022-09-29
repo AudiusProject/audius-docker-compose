@@ -32,6 +32,51 @@ services:
     networks:
       - discovery-provider-network
 
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    environment:
+      - DATA_SOURCE_NAME=${audius_db_url}?sslmode=disable
+    ports:
+      - "127.0.0.1:9187:9187"
+    networks:
+      - discovery-provider-network
+
+  exporter_postgres_read_replica:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres_read_replica
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    environment:
+      - DATA_SOURCE_NAME=${audius_db_url_read_replica}?sslmode=disable
+    ports:
+      - "127.0.0.1:9188:9187"
+    networks:
+      - discovery-provider-network
+
+  exporter_elasticsearch:
+    extends:
+      file: ../common-services.yml
+      service: exporter_elasticsearch
+    container_name: exporter_elasticsearch
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    command:
+      - "--es.uri=${audius_elasticsearch_url}"
+    ports:
+      - "127.0.0.1:9114:9114"
+    networks:
+      - discovery-provider-network
+
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0

@@ -30,6 +30,21 @@ services:
     networks:
       - identity-service-network
 
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    environment:
+      - DATA_SOURCE_NAME=${dbUrl}?sslmode=disable
+    ports:
+      - "127.0.0.1:9187:9187"
+    networks:
+      - identity-service-network
+
   backend:
     container_name: server
     image: audius/identity-service:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}

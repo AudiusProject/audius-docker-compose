@@ -34,8 +34,6 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-
-
   logspout:
     image: audius/logspout:v3.2.14-1
     container_name: logspout
@@ -50,4 +48,10 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  exporter_postgres:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    restart: always
 
+  exporter_elasticsearch:
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.3.0
+    restart: always
