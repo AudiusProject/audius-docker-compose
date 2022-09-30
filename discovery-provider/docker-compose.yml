@@ -65,6 +65,7 @@ services:
     container_name: server
     image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
     restart: always
+    mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
       db:
         condition: service_healthy
