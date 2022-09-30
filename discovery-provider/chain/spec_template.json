@@ -5,7 +5,7 @@
     "clique": {
       "params": {
         "period": 5,
-        "epoch": 3000
+        "epoch": 30000
       }
     }
   },
