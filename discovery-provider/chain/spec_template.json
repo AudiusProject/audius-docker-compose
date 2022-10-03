@@ -32,7 +32,7 @@
     "kip6Transition": "0xffffffffffffffff",
     "maxCodeSize": "0x6000",
     "maxCodeSizeTransition": "0x0",
-    "maximumExtraDataSize": "0x64",
+    "maximumExtraDataSize": "0x320",
     "minGasLimit": "0x1388",
     "networkID": "0x102020",
     "validateReceipts": false,
