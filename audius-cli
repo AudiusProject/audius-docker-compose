@@ -146,7 +146,13 @@ def health_check(ctx, service):
         else:
             click.secho("Service is not healthy", fg="red")
             sys.exit(1)
-    except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
+    except (
+        ConnectionError,
+        ConnectionRefusedError,
+        urllib.error.HTTPError,
+        urllib.error.URLError,
+        json.JSONDecodeError,
+    ):
         click.secho("Service is not healthy", fg="red")
         sys.exit(1)
 
