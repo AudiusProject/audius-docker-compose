@@ -13,6 +13,27 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    networks:
+      - discovery-provider-network
+  exporter_postgres_read_replica:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres_read_replica
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    command: [ "--read-replica" ]
+    networks:
+      - discovery-provider-network
 
   cache:
     container_name: redis
@@ -22,58 +43,14 @@ services:
       service: base-cache
     networks:
       - discovery-provider-network
-
-  logspout:
+  exporter_redis:
     extends:
       file: ../common-services.yml
-      service: logspout
-    env_file:
-      - override.env
-    networks:
-      - discovery-provider-network
-
-  exporter_postgres:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres
+      service: exporter_redis
+    container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
-    environment:
-      - DATA_SOURCE_NAME=${audius_db_url}?sslmode=disable
-    ports:
-      - "127.0.0.1:9187:9187"
-    networks:
-      - discovery-provider-network
-
-  exporter_postgres_read_replica:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres_read_replica
-    env_file:
-      - ${NETWORK:-prod}.env
-      - override.env
-    environment:
-      - DATA_SOURCE_NAME=${audius_db_url_read_replica}?sslmode=disable
-    ports:
-      - "127.0.0.1:9188:9187"
-    networks:
-      - discovery-provider-network
-
-  exporter_elasticsearch:
-    extends:
-      file: ../common-services.yml
-      service: exporter_elasticsearch
-    container_name: exporter_elasticsearch
-    env_file:
-      - ${NETWORK:-prod}.env
-      - override.env
-    command:
-      - "--es.uri=${audius_elasticsearch_url}"
-    ports:
-      - "127.0.0.1:9114:9114"
     networks:
       - discovery-provider-network
 
@@ -105,6 +82,16 @@ services:
         ]
       interval: 10s
       timeout: 5s
+  exporter_elasticsearch:
+    extends:
+      file: ../common-services.yml
+      service: exporter_elasticsearch
+    container_name: exporter_elasticsearch
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    networks:
+      - discovery-provider-network
 
   backend:
     container_name: server
@@ -128,6 +115,8 @@ services:
       - audius_discprov_infra_setup=audius-docker-compose
     networks:
       - discovery-provider-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   seed:
     image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
@@ -153,6 +142,21 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+
+  exporter_linux:
+    extends:
+      file: ../common-services.yml
+      service: exporter_linux
+    container_name: exporter_linux
 
   chain:
     image: nethermind/nethermind:1.14.2

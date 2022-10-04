@@ -49,9 +49,25 @@ services:
       driver: json-file
 
   exporter_postgres:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    image: audius/exporter-postgres:v0.10.1
     restart: always
 
   exporter_elasticsearch:
-    image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.3.0
+    image: audius/exporter-elasticsearch:v1.3.0
     restart: always
+
+  exporter_redis:
+    image: audius/exporter-redis:v1.44.0-alpine
+    restart: always
+
+  exporter_linux:
+    image: quay.io/prometheus/node-exporter:v1.4.0
+    container_name: exporter_linux
+    network_mode: host
+    command: --path.rootfs=/host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+    cap_add:
+      - SYS_TIME
