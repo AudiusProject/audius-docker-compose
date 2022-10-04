@@ -42,6 +42,8 @@ services:
       - ${NETWORK:-prod}.env
       - override.env
     command: [ "--identity-service" ]
+    ports:
+      - "127.0.0.1:9121:9121"
     networks:
       - identity-service-network
 
