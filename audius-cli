@@ -134,7 +134,7 @@ def health_check(ctx, service):
                     f"Block difference ({block_diff}) is greater than maximum healthy block difference ({max_block_diff})",
                     fg="yellow",
                 )
-        elif service == "identity":
+        elif service == "identity-service":
             healthy = response["healthy"]
 
         if healthy and partial:
@@ -146,7 +146,13 @@ def health_check(ctx, service):
         else:
             click.secho("Service is not healthy", fg="red")
             sys.exit(1)
-    except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
+    except (
+        ConnectionError,
+        ConnectionRefusedError,
+        urllib.error.HTTPError,
+        urllib.error.URLError,
+        json.JSONDecodeError,
+    ):
         click.secho("Service is not healthy", fg="red")
         sys.exit(1)
 
@@ -154,16 +160,15 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
-@click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, yes):
     """Launch the service"""
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
-
+    network = get_network(ctx, service)
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total
@@ -223,7 +228,8 @@ def launch(ctx, service, seed, chain, yes):
             ],
         )
 
-    if chain and service == "discovery-provider":
+    if network == "stage" and service == "discovery-provider":
+        ctx.invoke(update_chainspec)
         subprocess.run(
             [
                 "docker",
@@ -237,7 +243,6 @@ def launch(ctx, service, seed, chain, yes):
                 "chain",
             ],
         )
-        return
 
     subprocess.run(
         [
@@ -601,32 +606,37 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def update_chainspec_set_genesis(ctx):
+def update_chainspec(ctx):
     """
-    Sets the genesis address in the chainspec with the appropriate
-    keys for sealing blocks from the override.env.
-    This command isonly intended to be run by the genesis validator
-    of the network.
+    Prepares the discovery chainspec and static nodes, pulling from
+    relevant environment variables.
     """
-    # Get signer from override.env
-    override_env = ctx.obj["manifests_path"] / "discovery-provider" / "override.env"
-    override_env_data = dotenv.dotenv_values(override_env)
-    signer = override_env_data.get("audius_delegate_owner_wallet")
-    signer = signer.replace("0x", "")  # trim 0x from pubkey
+    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
+    env_data = dotenv.dotenv_values(env)
+
+    # Get signers from env
+    signers = env_data.get("audius_genesis_signers")
 
     # Compute extra data
-    extra_data = f"{EXTRA_VANITY}{signer}{EXTRA_SEAL}"
-    print("Genesis EXTRA_DATA:")
-    print(extra_data)
+    extra_data = f"{EXTRA_VANITY}{signers}{EXTRA_SEAL}"
 
     # Update chainspec
-    spec = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
-    spec_data = json.load(open(spec))
+    spec_input = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec_template.json"
+    spec_output = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
+    spec_data = json.load(open(spec_input))
     spec_data["genesis"]["extraData"] = extra_data
-    with open(spec, "w") as f:
+    with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print("spec.json updated")
+
+    # Get peers from env
+    peers_str = env_data.get("audius_static_nodes")
+    peers = peers_str.split(",")
+
+    static_peers_file = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
+    with open(static_peers_file, "w") as f:
+        json.dump(peers, f, ensure_ascii=False, indent=2)
+        f.write("\n")
 
 
 if __name__ == "__main__":

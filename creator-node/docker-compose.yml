@@ -32,7 +32,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-046808de17bc10aba88e5f1eb04e10c92f2afe45}
+    image: audius/creator-node:${TAG:-6e23e73780a6033d00f54e1dfe6e29a1732716d9}
     depends_on:
       db:
         condition: service_healthy
@@ -51,6 +51,13 @@ services:
       - audiusContentInfraSetup=audius-docker-compose
     networks:
       - creator-node-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   autoheal:
     image: willfarrell/autoheal
@@ -60,6 +67,13 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
 networks:
   creator-node-network:
