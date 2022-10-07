@@ -53,7 +53,7 @@ services:
     restart: always
 
   exporter_elasticsearch:
-    image: audius/exporter-elasticsearch:v1.3.0
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.3.0
     restart: always
 
   exporter_redis:

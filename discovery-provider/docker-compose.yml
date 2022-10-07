@@ -87,6 +87,7 @@ services:
       file: ../common-services.yml
       service: exporter_elasticsearch
     container_name: exporter_elasticsearch
+    entrypoint: ["/bin/sh", "-c", '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"']
     env_file:
       - ${NETWORK:-prod}.env
       - override.env
