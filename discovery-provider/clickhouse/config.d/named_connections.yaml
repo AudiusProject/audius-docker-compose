@@ -1,0 +1,7 @@
+named_collections:
+  mypg:
+    host: postgres
+    password: postgres
+    port: 5432
+    user: postgres
+    database: audius_discovery

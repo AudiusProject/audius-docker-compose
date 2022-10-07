@@ -98,6 +98,18 @@ services:
     networks:
       - discovery-provider-network
 
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+    networks:
+      - discovery-provider-network
+    volumes:
+      - clickhouse_db:/var/lib/clickhouse
+      - ./clickhouse/sql:/sql
+      - ./clickhouse/config.d:/etc/clickhouse-server/config.d
+
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-d48d44978adf2d7aabb61b35c6e638137f4d779a}
@@ -279,3 +291,4 @@ networks:
 
 volumes:
   esdata:
+  clickhouse_db:
