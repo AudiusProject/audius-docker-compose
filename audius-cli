@@ -212,7 +212,7 @@ def launch(ctx, service, seed, yes):
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "down",
-                "backend",
+                "indexer",
             ],
         )
 
