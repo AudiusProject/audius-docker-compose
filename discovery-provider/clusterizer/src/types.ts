@@ -12,11 +12,10 @@ export type ServiceProvider = {
 export type CurrentServerInfo = {
   ip: string
   nkey: string
+  publicKey: Uint8Array
 }
 
-export type DiscoveryPeer = {
-  ip: string
-  nkey: string
+export type DiscoveryPeer = CurrentServerInfo & {
   wallet: string
   host: string
   isSelf: boolean

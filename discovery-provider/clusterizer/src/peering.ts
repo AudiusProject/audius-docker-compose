@@ -4,11 +4,12 @@ import { fetch, request } from 'undici'
 import { contentType, getConfig } from './config'
 import { CurrentServerInfo, DiscoveryPeer, ServiceProvider } from './types'
 
-const { codec, wallet, nkey } = getConfig()
+const { codec, wallet, nkey, publicKey } = getConfig()
 
 export async function getCurrentServerInfo() {
   const ip = await getPublicIpAddress()
   const ourInfo: CurrentServerInfo = {
+    publicKey,
     ip: ip,
     nkey: nkey.getPublicKey(),
   }
@@ -72,7 +73,7 @@ async function getServiceProviders(
     'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet'
 
   const stagingEndpoint =
-    'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-ropsten'
+    'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli'
 
   const gql = `
     query ServiceProviders($type: String) {
@@ -101,6 +102,7 @@ async function getServiceProviders(
   return sps
 }
 
+// hardcoded values used in docker-compose test-cluster.yml env
 const testDiscoveryList: ServiceProvider[] = [
   {
     endpoint: 'http://clusterizer1:8925',

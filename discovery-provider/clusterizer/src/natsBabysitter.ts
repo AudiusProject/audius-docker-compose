@@ -5,6 +5,7 @@ import { writeNatsConfig } from './natsClusterConfig'
 import { startJetstreamListener } from './natsListener'
 import { exec, sleep } from './junk'
 import { DiscoveryPeer } from './types'
+import { printNethermindConfigForPeers } from './nethermind'
 
 let natsPromise: Promise<NatsConnection> | undefined
 
@@ -20,6 +21,11 @@ export async function startNatsBabysitter() {
     // that should be "add only" type of thing
     const changed = await writeNatsConfig(peers)
 
+    // TODO: this is just here for now for testing...
+    // since we don't keep a persistent list of peers
+    // we use the local `peers` here
+    printNethermindConfigForPeers(peers)
+
     // if no changes, linear backoff up to x minutes
     if (!changed) {
       // ensure nats client
@@ -27,7 +33,6 @@ export async function startNatsBabysitter() {
       await dialNats(peers)
 
       noDiffCounter++
-      console.log('nodiff', noDiffCounter)
       const sleepMinutes = Math.min(noDiffCounter, 3)
       await sleep(1000 * 60 * sleepMinutes)
       continue
