@@ -11,6 +11,13 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   base-cache:
     image: redis:5.0.5
@@ -19,6 +26,15 @@ services:
       test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+
 
   logspout:
     image: audius/logspout:v3.2.14-1
@@ -26,3 +42,12 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+
