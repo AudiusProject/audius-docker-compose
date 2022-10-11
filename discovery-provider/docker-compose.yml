@@ -89,7 +89,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-c54dc44721ad3c8352f0cec56b94002cffe9512a}
+    image: audius/discovery-provider:${TAG:-0a567453807381d859dd6e8df48c830d20b322d6}
     restart: always
     depends_on:
       db:
