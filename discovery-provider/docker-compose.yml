@@ -96,7 +96,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
+    image: audius/discovery-provider:${TAG:-28a19fb9aa5f99d286831cbcb84b1f25fc6da19c}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -115,13 +115,46 @@ services:
       - override.env
     environment:
       - audius_discprov_infra_setup=audius-docker-compose
+      - audius_no_workers=true
+      - audius_db_run_migrations=false
+    networks:
+      - discovery-provider-network
+
+  indexer:
+    container_name: indexer
+    image: audius/discovery-provider:${TAG:-28a19fb9aa5f99d286831cbcb84b1f25fc6da19c}
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    labels:
+      autoheal: "true"
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    environment:
+      - audius_discprov_infra_setup=audius-docker-compose
+      - audius_no_server=true
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pgrep alembic || curl -f http://server:5000/health_check || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     networks:
       - discovery-provider-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   seed:
-    image: audius/discovery-provider:${TAG:-5eb124acf0f20021a9cda40711b7f5268aff0d07}
+    image: audius/discovery-provider:${TAG:-28a19fb9aa5f99d286831cbcb84b1f25fc6da19c}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
