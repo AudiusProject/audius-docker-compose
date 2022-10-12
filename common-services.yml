@@ -60,6 +60,7 @@ services:
     image: audius/exporter-redis:v1.44.0-alpine
     restart: always
 
+  # https://github.com/prometheus/node_exporter/blob/98a40bd712eaeb1fd3ee60ca37e4091c503d8e1c/README.md#docker
   exporter_linux:
     image: quay.io/prometheus/node-exporter:v1.4.0
     container_name: exporter_linux
