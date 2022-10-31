@@ -13,6 +13,27 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    networks:
+      - discovery-provider-network
+  exporter_postgres_read_replica:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres_read_replica
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    command: [ "--read-replica" ]
+    networks:
+      - discovery-provider-network
 
   cache:
     container_name: redis
@@ -22,12 +43,13 @@ services:
       service: base-cache
     networks:
       - discovery-provider-network
-
-  logspout:
+  exporter_redis:
     extends:
       file: ../common-services.yml
-      service: logspout
+      service: exporter_redis
+    container_name: exporter_redis
     env_file:
+      - ${NETWORK:-prod}.env
       - override.env
     networks:
       - discovery-provider-network
@@ -60,10 +82,21 @@ services:
         ]
       interval: 10s
       timeout: 5s
+  exporter_elasticsearch:
+    extends:
+      file: ../common-services.yml
+      service: exporter_elasticsearch
+    container_name: exporter_elasticsearch
+    entrypoint: ["/bin/sh", "-c", '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"']
+    env_file:
+      - ${NETWORK:-prod}.env
+      - override.env
+    networks:
+      - discovery-provider-network
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-0a567453807381d859dd6e8df48c830d20b322d6}
+    image: audius/discovery-provider:${TAG:-fd720481af5abdb8a5fcc32cfb7fa6ca8bf82186}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -89,7 +122,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-0a567453807381d859dd6e8df48c830d20b322d6}
+    image: audius/discovery-provider:${TAG:-fd720481af5abdb8a5fcc32cfb7fa6ca8bf82186}
     restart: always
     depends_on:
       db:
@@ -117,9 +150,11 @@ services:
       retries: 12
     networks:
       - discovery-provider-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   seed:
-    image: audius/discovery-provider:${TAG:-0a567453807381d859dd6e8df48c830d20b322d6}
+    image: audius/discovery-provider:${TAG:-fd720481af5abdb8a5fcc32cfb7fa6ca8bf82186}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -142,6 +177,21 @@ services:
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
+
+  logspout:
+    extends:
+      file: ../common-services.yml
+      service: logspout
+    env_file:
+      - override.env
+    networks:
+      - discovery-provider-network
+
+  exporter_linux:
+    extends:
+      file: ../common-services.yml
+      service: exporter_linux
+    container_name: exporter_linux
 
   chain:
     image: nethermind/nethermind:1.14.2
