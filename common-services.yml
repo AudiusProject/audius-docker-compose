@@ -1,13 +1,14 @@
 services:
   base-db:
     image: postgres:11.4
+    restart: always
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 10s
       timeout: 5s
     ports:
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -21,9 +22,10 @@ services:
 
   base-cache:
     image: redis:5.0.5
+    restart: always
     command: redis-server --save ""
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging:
