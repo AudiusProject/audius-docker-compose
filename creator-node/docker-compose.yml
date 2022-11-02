@@ -26,7 +26,6 @@ services:
 
   cache:
     container_name: redis
-    restart: always
     extends:
       file: ../common-services.yml
       service: base-cache
