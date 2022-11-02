@@ -22,7 +22,6 @@ services:
 
   base-cache:
     image: redis:5.0.5
-    restart: always
     command: redis-server --save ""
     healthcheck:
       test: ['CMD', 'redis-cli', 'PING']
