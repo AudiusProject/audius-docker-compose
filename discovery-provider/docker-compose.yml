@@ -123,6 +123,8 @@ services:
       - audius_db_run_migrations=false
     networks:
       - discovery-provider-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   indexer:
     container_name: indexer
@@ -154,8 +156,6 @@ services:
       retries: 12
     networks:
       - discovery-provider-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   seed:
     image: audius/discovery-provider:${TAG:-e6f08c94bdd10040abb65ea91272aa854ba634f7}
