@@ -50,6 +50,14 @@ def get_network(ctx, service):
     )
 
 
+def signal_auto_upgrade_enabled(ctx, comment):
+    # use system call to be sure cron actually exists
+    auto_upgrade_enabled = 'true' if os.system(f'crontab -l | grep "{comment}" >/dev/null 2>&1') == 0 else 'false'
+    # give application awareness of host level auto upgrade cron job
+    ctx.invoke(set_config, **{ 'service': 'creator-node', 'key': 'autoUpgradeEnabled', 'value': auto_upgrade_enabled })
+    ctx.invoke(set_config, **{ 'service': 'discovery-provider', 'key': 'audius_auto_upgrade_enabled', 'value': auto_upgrade_enabled })
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -588,7 +596,8 @@ def upgrade(ctx, branch):
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
-        for job in cron.find_comment("audius-cli auto-upgrade"):
+        comment = "audius-cli auto-upgrade"
+        for job in cron.find_comment(comment):
             cron.remove(job)
 
         if not remove:
@@ -598,10 +607,11 @@ def auto_upgrade(ctx, remove, cron_expression):
                     f"date >> {log_file};"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
-                "audius-cli auto-upgrade",
+                comment,
             )
 
             job.setall(cron_expression)
+    signal_auto_upgrade_enabled(ctx, comment)
 
 
 @cli.command()
