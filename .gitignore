@@ -1,4 +1,5 @@
 override.env
+audius-cli.log
 auto-upgrade.log
 
 # .env files for system (tag, env management)

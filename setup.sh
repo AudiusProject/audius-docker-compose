@@ -83,6 +83,7 @@ if [[ "$1" != "" ]]; then
 	echo
 	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
 		audius-cli auto-upgrade
+		audius-cli set-config $1 autoUpgradeEnabled "true"
 	fi
 
 	audius-cli set-config --required "$1"
