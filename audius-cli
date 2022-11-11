@@ -38,6 +38,11 @@ SERVICES = ("creator-node", "discovery-provider", "identity-service")
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
+# https://linear.app/audius/issue/INF-315/refactor-audius-cli
+# until a refactor occurs for all the calls to `compose up`
+# need to reference this string in multiple places and ensure it dosent drift
+AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
+
 service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
@@ -172,6 +177,7 @@ def health_check(ctx, service):
 @click.pass_context
 def launch(ctx, service, seed, yes):
     """Launch the service"""
+    signal_auto_upgrade_enabled(ctx, AUTO_UPGRADE_CRON_COMMENT)
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
@@ -299,6 +305,7 @@ def logs(ctx, service, containers):
 @click.pass_context
 def restart(ctx, service, containers):
     """Restart a service/container"""
+    signal_auto_upgrade_enabled(ctx, AUTO_UPGRADE_CRON_COMMENT)
     services = [service]
     if service is None:
         services = SERVICES
@@ -538,6 +545,7 @@ def pull(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
+    signal_auto_upgrade_enabled(ctx, AUTO_UPGRADE_CRON_COMMENT)
     ctx.forward(pull)
 
     for service in SERVICES:
@@ -587,7 +595,6 @@ def upgrade(ctx, branch):
         ],
     )
 
-
 @cli.command()
 @click.option("--remove", is_flag=True)
 # random so nodes in the network stagger upgrades
@@ -596,8 +603,7 @@ def upgrade(ctx, branch):
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
-        comment = "audius-cli auto-upgrade"
-        for job in cron.find_comment(comment):
+        for job in cron.find_comment(AUTO_UPGRADE_CRON_COMMENT):
             cron.remove(job)
 
         if not remove:
@@ -607,11 +613,11 @@ def auto_upgrade(ctx, remove, cron_expression):
                     f"date >> {log_file};"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
-                comment,
+                AUTO_UPGRADE_CRON_COMMENT,
             )
 
             job.setall(cron_expression)
-    signal_auto_upgrade_enabled(ctx, comment)
+    signal_auto_upgrade_enabled(ctx, AUTO_UPGRADE_CRON_COMMENT)
 
 
 @cli.command()
