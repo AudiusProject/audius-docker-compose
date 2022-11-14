@@ -1,7 +1,12 @@
 #!/usr/bin/bash
 set -e
 
-git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
+if [ ! -d ~/audius-docker-compose ]
+then
+    # if not called via
+    # `bash <(curl https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/install.sh)`
+    git clone https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
+fi
 
 while read -p "Service to install (creator-node, discovery-provider): "; do
     if [[ $REPLY =~ ^(creator-node|discovery-provider)$ ]]; then
