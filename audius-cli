@@ -38,7 +38,6 @@ SERVICES = ("creator-node", "discovery-provider", "identity-service")
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
-# https://linear.app/audius/issue/INF-315/refactor-audius-cli
 # until a refactor occurs for all the calls to `compose up`
 # need to reference this string in multiple places and ensure it dosent drift
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
@@ -55,12 +54,16 @@ def get_network(ctx, service):
     )
 
 
-def signal_auto_upgrade_enabled(ctx, comment):
-    # use system call to be sure cron actually exists
-    auto_upgrade_enabled = 'true' if os.system(f'crontab -l | grep "{comment}" >/dev/null 2>&1') == 0 else 'false'
+def signal_auto_upgrade_enabled(ctx):
+    def _findCron():
+        with crontab.CronTab(user=True) as cron:
+            for _ in cron.find_comment(AUTO_UPGRADE_CRON_COMMENT):
+                # bools are expected as strings for config parser
+                return 'true'
+            return 'false'
     # give application awareness of host level auto upgrade cron job
-    ctx.invoke(set_config, **{ 'service': 'creator-node', 'key': 'autoUpgradeEnabled', 'value': auto_upgrade_enabled })
-    ctx.invoke(set_config, **{ 'service': 'discovery-provider', 'key': 'audius_auto_upgrade_enabled', 'value': auto_upgrade_enabled })
+    ctx.invoke(set_config, **{ 'service': 'creator-node', 'key': 'autoUpgradeEnabled', 'value':  _findCron() })
+    ctx.invoke(set_config, **{ 'service': 'discovery-provider', 'key': 'audius_auto_upgrade_enabled', 'value':  _findCron() })
 
 
 @click.group()
@@ -617,7 +620,7 @@ def auto_upgrade(ctx, remove, cron_expression):
             )
 
             job.setall(cron_expression)
-    signal_auto_upgrade_enabled(ctx, AUTO_UPGRADE_CRON_COMMENT)
+    signal_auto_upgrade_enabled(ctx)
 
 
 @cli.command()
