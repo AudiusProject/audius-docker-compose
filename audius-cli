@@ -16,7 +16,7 @@ import crontab
 import dotenv
 import psutil
 
-GB = 1024 ** 3
+GB = 1024**3
 
 RECOMMENDED_CPU_COUNT = 8
 RECOMMENDED_MEMORY = 16 * GB
@@ -55,15 +55,26 @@ def get_network(ctx, service):
 
 
 def signal_auto_upgrade_enabled(ctx):
-    def _findCron():
-        with crontab.CronTab(user=True) as cron:
-            for _ in cron.find_comment(AUTO_UPGRADE_CRON_COMMENT):
-                # bools are expected as strings for config parser
-                return 'true'
-            return 'false'
+    with crontab.CronTab(user=True) as cron:
+        auto_upgrade = (
+            "true" if any(cron.find_comment(AUTO_UPGRADE_CRON_COMMENT)) else "false"
+        )
+
     # give application awareness of host level auto upgrade cron job
-    ctx.invoke(set_config, **{ 'service': 'creator-node', 'key': 'autoUpgradeEnabled', 'value':  _findCron() })
-    ctx.invoke(set_config, **{ 'service': 'discovery-provider', 'key': 'audius_auto_upgrade_enabled', 'value':  _findCron() })
+
+    ctx.invoke(
+        set_config,
+        service="creator-node",
+        key="autoUpgradeEnabled",
+        value=auto_upgrade,
+    )
+
+    ctx.invoke(
+        set_config,
+        service="discovery-provider",
+        key="audius_auto_upgrade_enabled",
+        value=auto_upgrade,
+    )
 
 
 @click.group()
@@ -598,6 +609,7 @@ def upgrade(ctx, branch):
         ],
     )
 
+
 @cli.command()
 @click.option("--remove", is_flag=True)
 # random so nodes in the network stagger upgrades
@@ -630,7 +642,11 @@ def update_chainspec(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables.
     """
-    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{get_network(ctx, 'discovery-provider')}.env"
+    env = (
+        ctx.obj["manifests_path"]
+        / "discovery-provider"
+        / f"{get_network(ctx, 'discovery-provider')}.env"
+    )
     env_data = dotenv.dotenv_values(env)
 
     # Get signers from env
@@ -640,8 +656,15 @@ def update_chainspec(ctx):
     extra_data = f"{EXTRA_VANITY}{signers}{EXTRA_SEAL}"
 
     # Update chainspec
-    spec_input = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec_template.json"
-    spec_output = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
+    spec_input = (
+        ctx.obj["manifests_path"]
+        / "discovery-provider"
+        / "chain"
+        / "spec_template.json"
+    )
+    spec_output = (
+        ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
+    )
     spec_data = json.load(open(spec_input))
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
@@ -652,7 +675,9 @@ def update_chainspec(ctx):
     peers_str = env_data.get("audius_static_nodes")
     peers = peers_str.split(",")
 
-    static_peers_file = ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
+    static_peers_file = (
+        ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
+    )
     with open(static_peers_file, "w") as f:
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
