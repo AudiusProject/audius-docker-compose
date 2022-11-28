@@ -197,6 +197,18 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
+  comms:
+    image: audius/wip-comms:latest
+    container_name: comms
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    ports:
+      - "6222:6222"
+      - "4222:4222"
+    env_file:
+      - override.env
+
   chain:
     image: nethermind/nethermind:1.14.2
     command: --config config
