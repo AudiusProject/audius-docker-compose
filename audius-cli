@@ -54,11 +54,17 @@ def get_network(ctx, service):
     )
 
 
-def signal_auto_upgrade_enabled(ctx):
+def set_automatic_env(ctx):
     with crontab.CronTab(user=True) as cron:
         auto_upgrade = (
             "true" if any(cron.find_comment(AUTO_UPGRADE_CRON_COMMENT)) else "false"
         )
+
+    git_hash = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        cwd=ctx.obj["manifests_path"],
+    ).stdout.decode()
 
     # give application awareness of host level auto upgrade cron job
 
@@ -74,6 +80,20 @@ def signal_auto_upgrade_enabled(ctx):
         service="discovery-provider",
         key="audius_auto_upgrade_enabled",
         value=auto_upgrade,
+    )
+
+    ctx.invoke(
+        set_config,
+        service="discovery-provider",
+        key="AUDIUS_DOCKER_COMPOSE_GIT_SHA",
+        value=git_hash,
+    )
+
+    ctx.invoke(
+        set_config,
+        service="creator-node",
+        key="AUDIUS_DOCKER_COMPOSE_GIT_SHA",
+        value=git_hash,
     )
 
 
@@ -191,7 +211,8 @@ def health_check(ctx, service):
 @click.pass_context
 def launch(ctx, service, seed, yes):
     """Launch the service"""
-    signal_auto_upgrade_enabled(ctx)
+    set_automatic_env(ctx)
+
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
@@ -319,7 +340,8 @@ def logs(ctx, service, containers):
 @click.pass_context
 def restart(ctx, service, containers):
     """Restart a service/container"""
-    signal_auto_upgrade_enabled(ctx)
+    set_automatic_env(ctx)
+
     services = [service]
     if service is None:
         services = SERVICES
@@ -559,7 +581,8 @@ def pull(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
-    signal_auto_upgrade_enabled(ctx)
+    set_automatic_env(ctx)
+
     ctx.forward(pull)
 
     for service in SERVICES:
@@ -632,7 +655,6 @@ def auto_upgrade(ctx, remove, cron_expression):
             )
 
             job.setall(cron_expression)
-    signal_auto_upgrade_enabled(ctx)
 
 
 @cli.command()
