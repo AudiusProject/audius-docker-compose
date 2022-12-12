@@ -141,7 +141,7 @@ async function main() {
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
     .option('--web3-provider <web3Provider>', 'Web3 provider to use', defaultWeb3Provider)
-    .option('--gas <gas>', 'ammount of gas to use', 1000000)
+    .option('--gas <gas>', 'ammount of gas to use', 4000000)
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .action(claimRewards)
 
