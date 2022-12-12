@@ -28,7 +28,7 @@ services:
     container_name: redis
     extends:
       file: ../common-services.yml
-      service: base-cache
+      service: base-cache-v6
     networks:
       - creator-node-network
   exporter_redis:

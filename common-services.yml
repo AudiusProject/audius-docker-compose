@@ -35,6 +35,22 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  # Same as base-cache but using redis v6.2.7 instead of v5.0.5. Remove base-cache after upgrading identity and discovery to base-cache-v6
+  base-cache-v6:
+    image: redis:6.2.7
+    command: redis-server --save ""
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'PING']
+      interval: 10s
+      timeout: 5s
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   logspout:
     image: audius/logspout:v3.2.14-1
     container_name: logspout
