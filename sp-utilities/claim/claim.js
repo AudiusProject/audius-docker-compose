@@ -75,6 +75,12 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
     process.exit(1)
   }
 
+  if (gas === undefined) {
+    console.log('Estimating Gas')
+    gas = await claimsManagerContract.methods.initiateRound().estimateGas()
+    console.log('Calculated Gas:', gas)
+  }
+
   console.log('Initializing Round')
   await claimsManagerContract.methods.initiateRound().send({
     from: accountAddress,
@@ -82,6 +88,7 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
     gasPrice: gasPrice ? web3.utils.toWei(gasPrice, 'gwei') : (await getGasPrice()),
   })
   console.log('Successfully initiated Round')
+
   if (transferRewardsToSolana) {
     const { transferCommunityRewardsToSolana } = require('@audius/libs/scripts/communityRewards/transferCommunityRewardsToSolana')
     console.log('Running rewards manager transfer')
@@ -111,6 +118,12 @@ async function claimRewards(
   const claimPending = await claimsManagerContract.methods.claimPending(spOwnerWallet).call()
 
   if (claimPending) {
+    if (gas === undefined) {
+      console.log('Estimating Gas')
+      gas = await await delegateManagerContract.methods.claimRewards(spOwnerWallet).estimateGas()
+      console.log('Calculated Gas:', gas)
+    }
+
     console.log('Claiming Rewards')
     await delegateManagerContract.methods.claimRewards(spOwnerWallet).send({
       from: accountAddress,
@@ -141,7 +154,7 @@ async function main() {
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
     .option('--web3-provider <web3Provider>', 'Web3 provider to use', defaultWeb3Provider)
-    .option('--gas <gas>', 'ammount of gas to use', 4000000)
+    .option('--gas <gas>', 'ammount of gas to use', 1000000)
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .action(claimRewards)
 
