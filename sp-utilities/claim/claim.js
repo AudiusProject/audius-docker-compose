@@ -120,7 +120,7 @@ async function claimRewards(
   if (claimPending) {
     if (gas === undefined) {
       console.log('Estimating Gas')
-      gas = await await delegateManagerContract.methods.claimRewards(spOwnerWallet).estimateGas()
+      gas = await delegateManagerContract.methods.claimRewards(spOwnerWallet).estimateGas()
       console.log('Calculated Gas:', gas)
     }
 
@@ -143,7 +143,7 @@ async function main() {
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
     .option('--web3-provider <web3Provider>', 'Web3 provider to use', defaultWeb3Provider)
-    .option('--gas <gas>', 'amount of gas to use', 100000)
+    .option('--gas <gas>', 'amount of gas to use')
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .option('--transfer-rewards-to-solana', 'whether to also transfer rewards to solana rewards manager on success. Requires env vars to be set.', false)
     .action(initiateRound)
@@ -154,7 +154,7 @@ async function main() {
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
     .option('--web3-provider <web3Provider>', 'Web3 provider to use', defaultWeb3Provider)
-    .option('--gas <gas>', 'ammount of gas to use', 1000000)
+    .option('--gas <gas>', 'ammount of gas to use')
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .action(claimRewards)
 
