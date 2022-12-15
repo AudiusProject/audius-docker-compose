@@ -9,3 +9,6 @@ creator-node/.env
 # discovery blockchain
 discovery-provider/chain/spec.json
 discovery-provider/chain/static-nodes.json
+
+# sp-utilities
+sp-utilities/node_modules/*
