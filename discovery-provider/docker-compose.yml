@@ -198,7 +198,8 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/wip-comms:latest
+    # image: audius/comms:latest
+    image: audius/comms:${TAG:-5a67bce9de347813c0170e209c690dc283d1c32f}
     container_name: comms
     restart: unless-stopped
     networks:
