@@ -217,7 +217,7 @@ services:
     ports:
       - "30300:30300"
       - "30300:30300/udp"
-      - "8545:8545"
+      - "127.0.0.1:8545:8545"
     networks:
       - discovery-provider-network
     profiles:
