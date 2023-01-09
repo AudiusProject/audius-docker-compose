@@ -100,7 +100,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-c5dc13145aebfb6980e47eed021fe8bfe3a285ec}
+    image: audius/discovery-provider:${TAG:-c431f3a9fbf52692d56e1043d49796cb6e68162c}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -128,7 +128,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-c5dc13145aebfb6980e47eed021fe8bfe3a285ec}
+    image: audius/discovery-provider:${TAG:-c431f3a9fbf52692d56e1043d49796cb6e68162c}
     restart: always
     depends_on:
       db:
@@ -158,7 +158,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-c5dc13145aebfb6980e47eed021fe8bfe3a285ec}
+    image: audius/discovery-provider:${TAG:-c431f3a9fbf52692d56e1043d49796cb6e68162c}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
