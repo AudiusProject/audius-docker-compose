@@ -209,6 +209,8 @@ services:
       - "4222:4222"
     env_file:
       - override.env
+    volumes:
+      - /var/k8s/nats:/tmp/nats
 
   chain:
     image: nethermind/nethermind:1.14.2
