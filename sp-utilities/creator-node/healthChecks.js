@@ -1,14 +1,8 @@
 const axios = require('axios')
-const Web3 = require('web3')
 const FormData = require('form-data')
-
-const crypto = require('crypto')
 const assert = require('assert')
 
-const { promisify } = require('util')
 const { generateTimestampAndSignatureForSPVerification } = require('./apiSigning')
-
-const web3 = new Web3()
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
@@ -199,7 +193,8 @@ async function healthCheckFileUpload () {
       responseType: 'json',
       data: sampleTrack,
       maxContentLength: Infinity,
-      maxBodyLength: Infinity
+      maxBodyLength: Infinity,
+      timeout: 30_000 // 30sec
     }
     let transcodeResp = await axios(requestConfig)
     const uuid = transcodeResp.data.data.uuid
@@ -305,9 +300,9 @@ async function run () {
     await healthCheck()
     await healthCheckDB()
     await healthCheckDisk()
+    await healthCheckFileUpload()
     await healthCheckDurationHeartbeat()
     await healthCheckDuration()
-    await healthCheckFileUpload()
     console.log("All checks passed!")
     process.exit(0)
   } catch (e) {
