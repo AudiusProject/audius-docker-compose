@@ -209,8 +209,10 @@ services:
       - "4222:4222"
     env_file:
       - override.env
+    environment:
+      - NATS_STORE_DIR=/nats
     volumes:
-      - /var/k8s/nats:/tmp/nats
+      - /var/k8s/nats:/nats
 
   chain:
     image: nethermind/nethermind:1.14.2
