@@ -217,7 +217,6 @@ def launch(ctx, service, seed, yes):
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
-    network = get_network(ctx, service)
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total
@@ -277,21 +276,8 @@ def launch(ctx, service, seed, yes):
             ],
         )
 
-    if network == "stage" and service == "discovery-provider":
-        ctx.invoke(update_chainspec)
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--env-file",
-                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "up",
-                "-d",
-                "chain",
-            ],
-        )
+    if service == "discovery-provider":
+        ctx.invoke(launch_chain)
 
     subprocess.run(
         [
@@ -659,10 +645,10 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def update_chainspec(ctx):
+def launch_chain(ctx):
     """
     Prepares the discovery chainspec and static nodes, pulling from
-    relevant environment variables.
+    relevant environment variables. Launches or resets chain acoordingly.
     """
     env = (
         ctx.obj["manifests_path"]
@@ -704,6 +690,30 @@ def update_chainspec(ctx):
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
+    # Reset chain
+    reset_chain = env_data.get("audius_reset_chain", "") == "true"
+    if reset_chain:
+        subprocess.run(
+            [
+                "docker",
+                "rm",
+                "--force",
+                "--volumes",  # remove clique db and keystore
+                "chain",
+            ],
+        )
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "up",
+            "-d",
+            "--no-recreate",  # only create on initial up or reset
+            "chain",
+        ],
+    )
 
 if __name__ == "__main__":
     cli(obj={})
