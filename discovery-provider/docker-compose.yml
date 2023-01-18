@@ -7,7 +7,7 @@ services:
       POSTGRES_DB: audius_discovery
     extends:
       file: ../common-services.yml
-      service: base-db
+      service: base-postgres
     volumes:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
@@ -39,7 +39,7 @@ services:
     restart: always
     extends:
       file: ../common-services.yml
-      service: base-cache
+      service: base-redis
     networks:
       - discovery-provider-network
   exporter_redis:
