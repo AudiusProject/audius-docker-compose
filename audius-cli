@@ -691,14 +691,15 @@ def launch_chain(ctx):
         f.write("\n")
 
     # Reset chain
-    reset_chain = env_data.get("audius_reset_chain", "") == "true"
-    if reset_chain:
+    reset_chain = env_data.get("audius_reset_chain", "")
+    if reset_chain == "true":
+        chain_directory_path = "/var/k8s/discovery-provider-chain"
+        subprocess.run(['sudo', 'rm', '-r', chain_directory_path])
         subprocess.run(
             [
                 "docker",
                 "rm",
                 "--force",
-                "--volumes",  # remove clique db and keystore
                 "chain",
             ],
         )
