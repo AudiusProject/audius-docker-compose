@@ -207,9 +207,10 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
+@click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, yes):
+def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -278,6 +279,8 @@ def launch(ctx, service, seed, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
+        if chain:
+            return
 
     subprocess.run(
         [
@@ -650,10 +653,12 @@ def launch_chain(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
     """
+    network = get_network(ctx, 'discovery-provider')
+    print("network: ", network)
     env = (
         ctx.obj["manifests_path"]
         / "discovery-provider"
-        / f"{get_network(ctx, 'discovery-provider')}.env"
+        / f"{network}.env"
     )
     env_data = dotenv.dotenv_values(env)
 
@@ -668,12 +673,34 @@ def launch_chain(ctx):
         ctx.obj["manifests_path"]
         / "discovery-provider"
         / "chain"
-        / "spec_template.json"
+        / f"{network}_spec_template.json"
     )
+    print("spec_input: ", spec_input)
+
     spec_output = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
     )
     spec_data = json.load(open(spec_input))
+    
+    prev_network_id = None
+    network_id = spec_data["params"]["networkID"]
+
+    if os.path.isfile(spec_output):
+        prev_spec_data = json.load(open(spec_output))
+        prev_network_id = prev_spec_data["params"]["networkID"]
+        if prev_network_id != network_id:
+            print("Resetting chain")
+            subprocess.run(
+                [
+                    "docker",
+                    "rm",
+                    "--force",
+                    "chain",
+                ],
+            )
+            clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
+            subprocess.run(['sudo', 'rm', '-rf', clique_db_path])
+
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
@@ -690,19 +717,6 @@ def launch_chain(ctx):
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    # Reset chain
-    reset_chain = env_data.get("audius_reset_chain", "")
-    if reset_chain == "true":
-        chain_directory_path = "/var/k8s/discovery-provider-chain"
-        subprocess.run(['sudo', 'rm', '-r', chain_directory_path])
-        subprocess.run(
-            [
-                "docker",
-                "rm",
-                "--force",
-                "chain",
-            ],
-        )
     subprocess.run(
         [
             "docker",
