@@ -198,9 +198,18 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/wip-comms:latest
-    # image: audius/comms:${TAG:-5a67bce9de347813c0170e209c690dc283d1c32f}
+    image: audius/wip-comms:a1
     container_name: comms
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - override.env
+
+  nats:
+    image: audius/wip-comms:a1
+    container_name: nats
+    command: /comms-linux nats
     restart: unless-stopped
     networks:
       - discovery-provider-network
