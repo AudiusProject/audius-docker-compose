@@ -200,6 +200,7 @@ services:
   comms:
     image: audius/wip-comms:a1
     container_name: comms
+    command: /comms-linux discovery
     restart: unless-stopped
     networks:
       - discovery-provider-network
