@@ -654,7 +654,6 @@ def launch_chain(ctx):
     relevant environment variables. Launches or resets chain acoordingly.
     """
     network = get_network(ctx, 'discovery-provider')
-    print("network: ", network)
     env = (
         ctx.obj["manifests_path"]
         / "discovery-provider"
@@ -675,7 +674,6 @@ def launch_chain(ctx):
         / "chain"
         / f"{network}_spec_template.json"
     )
-    print("spec_input: ", spec_input)
 
     spec_output = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
