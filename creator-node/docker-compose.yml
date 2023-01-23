@@ -110,6 +110,8 @@ services:
     image: audius/wip-comms:a1
     container_name: storage
     command: /comms-linux storage
+    depends_on:
+      - nats
     restart: unless-stopped
     networks:
       - creator-node-network

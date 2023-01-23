@@ -201,6 +201,8 @@ services:
     image: audius/wip-comms:a1
     container_name: comms
     command: /comms-linux discovery
+    depends_on:
+      - nats
     restart: unless-stopped
     networks:
       - discovery-provider-network
