@@ -674,7 +674,6 @@ def launch_chain(ctx):
         / "chain"
         / f"{network}_spec_template.json"
     )
-
     spec_output = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
     )
@@ -719,15 +718,15 @@ def launch_chain(ctx):
         [
             "docker",
             "compose",
+            "--env-file",
+            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
             "-d",
-            "--no-recreate",  # only create on initial up or reset
             "chain",
         ],
     )
-
 
 if __name__ == "__main__":
     cli(obj={})
