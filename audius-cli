@@ -600,6 +600,9 @@ def upgrade(ctx, branch):
                 ],
             )
 
+            if service == "discovery-provider":
+                ctx.invoke(launch_chain)
+
             subprocess.run(
                 [
                     "docker",
