@@ -599,7 +599,7 @@ def upgrade(ctx, branch):
                     "pull",
                 ],
             )
-
+            print("service: ", service)
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
@@ -656,6 +656,7 @@ def launch_chain(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
     """
+    print("launching chain")
     network = get_network(ctx, 'discovery-provider')
     env = (
         ctx.obj["manifests_path"]
