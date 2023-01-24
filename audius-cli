@@ -589,6 +589,7 @@ def upgrade(ctx, branch):
             capture_output=True,
         )
 
+
         # update if service is running
         print("proc.stdout: ", proc.stdout)
 
