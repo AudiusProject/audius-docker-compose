@@ -575,6 +575,7 @@ def upgrade(ctx, branch):
     ctx.forward(pull)
 
     for service in SERVICES:
+        print("service: ", service)
         proc = subprocess.run(
             [
                 "docker",
@@ -589,6 +590,8 @@ def upgrade(ctx, branch):
         )
 
         # update if service is running
+        print("proc.stdout: ", proc.stdout)
+
         if proc.stdout:
             subprocess.run(
                 [
@@ -599,7 +602,6 @@ def upgrade(ctx, branch):
                     "pull",
                 ],
             )
-            print("service: ", service)
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
