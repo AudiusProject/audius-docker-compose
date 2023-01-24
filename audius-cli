@@ -207,9 +207,10 @@ def health_check(ctx, service):
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
+@click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, yes):
+def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -217,7 +218,6 @@ def launch(ctx, service, seed, yes):
         ctx.invoke(check_config, service=service)
     except SystemExit:
         pass
-    network = get_network(ctx, service)
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total
@@ -277,21 +277,10 @@ def launch(ctx, service, seed, yes):
             ],
         )
 
-    if network == "stage" and service == "discovery-provider":
-        ctx.invoke(update_chainspec)
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--env-file",
-                ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "up",
-                "-d",
-                "chain",
-            ],
-        )
+    if service == "discovery-provider":
+        ctx.invoke(launch_chain)
+        if chain:
+            return
 
     subprocess.run(
         [
@@ -659,15 +648,16 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def update_chainspec(ctx):
+def launch_chain(ctx):
     """
     Prepares the discovery chainspec and static nodes, pulling from
-    relevant environment variables.
+    relevant environment variables. Launches or resets chain acoordingly.
     """
+    network = get_network(ctx, 'discovery-provider')
     env = (
         ctx.obj["manifests_path"]
         / "discovery-provider"
-        / f"{get_network(ctx, 'discovery-provider')}.env"
+        / f"{network}.env"
     )
     env_data = dotenv.dotenv_values(env)
 
@@ -682,12 +672,32 @@ def update_chainspec(ctx):
         ctx.obj["manifests_path"]
         / "discovery-provider"
         / "chain"
-        / "spec_template.json"
+        / f"{network}_spec_template.json"
     )
     spec_output = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
     )
     spec_data = json.load(open(spec_input))
+    
+    prev_network_id = None
+    network_id = spec_data["params"]["networkID"]
+
+    if os.path.isfile(spec_output):
+        prev_spec_data = json.load(open(spec_output))
+        prev_network_id = prev_spec_data["params"]["networkID"]
+        if prev_network_id != network_id:
+            print("Resetting chain")
+            subprocess.run(
+                [
+                    "docker",
+                    "rm",
+                    "--force",
+                    "chain",
+                ],
+            )
+            clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
+            subprocess.run(['sudo', 'rm', '-rf', clique_db_path])
+
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)
@@ -704,6 +714,19 @@ def update_chainspec(ctx):
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "up",
+            "-d",
+            "chain",
+        ],
+    )
 
 if __name__ == "__main__":
     cli(obj={})
