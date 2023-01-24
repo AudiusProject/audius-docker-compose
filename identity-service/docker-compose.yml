@@ -5,7 +5,7 @@ services:
     container_name: postgres
     extends:
       file: ../common-services.yml
-      service: base-db
+      service: base-postgres
     environment:
       POSTGRES_DB: audius_identity_service
     volumes:
@@ -30,7 +30,7 @@ services:
     container_name: redis
     extends:
       file: ../common-services.yml
-      service: base-cache
+      service: base-redis
     networks:
       - identity-service-network
   exporter_redis:

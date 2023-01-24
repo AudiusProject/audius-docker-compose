@@ -1,5 +1,5 @@
 services:
-  base-db:
+  base-postgres:
     image: postgres:11.4
     restart: always
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
@@ -20,9 +20,10 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  base-cache:
-    image: redis:5.0.5
-    command: redis-server --save ""
+  base-redis:
+    image: redis:7.0
+    command: redis-server --save 60 1
+    restart: always
     healthcheck:
       test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
@@ -34,6 +35,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    volumes:
+      - /var/redis_data:/data
 
   logspout:
     image: audius/logspout:v3.2.14-1

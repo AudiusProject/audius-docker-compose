@@ -7,7 +7,7 @@ services:
       POSTGRES_DB: audius_discovery
     extends:
       file: ../common-services.yml
-      service: base-db
+      service: base-postgres
     volumes:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
@@ -39,7 +39,7 @@ services:
     restart: always
     extends:
       file: ../common-services.yml
-      service: base-cache
+      service: base-redis
     networks:
       - discovery-provider-network
   exporter_redis:
@@ -196,6 +196,35 @@ services:
       file: ../common-services.yml
       service: exporter_linux
     container_name: exporter_linux
+
+  comms:
+    image: audius/wip-comms:a1
+    container_name: comms
+    command: /comms-linux discovery
+    depends_on:
+      - nats
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - override.env
+
+  nats:
+    image: audius/wip-comms:a1
+    container_name: nats
+    command: /comms-linux nats
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    ports:
+      - "6222:6222"
+      - "4222:4222"
+    env_file:
+      - override.env
+    environment:
+      - NATS_STORE_DIR=/nats
+    volumes:
+      - /var/k8s/nats:/nats
 
   chain:
     image: nethermind/nethermind:1.14.2

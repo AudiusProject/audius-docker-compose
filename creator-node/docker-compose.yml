@@ -5,7 +5,7 @@ services:
     container_name: postgres
     extends:
       file: ../common-services.yml
-      service: base-db
+      service: base-postgres
     environment:
       POSTGRES_DB: audius_creator_node
     volumes:
@@ -28,7 +28,7 @@ services:
     container_name: redis
     extends:
       file: ../common-services.yml
-      service: base-cache
+      service: base-redis
     networks:
       - creator-node-network
   exporter_redis:
@@ -105,6 +105,35 @@ services:
       file: ../common-services.yml
       service: exporter_linux
     container_name: exporter_linux
+  
+  storage:
+    image: audius/wip-comms:a1
+    container_name: storage
+    command: /comms-linux storage
+    depends_on:
+      - nats
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    env_file:
+      - override.env
+
+  nats:
+    image: audius/wip-comms:a1
+    container_name: nats
+    command: /comms-linux nats
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    ports:
+      - "6222:6222"
+      - "4222:4222"
+    env_file:
+      - override.env
+    environment:
+      - NATS_STORE_DIR=/nats
+    volumes:
+      - /var/k8s/nats:/nats
 
 networks:
   creator-node-network:
