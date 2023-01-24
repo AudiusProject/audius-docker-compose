@@ -107,7 +107,7 @@ services:
     container_name: exporter_linux
   
   storage:
-    image: audius/wip-comms:a1
+    image: audius/comms:a1
     container_name: storage
     command: /comms-linux storage
     depends_on:
@@ -119,7 +119,7 @@ services:
       - override.env
 
   nats:
-    image: audius/wip-comms:a1
+    image: audius/comms:a1
     container_name: nats
     command: /comms-linux nats
     restart: unless-stopped
