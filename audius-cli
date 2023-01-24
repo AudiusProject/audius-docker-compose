@@ -38,7 +38,7 @@ SERVICES = ("creator-node", "discovery-provider", "identity-service")
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
-# until a refactor occurs for all the calls to `compose up`
+# Until a refactor occurs for all the calls to `compose up`
 # need to reference this string in multiple places and ensure it dosent drift
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
