@@ -198,7 +198,7 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/comms:a1
+    image: audius/comms:${COMMS_TAG:-b6a344ff3ab68d64df02fce2db261a7181d3b182}
     container_name: comms
     command: /comms-linux discovery
     depends_on:
@@ -210,7 +210,7 @@ services:
       - override.env
 
   nats:
-    image: audius/comms:a1
+    image: audius/comms:${COMMS_TAG:-b6a344ff3ab68d64df02fce2db261a7181d3b182}
     container_name: nats
     command: /comms-linux nats
     restart: unless-stopped
