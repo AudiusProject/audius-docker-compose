@@ -208,6 +208,13 @@ services:
       - discovery-provider-network
     env_file:
       - override.env
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   nats:
     image: audius/comms:${COMMS_TAG:-b6a344ff3ab68d64df02fce2db261a7181d3b182}

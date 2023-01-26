@@ -141,6 +141,13 @@ services:
       - NATS_STORE_DIR=/nats
     volumes:
       - /var/k8s/nats:/nats
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
 networks:
   creator-node-network:
