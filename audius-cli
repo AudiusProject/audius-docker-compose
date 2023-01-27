@@ -54,6 +54,15 @@ def get_network(ctx, service):
     )
 
 
+def get_override_path(ctx, service):
+    """Returns path to override.env for the given service."""
+    return pathlib.Path(
+        dotenv.dotenv_values(ctx.obj["manifests_path"] / service / ".env").get(
+            "OVERRIDE_PATH", ctx.obj["manifests_path"] / service / "override.env"
+        )
+    )
+
+
 def set_automatic_env(ctx):
     with crontab.CronTab(user=True) as cron:
         auto_upgrade = (
@@ -119,7 +128,7 @@ def cli(ctx):
 def check_config(ctx, service):
     """Check the config for a service"""
     env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
-    override_env = ctx.obj["manifests_path"] / service / "override.env"
+    override_env = get_override_path(ctx, service)
 
     env_data = dotenv.dotenv_values(env)
     override_env_data = dotenv.dotenv_values(override_env)
@@ -414,7 +423,7 @@ def set_config(ctx, service, unset, required, key, value):
     env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
     env_data = dotenv.dotenv_values(env)
 
-    override_env = ctx.obj["manifests_path"] / service / "override.env"
+    override_env = get_override_path(ctx, service)
     override_env_data = dotenv.dotenv_values(override_env)
 
     if required:
@@ -477,7 +486,7 @@ def get_config(ctx, service):
     else:
         env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
         env_data = dotenv.dotenv_values(env)
-        override_env = ctx.obj["manifests_path"] / service / "override.env"
+        override_env = get_override_path(ctx, service)
         override_env_data = dotenv.dotenv_values(override_env)
         current_env_data = {**env_data, **override_env_data}
         for key, value in current_env_data.items():
@@ -523,6 +532,31 @@ def set_tag(ctx, unset, tag):
         else:
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, "TAG", tag)
+
+
+@cli.command()
+@click.option("--unset", is_flag=True)
+@click.argument("service", required=False)
+@click.argument("path", type=click.Path(), required=False)
+@click.pass_context
+def set_override_path(ctx, unset, service, path):
+    """Specify alternate location for override.env"""
+    if not unset:
+        if not service:
+            service = click.prompt(click.style("Service", bold=True))
+        if not path:
+            path = click.prompt(click.style("Path", bold=True))
+
+    env_file = ctx.obj["manifests_path"] / service / ".env"
+
+    if unset:
+        logging.info(
+            f"audius-cli set-override-path unset service={service!r} path={path!r}"
+        )
+        dotenv.unset_key(env_file, "OVERRIDE_PATH")
+    else:
+        logging.info(f"audius-cli set-override-path service={service!r} path={path!r}")
+        dotenv.set_key(env_file, "OVERRIDE_PATH", path)
 
 
 @cli.command()
@@ -656,12 +690,8 @@ def launch_chain(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
     """
-    network = get_network(ctx, 'discovery-provider')
-    env = (
-        ctx.obj["manifests_path"]
-        / "discovery-provider"
-        / f"{network}.env"
-    )
+    network = get_network(ctx, "discovery-provider")
+    env = ctx.obj["manifests_path"] / "discovery-provider" / f"{network}.env"
     env_data = dotenv.dotenv_values(env)
 
     # Get signers from env
@@ -681,7 +711,7 @@ def launch_chain(ctx):
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "spec.json"
     )
     spec_data = json.load(open(spec_input))
-    
+
     prev_network_id = None
     network_id = spec_data["params"]["networkID"]
 
@@ -699,7 +729,7 @@ def launch_chain(ctx):
                 ],
             )
             clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
-            subprocess.run(['sudo', 'rm', '-rf', clique_db_path])
+            subprocess.run(["sudo", "rm", "-rf", clique_db_path])
 
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
@@ -722,7 +752,7 @@ def launch_chain(ctx):
             "docker",
             "compose",
             "--env-file",
-            ctx.obj["manifests_path"] / "discovery-provider" / "override.env",
+            get_override_path(ctx, "discovery-provider"),
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
@@ -731,6 +761,7 @@ def launch_chain(ctx):
             "chain",
         ],
     )
+
 
 if __name__ == "__main__":
     cli(obj={})

@@ -19,7 +19,7 @@ services:
     container_name: exporter_postgres
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     command: [ "--creator-node" ]
     networks:
       - creator-node-network
@@ -38,7 +38,7 @@ services:
     container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     command: [ "--creator-node" ]
     networks:
       - creator-node-network
@@ -60,7 +60,7 @@ services:
       - "4000:4000"
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - audiusContentInfraSetup=audius-docker-compose
     networks:
@@ -96,7 +96,7 @@ services:
       file: ../common-services.yml
       service: logspout
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - creator-node-network
 
@@ -105,7 +105,7 @@ services:
       file: ../common-services.yml
       service: exporter_linux
     container_name: exporter_linux
-  
+
   storage:
     image: audius/comms:${COMMS_TAG:-b6a344ff3ab68d64df02fce2db261a7181d3b182}
     container_name: storage
@@ -116,7 +116,7 @@ services:
     networks:
       - creator-node-network
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     logging:
       options:
         max-size: 10m
@@ -136,7 +136,7 @@ services:
       - "6222:6222"
       - "4222:4222"
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - NATS_STORE_DIR=/nats
     volumes:
