@@ -536,7 +536,7 @@ def set_tag(ctx, unset, tag):
 
 @cli.command()
 @click.option("--unset", is_flag=True)
-@click.argument("service", required=False)
+@click.argument("service", required=True)
 @click.argument("path", type=click.Path(), required=False)
 @click.pass_context
 def set_override_path(ctx, unset, service, path):
