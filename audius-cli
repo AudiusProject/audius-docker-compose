@@ -296,10 +296,9 @@ def launch(ctx, service, seed, chain, yes):
     subprocess.run(
         [
             "docker",
-            "image",
+            "system",
             "prune",
-            "--all",
-            "--force",
+            "--all"
         ],
     )
 
@@ -617,10 +616,9 @@ def upgrade(ctx, branch):
     subprocess.run(
         [
             "docker",
-            "image",
+            "system",
             "prune",
-            "--all",
-            "--force",
+            "--all"
         ],
     )
 
