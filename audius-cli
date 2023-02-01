@@ -619,7 +619,8 @@ def upgrade(ctx, branch):
             "docker",
             "system",
             "prune",
-            "--all"
+            "--all",
+            "--force"
         ],
     )
 
