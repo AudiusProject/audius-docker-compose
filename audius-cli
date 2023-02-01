@@ -298,7 +298,8 @@ def launch(ctx, service, seed, chain, yes):
             "docker",
             "system",
             "prune",
-            "--all"
+            "--all",
+            "--force"
         ],
     )
 
@@ -618,7 +619,8 @@ def upgrade(ctx, branch):
             "docker",
             "system",
             "prune",
-            "--all"
+            "--all",
+            "--force"
         ],
     )
 
