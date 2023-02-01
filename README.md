@@ -38,6 +38,17 @@ This folder contains a set of scripts and utilities to manage services like:
 - Delist content scripts (for content node)
 - Automatic rewards claim script
 
+## Upgrading
+You can upgrade your service to the latest release by setting up autoupgrade:
+```
+audius-cli auto-upgrade
+```
+
+Or manually:
+```
+audius-cli upgrade
+```
+
 ## Logging
 Logging is enabled by default to stream logs to a logging service for ease of debugging. It's strongly recommended to keep logging enabled. However, if there's a reason to turn logging off, it can be disabled with:
  ```
