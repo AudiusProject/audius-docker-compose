@@ -298,7 +298,8 @@ def launch(ctx, service, seed, chain, yes):
             "docker",
             "system",
             "prune",
-            "--all"
+            "--all",
+            "--force"
         ],
     )
 
