@@ -19,7 +19,7 @@ services:
     container_name: exporter_postgres
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     command: [ "--identity-service" ]
     ports:
       - "127.0.0.1:9187:9187"
@@ -40,7 +40,7 @@ services:
     container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     command: [ "--identity-service" ]
     ports:
       - "127.0.0.1:9121:9121"
@@ -61,7 +61,7 @@ services:
       - "7000:7000"
     env_file:
       - ${NETWORK}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - identity-service-network
 
@@ -79,7 +79,7 @@ services:
       file: ../common-services.yml
       service: logspout
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - identity-service-network
 

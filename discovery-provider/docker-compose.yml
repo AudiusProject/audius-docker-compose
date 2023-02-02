@@ -19,7 +19,7 @@ services:
     container_name: exporter_postgres
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
   exporter_postgres_read_replica:
@@ -29,7 +29,7 @@ services:
     container_name: exporter_postgres_read_replica
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     command: [ "--read-replica" ]
     networks:
       - discovery-provider-network
@@ -49,7 +49,7 @@ services:
     container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -94,7 +94,7 @@ services:
       ]
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -116,7 +116,7 @@ services:
       - "5000:5000"
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - audius_discprov_infra_setup=audius-docker-compose
       - audius_no_workers=true
@@ -141,7 +141,7 @@ services:
       autoheal: "true"
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - audius_discprov_infra_setup=audius-docker-compose
       - audius_no_server=true
@@ -162,7 +162,7 @@ services:
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     volumes:
       - ./seed.sh:/usr/share/seed.sh
     depends_on:
@@ -187,7 +187,7 @@ services:
       file: ../common-services.yml
       service: logspout
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -207,7 +207,7 @@ services:
     networks:
       - discovery-provider-network
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     logging:
       options:
         max-size: 10m
@@ -227,7 +227,7 @@ services:
       - "6222:6222"
       - "4222:4222"
     env_file:
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - NATS_STORE_DIR=/nats
     volumes:
@@ -246,7 +246,7 @@ services:
     container_name: chain
     env_file:
       - ${NETWORK:-prod}.env
-      - override.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
     volumes:
