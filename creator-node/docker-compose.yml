@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-8077ddef49955f66fb8a82dfedb3bfc97bd2b595}
+    image: audius/creator-node:${TAG:-b1de448ed1bd2e7c64c33cac019ba8e265c17a21}
     restart: always
     depends_on:
       db:
