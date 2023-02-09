@@ -198,7 +198,7 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/comms:${COMMS_TAG:-d48d44978adf2d7aabb61b35c6e638137f4d779a}
+    image: audius/comms:${COMMS_TAG:-bc727a943f84d8b5de4c5c9894fecc0e579b629f}
     container_name: comms
     command: /comms-linux discovery
     depends_on:
@@ -217,7 +217,7 @@ services:
       driver: json-file
 
   nats:
-    image: audius/comms:${COMMS_TAG:-d48d44978adf2d7aabb61b35c6e638137f4d779a}
+    image: audius/comms:${COMMS_TAG:-bc727a943f84d8b5de4c5c9894fecc0e579b629f}
     container_name: nats
     command: /comms-linux nats
     restart: unless-stopped
