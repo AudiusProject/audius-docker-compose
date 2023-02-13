@@ -259,6 +259,7 @@ def launch(ctx, service, seed, chain, yes):
             ctx.obj["manifests_path"] / service,
             "pull",
         ],
+        check=True,
     )
 
     if seed and service == "discovery-provider":
@@ -300,16 +301,11 @@ def launch(ctx, service, seed, chain, yes):
             "up",
             "-d",
         ],
+        check=True,
     )
 
     subprocess.run(
-        [
-            "docker",
-            "system",
-            "prune",
-            "--all",
-            "--force"
-        ],
+        ["docker", "system", "prune", "--all", "--force"],
     )
 
 
@@ -495,9 +491,10 @@ def get_config(ctx, service):
 
 @cli.command()
 @click.option("--unset", is_flag=True)
+@click.option("-y", "--yes", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
-def set_tag(ctx, unset, tag):
+def set_tag(ctx, unset, yes, tag):
     """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
@@ -518,9 +515,12 @@ def set_tag(ctx, unset, tag):
         except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
             click.secho("Failed to get commit messages", fg="red")
 
-        click.confirm(
-            click.style("Do you want to continue?", bold=True), abort=True, default=True
-        )
+        if not yes:
+            click.confirm(
+                click.style("Do you want to continue?", bold=True),
+                abort=True,
+                default=True,
+            )
 
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
@@ -649,13 +649,7 @@ def upgrade(ctx, branch):
             )
 
     subprocess.run(
-        [
-            "docker",
-            "system",
-            "prune",
-            "--all",
-            "--force"
-        ],
+        ["docker", "system", "prune", "--all", "--force"],
     )
 
 
