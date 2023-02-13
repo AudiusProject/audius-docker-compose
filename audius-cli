@@ -259,6 +259,7 @@ def launch(ctx, service, seed, chain, yes):
             ctx.obj["manifests_path"] / service,
             "pull",
         ],
+        check=True,
     )
 
     if seed and service == "discovery-provider":
@@ -300,6 +301,7 @@ def launch(ctx, service, seed, chain, yes):
             "up",
             "-d",
         ],
+        check=True,
     )
 
     subprocess.run(
