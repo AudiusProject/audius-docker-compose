@@ -107,7 +107,7 @@ services:
     container_name: exporter_linux
 
   storage:
-    image: audius/comms:${COMMS_TAG:-bc727a943f84d8b5de4c5c9894fecc0e579b629f}
+    image: audius/comms:${COMMS_TAG:-fc2db1839f3b801f8b0a9311e8825c9aa320fccb}
     container_name: storage
     command: /comms-linux storage
     depends_on:
@@ -117,6 +117,8 @@ services:
       - creator-node-network
     env_file:
       - ${OVERRIDE_PATH:-override.env}
+    environment:
+      - LOGSPOUT=ignore
     logging:
       options:
         max-size: 10m
@@ -126,7 +128,7 @@ services:
       driver: json-file
 
   nats:
-    image: audius/comms:${COMMS_TAG:-bc727a943f84d8b5de4c5c9894fecc0e579b629f}
+    image: audius/comms:${COMMS_TAG:-fc2db1839f3b801f8b0a9311e8825c9aa320fccb}
     container_name: nats
     command: /comms-linux nats
     restart: unless-stopped
@@ -139,6 +141,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - NATS_STORE_DIR=/nats
+      - LOGSPOUT=ignore
     volumes:
       - /var/k8s/nats:/nats
     logging:
