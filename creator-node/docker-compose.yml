@@ -106,8 +106,8 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
-  data-archiver:
-    image: audius/data-archiver:latest
+  archiver:
+    image: audius/archiver:latest
     volumes:
       - /var/k8s/creator-node-backend:/data
     logging:
