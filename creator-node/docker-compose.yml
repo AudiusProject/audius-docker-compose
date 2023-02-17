@@ -106,6 +106,18 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
+  data-archiver:
+    image: audius/data-archiver:latest
+    volumes:
+      - /var/k8s/creator-node-backend:/data
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   storage:
     image: audius/comms:${COMMS_TAG:-0913e1cb436fde64030f6d606e1a63bf4b6097c4}
     container_name: storage
