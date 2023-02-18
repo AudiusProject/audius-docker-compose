@@ -182,11 +182,12 @@ services:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
 
-  logspout:
+  vector:
     extends:
       file: ../common-services.yml
-      service: logspout
+      service: vector
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
@@ -209,8 +210,6 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    environment:
-      - LOGSPOUT=ignore
     logging:
       options:
         max-size: 10m

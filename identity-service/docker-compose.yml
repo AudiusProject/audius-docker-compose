@@ -74,11 +74,12 @@ services:
       - AUTOHEAL_INTERVAL=300
       - CURL_TIMEOUT=300
 
-  logspout:
+  vector:
     extends:
       file: ../common-services.yml
-      service: logspout
+      service: vector
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - identity-service-network

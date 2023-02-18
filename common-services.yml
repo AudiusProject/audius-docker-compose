@@ -38,12 +38,12 @@ services:
     volumes:
       - /var/redis_data:/data
 
-  logspout:
-    image: audius/logspout:v3.2.14-1
-    container_name: logspout
+  vector:
+    image: audius/vector:0.26.0-alpine
+    container_name: vector
     restart: always
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       options:
         max-size: 10m
