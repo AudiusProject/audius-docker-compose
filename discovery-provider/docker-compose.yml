@@ -230,6 +230,7 @@ services:
       - "6222:6222"
       - "4222:4222"
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - NATS_STORE_DIR=/nats
