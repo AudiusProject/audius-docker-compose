@@ -142,7 +142,6 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
-      - NATS_STORE_DIR=/nats
       - LOGSPOUT=ignore
     volumes:
       - /var/k8s/nats:/nats
