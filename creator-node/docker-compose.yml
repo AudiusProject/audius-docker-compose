@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-b1de448ed1bd2e7c64c33cac019ba8e265c17a21}
+    image: audius/creator-node:${TAG:-352ddeaf7d3b2ba9fe9a78daa9e6d517646b9cb8}
     restart: always
     depends_on:
       db:
@@ -107,7 +107,7 @@ services:
     container_name: exporter_linux
 
   storage:
-    image: audius/comms:${COMMS_TAG:-0913e1cb436fde64030f6d606e1a63bf4b6097c4}
+    image: audius/comms:${COMMS_TAG:-d84102580260d4065729e47e8f14c390aebe8ddb}
     container_name: storage
     command: /comms-linux storage
     depends_on:
@@ -116,6 +116,7 @@ services:
     networks:
       - creator-node-network
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - LOGSPOUT=ignore
@@ -128,7 +129,7 @@ services:
       driver: json-file
 
   nats:
-    image: audius/comms:${COMMS_TAG:-0913e1cb436fde64030f6d606e1a63bf4b6097c4}
+    image: audius/comms:${COMMS_TAG:-d84102580260d4065729e47e8f14c390aebe8ddb}
     container_name: nats
     command: /comms-linux nats
     restart: unless-stopped
@@ -138,6 +139,7 @@ services:
       - "6222:6222"
       - "4222:4222"
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - NATS_STORE_DIR=/nats
