@@ -106,10 +106,12 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
-  monitor:
-    image: audius/monitor:latest
+  archiver:
+    image: audius/archiver:latest
     volumes:
       - /var/k8s/creator-node-backend:/data
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
     logging:
       options:
         max-size: 10m
