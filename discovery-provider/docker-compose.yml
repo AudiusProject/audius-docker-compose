@@ -246,7 +246,7 @@ services:
       driver: json-file
 
   chain:
-    image: nethermind/nethermind:1.14.2
+    image: nethermind/nethermind:latest
     command: --config config
     container_name: chain
     env_file:
