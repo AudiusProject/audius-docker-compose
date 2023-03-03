@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  audius-sandbox:
+    container_name: audius-sandbox
+    image: audius-sandbox
