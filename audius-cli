@@ -214,13 +214,14 @@ def health_check(ctx, service):
 
 
 @cli.command()
+@click.option("--isminer", is_flag=True, default=True)
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
-@click.option("--miner", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes, miner):
+def launch(ctx, service, seed, chain, yes, isminer):
+    print(isminer)
     """Launch the service"""
     set_automatic_env(ctx)
 
