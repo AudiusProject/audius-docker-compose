@@ -214,7 +214,7 @@ def health_check(ctx, service):
 
 
 @cli.command()
-@click.option("--isminer", is_flag=True, default=True)
+@click.option("--isminer", type=bool, default=True)
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
