@@ -289,8 +289,7 @@ def launch(ctx, service, seed, chain, yes, isminer):
         )
 
     if service == "discovery-provider":
-        print("here??")
-        ctx.invoke(launch_chain)
+        ctx.invoke(launch_chain, isminer)
         if chain:
             return
 
@@ -679,8 +678,9 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 
 @cli.command()
+@click.option("--isminer", type=bool, default=True)
 @click.pass_context
-def launch_chain(ctx):
+def launch_chain(ctx, isminer):
     """
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
@@ -743,6 +743,8 @@ def launch_chain(ctx):
         f.write("\n")
 
     # override .env with isMining here
+    if not isminer:
+        print("starting node in non mining mode")
 
     subprocess.run(
         [
