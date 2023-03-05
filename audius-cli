@@ -289,7 +289,7 @@ def launch(ctx, service, seed, chain, yes, isminer):
         )
 
     if service == "discovery-provider":
-        ctx.invoke(launch_chain)
+        ctx.invoke(launch_chain, isminer=isminer)
         if chain:
             return
 
@@ -678,7 +678,7 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 
 @cli.command()
-@click.option("--isminer", type=bool, default=True)
+@click.option("--isminer", type=bool)
 @click.pass_context
 def launch_chain(ctx, isminer):
     """
