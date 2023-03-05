@@ -214,6 +214,7 @@ def health_check(ctx, service):
 
 
 @cli.command()
+@click.option("--isminer", is_flag=True, default=True)
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
@@ -739,7 +740,7 @@ def launch_chain(ctx):
     static_peers_file = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
     )
-            with open(static_peers_file, "w") as f:
+    with open(static_peers_file, "w") as f:
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
