@@ -289,7 +289,7 @@ def launch(ctx, service, seed, chain, yes, isminer):
         )
 
     if service == "discovery-provider":
-        ctx.invoke(launch_chain, isminer)
+        ctx.invoke(launch_chain)
         if chain:
             return
 
