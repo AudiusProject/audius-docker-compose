@@ -745,6 +745,10 @@ def launch_chain(ctx, isminer):
     # override .env with isMining here
     if not isminer:
         print("starting node in non mining mode")
+        dotenv.set_key(env, "NETHERMIND_INITCONFIG_ISMINING", "false")
+    else:
+        print("removing ismining env var in favor of config.cfg")
+        dotenv.unset_key(env, "NETHERMIND_INITCONFIG_ISMINING")
 
     subprocess.run(
         [
