@@ -285,10 +285,9 @@ services:
           "CMD-SHELL",
           "python3 /nethermind/health.py",
         ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
 networks:
   discovery-provider-network:
