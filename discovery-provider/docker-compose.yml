@@ -260,6 +260,7 @@ services:
       - ./chain/config.cfg:/nethermind/configs/config.cfg
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
+      - ./chain/health.py:/nethermind/health.py
     labels:
       autoheal: "true"
     ports:
@@ -282,7 +283,7 @@ services:
       test:         
         [
           "CMD-SHELL",
-          "curl --silent --fail http://localhost:8545/health || exit 1", # unhealthy nodes return a 503
+          "python3 /nethermind/health.py",
         ]
       interval: 30s
       timeout: 10s
