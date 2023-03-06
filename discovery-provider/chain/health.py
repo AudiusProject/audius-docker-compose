@@ -27,7 +27,7 @@ if not health_check_unhealthy:
 
 # node should be able to sign but stopped producing, restart
 if is_current_signer and health_check_unhealthy and stopped_producing:
-    exit(1)  # prompt restart
+    exit(0)  # prompt restart
 
 # node is not a signer but is reporting unhealthy because it cant produce
 # this is technically healthy but all nodes start as miners
@@ -37,3 +37,5 @@ if not is_current_signer and health_check_unhealthy and stopped_producing:
 # node is reporting unhealthy for some other reason
 if health_check_unhealthy and not stopped_producing:
     exit(0)
+
+exit(0)
