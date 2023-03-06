@@ -34,6 +34,6 @@ if is_current_signer and health_check_unhealthy and stopped_producing:
 if not is_current_signer and health_check_unhealthy and stopped_producing:
     exit(0)
 
-# node is reporting unhealthy for some other reason, prompt a restart
+# node is reporting unhealthy for some other reason
 if health_check_unhealthy and not stopped_producing:
-    exit(1)
+    exit(0)
