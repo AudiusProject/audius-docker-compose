@@ -260,7 +260,7 @@ services:
       - ./chain/config.cfg:/nethermind/configs/config.cfg
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
-      - ./chain/health.py:/nethermind/health.py
+      - ./chain/block_production.py:/nethermind/block_production.py
     labels:
       autoheal: "true"
     ports:
@@ -281,7 +281,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test:         
-        [ "CMD", "python3", "/nethermind/health.py" ]
+        [ "CMD-SHELL", "./nethermind/block_production.sh || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 12
