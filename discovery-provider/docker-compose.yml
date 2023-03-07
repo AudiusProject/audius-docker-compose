@@ -280,10 +280,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test:
-        - CMD
+        - CMD-SHELL
         - >
           function blocknum() {
-              res=$$(curl -s --data '{"method":"eth_blockNumber","params":[],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST https://acdc-gateway.audius.co)
+              res=$$(curl -s --data '{"method":"eth_blockNumber","params":[],"id":1,"jsonrpc":"2.0"}' -H "Content-Type: application/json" -X POST localhost:8545)
               block_res=$$( jq -r '.result' <<< "${res}")
               block_num=$$(($block_res))
               echo $$block_num
