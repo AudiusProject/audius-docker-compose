@@ -281,10 +281,13 @@ services:
     restart: unless-stopped
     healthcheck:
       test:         
-        [ "CMD", "python3", "/nethermind/health.py" ]
+        [ "CMD-SHELL", "curl localhost:8545/health || exit 1" ]
       interval: 5s
       timeout: 5s
       retries: 12
+
+  deadlock_resolver:
+    image: deadlock-resolver
 
 networks:
   discovery-provider-network:

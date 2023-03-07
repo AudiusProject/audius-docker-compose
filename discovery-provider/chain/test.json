@@ -1,0 +1,1 @@
+{ "status": "Unhealthy", "totalDuration": "00:00:00.0003668", "entries": { "node-health": { "data": {}, "description": "The node is now fully synced with a network. Peers: 2. The node stopped producing blocks.", "duration": "00:00:00.0000573", "status": "Unhealthy", "tags": [] } } }
