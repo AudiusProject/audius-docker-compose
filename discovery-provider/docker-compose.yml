@@ -260,7 +260,7 @@ services:
       - ./chain/config.cfg:/nethermind/configs/config.cfg
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
-      - ./chain/block_production.py:/nethermind/block_production.py
+      - ./chain/block_production.sh:/nethermind/block_production.sh
     labels:
       autoheal: "true"
     ports:
