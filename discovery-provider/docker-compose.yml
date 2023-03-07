@@ -281,7 +281,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test:         
-        [ "CMD-SHELL", "ls" ]
+        [ "CMD-SHELL", "chain/block_production.sh" ]
       interval: 5s
       timeout: 5s
       retries: 12
