@@ -115,6 +115,8 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/mediorum:/tmp/mediorum
     environment:
       - LOGSPOUT=ignore
     logging:
