@@ -109,7 +109,7 @@ services:
   storage:
     image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
     container_name: storage
-    command: /comms-linux storage
+    command: storage
     depends_on:
       - nats
     restart: unless-stopped
@@ -131,7 +131,7 @@ services:
   nats:
     image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
     container_name: nats
-    command: /comms-linux nats
+    command: nats
     restart: unless-stopped
     networks:
       - creator-node-network
