@@ -43,6 +43,16 @@ services:
     networks:
       - creator-node-network
 
+  openresty:
+    container_name: openresty
+    image: openresty/openresty
+    networks:
+      - creator-node-network
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+
   backend:
     container_name: server
     image: audius/creator-node:${TAG:-b3b90ba7e80fad3b876c63678830f52b61f93d3c}
@@ -56,8 +66,6 @@ services:
       - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
     labels:
       autoheal: "true"
-    ports:
-      - "4000:4000"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
