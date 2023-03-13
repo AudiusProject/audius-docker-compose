@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-352ddeaf7d3b2ba9fe9a78daa9e6d517646b9cb8}
+    image: audius/creator-node:${TAG:-b3b90ba7e80fad3b876c63678830f52b61f93d3c}
     restart: always
     depends_on:
       db:
@@ -107,9 +107,9 @@ services:
     container_name: exporter_linux
 
   storage:
-    image: audius/comms:${COMMS_TAG:-d84102580260d4065729e47e8f14c390aebe8ddb}
+    image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
     container_name: storage
-    command: /comms-linux storage
+    command: storage
     depends_on:
       - nats
     restart: unless-stopped
@@ -129,9 +129,9 @@ services:
       driver: json-file
 
   nats:
-    image: audius/comms:${COMMS_TAG:-d84102580260d4065729e47e8f14c390aebe8ddb}
+    image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
     container_name: nats
-    command: /comms-linux nats
+    command: nats
     restart: unless-stopped
     networks:
       - creator-node-network
@@ -142,10 +142,30 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
-      - NATS_STORE_DIR=/nats
       - LOGSPOUT=ignore
     volumes:
       - /var/k8s/nats:/nats
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+  mediorum:
+    image: audius/mediorum:latest
+    container_name: mediorum
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/mediorum:/tmp/mediorum
+    environment:
+      - LOGSPOUT=ignore
     logging:
       options:
         max-size: 10m
