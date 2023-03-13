@@ -217,9 +217,10 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
+@click.option("--notifications", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, chain, notifications, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -290,6 +291,11 @@ def launch(ctx, service, seed, chain, yes):
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
         if chain:
+            return
+
+    if service == "discovery-provider":
+        if notifications:
+            ctx.invoke(launch_notifications)
             return
 
     subprocess.run(
@@ -494,8 +500,9 @@ def get_config(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--comms", is_flag=True)
 @click.argument("tag", required=False)
+@click.argument("--notifications", required=False)
 @click.pass_context
-def set_tag(ctx, unset, yes, comms, tag):
+def set_tag(ctx, unset, yes, comms, tag, notifications):
     """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
@@ -526,13 +533,17 @@ def set_tag(ctx, unset, yes, comms, tag):
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
-
+        key = "TAG"
+        if comms:
+            key = "COMMS_TAG"
+        if notifications:
+            key = "NOTIFICATIONS_TAG"
         if unset:
             logging.info(f"> audius-cli set-tag unset service={service!r}")
-            dotenv.unset_key(env_file, "TAG" if not comms else "COMMS_TAG")
+            dotenv.unset_key(env_file, key)
         else:
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
-            dotenv.set_key(env_file, "TAG" if not comms else "COMMS_TAG", tag)
+            dotenv.set_key(env_file, key)
 
 
 @cli.command()
@@ -753,6 +764,24 @@ def launch_chain(ctx):
             "--no-recreate",
             "-d",
             "chain",
+        ],
+    )
+
+@cli.command()
+@click.pass_context
+def launch_notifications(ctx):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--env-file",
+            get_override_path(ctx, "discovery-provider"),
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "up",
+            "--no-recreate",
+            "-d",
+            "notifications",
         ],
     )
 
