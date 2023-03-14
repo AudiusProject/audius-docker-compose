@@ -22,5 +22,5 @@ services:
 
 networks:
   dn-network:
-    name: discovery-provider-network
+    name: discovery-provider_discovery-provider-network
     external: true
