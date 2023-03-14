@@ -23,6 +23,7 @@ RECOMMENDED_MEMORY = 16 * GB
 RECOMMENDED_STORAGE = {
     "creator-node": 2048 * GB,
     "discovery-provider": 256 * GB,
+    "discovery-provider-notifications": 256 * GB,
     "identity-service": 256 * GB,
 }
 
@@ -251,6 +252,22 @@ def launch(ctx, service, seed, chain, yes):
     if not yes:
         click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
+    if service == "discovery-provider-notifications":
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service ,
+                "-f",
+                ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+                "pull",
+            ],
+            check=True,
+        )
+        ctx.invoke(launch_notifications)
+        return
+
     subprocess.run(
         [
             "docker",
@@ -293,6 +310,18 @@ def launch(ctx, service, seed, chain, yes):
             return
 
     if service == "discovery-provider-notifications":
+        subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / service ,
+            "-f",
+            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+            "pull",
+        ],
+        check=True,
+    )
         ctx.invoke(launch_notifications)
         return
 
