@@ -23,7 +23,6 @@ RECOMMENDED_MEMORY = 16 * GB
 RECOMMENDED_STORAGE = {
     "creator-node": 2048 * GB,
     "discovery-provider": 256 * GB,
-    "discovery-provider-notifications": 256 * GB,
     "identity-service": 256 * GB,
 }
 
@@ -33,7 +32,7 @@ SERVICE_PORTS = {
     "identity-service": "7000",
 }
 
-SERVICES = ("creator-node", "discovery-provider", "discovery-provider-notifications", "identity-service")
+SERVICES = ("creator-node", "discovery-provider", "identity-service")
 
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
@@ -44,6 +43,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
+launch_service_type = click.Choice(SERVICES + ('discovery-provider-notifications'))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -218,11 +218,15 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
-@click.argument("service", type=service_type)
+@click.argument("service", type=launch_service_type)
 @click.pass_context
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
+
+    if service == "discovery-provider-notifications":
+        ctx.invoke(launch_notifications)
+        return
 
     try:
         ctx.invoke(check_config, service=service)
@@ -251,22 +255,6 @@ def launch(ctx, service, seed, chain, yes):
 
     if not yes:
         click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
-
-    if service == "discovery-provider-notifications":
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider" ,
-                "-f",
-                ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
-                "pull",
-            ],
-            check=True,
-        )
-        ctx.invoke(launch_notifications)
-        return
 
     subprocess.run(
         [
@@ -308,22 +296,6 @@ def launch(ctx, service, seed, chain, yes):
         ctx.invoke(launch_chain)
         if chain:
             return
-
-    if service == "discovery-provider-notifications":
-        subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service ,
-            "-f",
-            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
-            "pull",
-        ],
-        check=True,
-    )
-        ctx.invoke(launch_notifications)
-        return
 
     subprocess.run(
         [
@@ -797,6 +769,19 @@ def launch_chain(ctx):
 @cli.command()
 @click.pass_context
 def launch_notifications(ctx):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider" ,
+            "-f",
+            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+            "pull",
+        ],
+        check=True,
+    )
+
     subprocess.run(
         [
             "docker",
