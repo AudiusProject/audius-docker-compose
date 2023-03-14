@@ -7,7 +7,7 @@ services:
     container_name: notifications
     restart: unless-stopped
     networks:
-      - discovery-provider-network
+      - dn-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
