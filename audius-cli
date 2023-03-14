@@ -801,8 +801,6 @@ def launch_notifications(ctx):
         [
             "docker",
             "compose",
-            "--env-file",
-            get_override_path(ctx, "discovery-provider"),
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "-f",
