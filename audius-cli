@@ -73,7 +73,7 @@ def set_automatic_env(ctx):
         ["git", "rev-parse", "HEAD"],
         capture_output=True,
         cwd=ctx.obj["manifests_path"],
-    ).stdout.decode()
+    ).stdout.decode().rstrip()
 
     # give application awareness of host level auto upgrade cron job
 
