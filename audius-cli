@@ -32,7 +32,7 @@ SERVICE_PORTS = {
     "identity-service": "7000",
 }
 
-SERVICES = ("creator-node", "discovery-provider", "identity-service")
+SERVICES = ("creator-node", "discovery-provider", "discovery-provider-notifications", "identity-service")
 
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
@@ -778,6 +778,8 @@ def launch_notifications(ctx):
             get_override_path(ctx, "discovery-provider"),
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
             "up",
             "--no-recreate",
             "-d",

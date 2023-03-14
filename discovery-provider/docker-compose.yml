@@ -277,26 +277,6 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  notifications:
-    image: audius/discovery-provider-notifications:${NOTIFICATIONS_TAG:-ff4105ace23df33e80c784c5c5c5f47d253a1603}
-    container_name: notifications
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-      - notifications.env
-    environment:
-      - LOGSPOUT=ignore
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
 networks:
   discovery-provider-network:
 
