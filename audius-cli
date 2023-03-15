@@ -43,7 +43,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ('discovery-provider-notifications'))
+launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
