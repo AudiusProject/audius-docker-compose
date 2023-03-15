@@ -34,7 +34,7 @@
     "maxCodeSizeTransition": "0x0",
     "maximumExtraDataSize": "0x320",
     "minGasLimit": "0x1388",
-    "networkID": "0x566b",
+    "networkID": "0x7b23",
     "validateReceipts": false,
     "validateReceiptsTransition": "0xffffffffffffffff",
     "wasmActivationTransition": "0xffffffffffffffff"
