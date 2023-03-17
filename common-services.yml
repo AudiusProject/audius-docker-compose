@@ -39,7 +39,7 @@ services:
       - /var/redis_data:/data
 
   vector:
-    image: audius/vector:0.26.0-alpine
+    image: audius/vector:0.28.1-alpine
     container_name: vector
     restart: always
     volumes:
