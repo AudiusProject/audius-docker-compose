@@ -186,6 +186,8 @@ services:
     extends:
       file: ../common-services.yml
       service: vector
+    ports:
+      - "8686:8686"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
