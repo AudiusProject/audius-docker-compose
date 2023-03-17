@@ -231,8 +231,6 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    environment:
-      - LOGSPOUT=ignore
     volumes:
       - /var/k8s/nats:/nats
     logging:
