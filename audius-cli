@@ -155,7 +155,7 @@ def health_check(ctx, service):
     path = ctx.obj["manifests_path"] / service
     container = 'backend'
     if service == 'discovery-provider-notifications':
-        path = ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+        path = ctx.obj["manifests_path"] / "discovery-provider"
         container = 'notifications'
 
     proc = subprocess.run(
