@@ -153,8 +153,10 @@ def health_check(ctx, service):
     """Check the health of a service"""
     
     path = ctx.obj["manifests_path"] / service
+    container = 'backend'
     if service == 'discovery-provider-notifications':
         path = ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+        container = 'notifications'
 
     proc = subprocess.run(
         [
@@ -164,7 +166,7 @@ def health_check(ctx, service):
             path,
             "ps",
             "-q",
-            "backend",
+            container,
         ],
         capture_output=True,
     )
