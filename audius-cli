@@ -43,6 +43,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
+launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -73,7 +74,7 @@ def set_automatic_env(ctx):
         ["git", "rev-parse", "HEAD"],
         capture_output=True,
         cwd=ctx.obj["manifests_path"],
-    ).stdout.decode()
+    ).stdout.decode().rstrip()
 
     # give application awareness of host level auto upgrade cron job
 
@@ -217,11 +218,15 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
-@click.argument("service", type=service_type)
+@click.argument("service", type=launch_service_type)
 @click.pass_context
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
+
+    if service == "discovery-provider-notifications":
+        ctx.invoke(launch_notifications)
+        return
 
     try:
         ctx.invoke(check_config, service=service)
@@ -493,9 +498,10 @@ def get_config(ctx, service):
 @click.option("--unset", is_flag=True)
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--comms", is_flag=True)
+@click.option("--notifications", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
-def set_tag(ctx, unset, yes, comms, tag):
+def set_tag(ctx, unset, yes, comms, notifications, tag):
     """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
@@ -526,13 +532,17 @@ def set_tag(ctx, unset, yes, comms, tag):
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         env_file = ctx.obj["manifests_path"] / service / ".env"
-
+        key = "TAG"
+        if comms:
+            key = "COMMS_TAG"
+        if notifications:
+            key = "NOTIFICATIONS_TAG"
         if unset:
             logging.info(f"> audius-cli set-tag unset service={service!r}")
-            dotenv.unset_key(env_file, "TAG" if not comms else "COMMS_TAG")
+            dotenv.unset_key(env_file, key)
         else:
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
-            dotenv.set_key(env_file, "TAG" if not comms else "COMMS_TAG", tag)
+            dotenv.set_key(env_file, key, tag)
 
 
 @cli.command()
@@ -753,6 +763,37 @@ def launch_chain(ctx):
             "--no-recreate",
             "-d",
             "chain",
+        ],
+    )
+
+@cli.command()
+@click.pass_context
+def launch_notifications(ctx):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider" ,
+            "-f",
+            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+            "pull",
+        ],
+        check=True,
+    )
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+            "up",
+            "--no-recreate",
+            "-d",
+            "notifications",
         ],
     )
 
