@@ -151,12 +151,17 @@ def check_config(ctx, service):
 @click.pass_context
 def health_check(ctx, service):
     """Check the health of a service"""
+    
+    path = ctx.obj["manifests_path"] / service
+    if service == 'discovery-provider-notifications':
+        path = ctx.obj["manifests_path"] / "discovery-provider" / "docker-compose.notifications.yml",
+
     proc = subprocess.run(
         [
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / service,
+            path,
             "ps",
             "-q",
             "backend",
