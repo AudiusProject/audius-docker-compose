@@ -550,16 +550,16 @@ def set_tag(ctx, unset, yes, comms, notifications, tag):
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         key = "TAG"
+        env_file = ctx.obj["manifests_path"] / service / ".env"
         if comms:
             key = "COMMS_TAG"
         if notifications:
             key = "NOTIFICATIONS_TAG"
+            env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
         if unset:
-            env_file = ctx.obj["manifests_path"] / service / ".env"
             logging.info(f"> audius-cli set-tag unset service={service!r}")
             dotenv.unset_key(env_file, key)
         else:
-            env_file = ctx.obj["manifests_path"] / service / ".env"
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, key, tag)
 
