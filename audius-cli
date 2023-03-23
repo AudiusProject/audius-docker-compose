@@ -28,11 +28,12 @@ RECOMMENDED_STORAGE = {
 
 SERVICE_PORTS = {
     "discovery-provider": "5000",
+    "discovery-provider-notifications": "6000",
     "creator-node": "4000",
     "identity-service": "7000",
 }
 
-SERVICES = ("creator-node", "discovery-provider", "identity-service")
+SERVICES = ("creator-node", "discovery-provider", "identity-service", "discovery-provider-notifications")
 
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
@@ -43,7 +44,6 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -151,15 +151,22 @@ def check_config(ctx, service):
 @click.pass_context
 def health_check(ctx, service):
     """Check the health of a service"""
+    
+    path = ctx.obj["manifests_path"] / service
+    container = 'backend'
+    if service == 'discovery-provider-notifications':
+        path = ctx.obj["manifests_path"] / "discovery-provider"
+        container = 'notifications'
+
     proc = subprocess.run(
         [
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / service,
+            path,
             "ps",
             "-q",
-            "backend",
+            container,
         ],
         capture_output=True,
     )
@@ -193,6 +200,8 @@ def health_check(ctx, service):
                 )
         elif service == "identity-service":
             healthy = response["healthy"]
+        elif service == "discovery-provider-notifications":
+            healthy = response["healthy"]
 
         if healthy and partial:
             click.secho("Service is partially healthy", fg="yellow")
@@ -218,7 +227,7 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
-@click.argument("service", type=launch_service_type)
+@click.argument("service", type=service_type)
 @click.pass_context
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
@@ -537,6 +546,7 @@ def set_tag(ctx, unset, yes, comms, notifications, tag):
             key = "COMMS_TAG"
         if notifications:
             key = "NOTIFICATIONS_TAG"
+            env_file = ctx.obj["manifests_path"] / 'discovery-provider' / ".env"
         if unset:
             logging.info(f"> audius-cli set-tag unset service={service!r}")
             dotenv.unset_key(env_file, key)
