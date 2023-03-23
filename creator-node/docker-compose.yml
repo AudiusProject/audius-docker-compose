@@ -1,6 +1,21 @@
 version: "3.9"
 
 services:
+  reverse-proxy:
+    image: traefik:v2.9
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      - "4000:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - creator-node-network
+
   db:
     container_name: postgres
     extends:
@@ -55,9 +70,8 @@ services:
     volumes:
       - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
     labels:
-      autoheal: "true"
-    ports:
-      - "4000:4000"
+      - "autoheal=true"
+      - "traefik.http.routers.creator.rule=PathPrefix(`/`)"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -115,6 +129,8 @@ services:
     restart: unless-stopped
     networks:
       - creator-node-network
+    labels:
+      - "traefik.http.routers.storage.rule=PathPrefix(`/storage`)"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -135,6 +151,9 @@ services:
     restart: unless-stopped
     networks:
       - creator-node-network
+    labels:
+      - "traefik.http.routers.nats.rule=PathPrefix(`/nats`)"
+      - "traefik.http.services.nats.loadbalancer.server.port=8924"
     ports:
       - "6222:6222"
       - "4222:4222"
@@ -159,6 +178,8 @@ services:
     restart: unless-stopped
     networks:
       - creator-node-network
+    labels:
+      - "traefik.http.routers.mediorum.rule=PathPrefix(`/mediorum`)"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
