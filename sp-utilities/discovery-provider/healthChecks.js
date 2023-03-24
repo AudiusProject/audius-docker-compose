@@ -23,9 +23,9 @@ async function healthCheck () {
   }
   const resp = await axios(requestConfig)
   const data = resp.data
-  assert.deepStrictEqual(resp.status, 200)
-  assert.deepStrictEqual(data.data.db.number > 0, true)
-  assert.deepStrictEqual(data.data.block_difference < 5, true)
+  assert.deepStrictEqual(resp.status, 200, `Status code is ${resp.status}, not 200`)
+  assert.deepStrictEqual(data.data.db.number > 0, true, `DB number is ${data.data.db.number}, less than 0`)
+  assert.deepStrictEqual(data.data.block_difference < 5, true, `Block difference is ${data.data.block_difference}, greater than 5`)
   console.log('✓ Health check passed successfully')
 }
 
