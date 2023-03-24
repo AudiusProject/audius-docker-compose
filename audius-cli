@@ -76,7 +76,7 @@ def lock(ctx, group):
     lockfile.touch(exist_ok=True)
 
     pid, retries = lockfile.read_text(), 0
-    while pid.isdigit() and psutil.pid_exists(int(pid)):
+    while pid.isdigit() and int(pid) != os.getpid() and psutil.pid_exists(int(pid)):
         if retries == 600:  # 10 mins
             click.secho("Giving up on lock")
             sys.exit(1)
@@ -820,6 +820,8 @@ def launch_chain(ctx):
 @cli.command()
 @click.pass_context
 def launch_notifications(ctx):
+    lock(ctx, "docker")
+
     subprocess.run(
         [
             "docker",
