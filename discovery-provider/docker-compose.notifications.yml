@@ -19,6 +19,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    ports:
+      - "6000:6000"
 
 networks:
   dn-network:

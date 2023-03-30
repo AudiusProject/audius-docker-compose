@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-b3b90ba7e80fad3b876c63678830f52b61f93d3c}
+    image: audius/creator-node:${TAG:-cda247f60aa4e370c506716e24294026e034496b}
     restart: always
     depends_on:
       db:
@@ -108,7 +108,7 @@ services:
     container_name: exporter_linux
 
   storage:
-    image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
+    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
     container_name: storage
     command: storage
     depends_on:
@@ -128,7 +128,7 @@ services:
       driver: json-file
 
   nats:
-    image: audius/comms:${COMMS_TAG:-d61a9c2a096d67d0c98bf39ff06be65119d44bd9}
+    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
     container_name: nats
     command: nats
     restart: unless-stopped
