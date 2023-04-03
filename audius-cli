@@ -345,6 +345,7 @@ def launch(ctx, service, seed, chain, yes):
             ctx.obj["manifests_path"] / service,
             "up",
             "-d",
+            "--remove-orphans",
         ],
         check=True,
     )
@@ -702,6 +703,7 @@ def upgrade(ctx, branch):
                     ctx.obj["manifests_path"] / service,
                     "up",
                     "-d",
+                    "--remove-orphans",
                 ],
             )
 
