@@ -107,49 +107,6 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
-  storage:
-    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
-    container_name: storage
-    command: storage
-    depends_on:
-      - nats
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-  nats:
-    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
-    container_name: nats
-    command: nats
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-    ports:
-      - "6222:6222"
-      - "4222:4222"
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    volumes:
-      - /var/k8s/nats:/nats
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
   mediorum:
     image: audius/mediorum:latest
     container_name: mediorum

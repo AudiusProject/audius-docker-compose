@@ -199,40 +199,15 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
+    image: audius/comms:${COMMS_TAG:-7a00b5c1aff16cc2e2d948205fb990a45ac111a0}
     container_name: comms
     command: discovery
-    depends_on:
-      - nats
     restart: unless-stopped
     networks:
       - discovery-provider-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-  nats:
-    image: audius/comms:${COMMS_TAG:-6b80fc720ab75c8fa8f587207a7b5b798d38326d}
-    container_name: nats
-    command: nats
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    ports:
-      - "6222:6222"
-      - "4222:4222"
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    volumes:
-      - /var/k8s/nats:/nats
     logging:
       options:
         max-size: 10m
