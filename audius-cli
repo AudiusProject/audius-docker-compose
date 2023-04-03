@@ -351,7 +351,7 @@ def launch(ctx, service, seed, chain, yes):
     )
 
     subprocess.run(
-        ["docker", "system", "prune", "--all", "--force"],
+        ["docker", "system", "prune", "--all", "--force", "until=1h"],
     )
 
 
@@ -424,6 +424,7 @@ def restart(ctx, service, containers):
             "prune",
             "--all",
             "--force",
+            "until=1h",
         ],
     )
 
@@ -708,7 +709,7 @@ def upgrade(ctx, branch):
             )
 
     subprocess.run(
-        ["docker", "system", "prune", "--all", "--force"],
+        ["docker", "system", "prune", "--all", "--force", "until=1h"],
     )
 
 
