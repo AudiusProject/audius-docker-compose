@@ -344,8 +344,8 @@ def launch(ctx, service, seed, chain, yes):
             "--project-directory",
             ctx.obj["manifests_path"] / service,
             "up",
-            "-d",
             "--remove-orphans",
+            "-d",
         ],
         check=True,
     )
@@ -412,6 +412,7 @@ def restart(ctx, service, containers):
                     "up",
                     "--build",
                     "--force-recreate",
+                    "--remove-orphans",
                     "-d",
                     *containers,
                 ],
@@ -704,8 +705,8 @@ def upgrade(ctx, branch):
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
                     "up",
-                    "-d",
                     "--remove-orphans",
+                    "-d",
                 ],
             )
 

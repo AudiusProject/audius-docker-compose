@@ -91,11 +91,12 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  logspout:
+  vector:
     extends:
       file: ../common-services.yml
-      service: logspout
+      service: vector
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - creator-node-network
