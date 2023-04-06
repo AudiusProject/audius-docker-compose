@@ -72,6 +72,48 @@ def get_override_path(ctx, service):
     )
 
 
+def launch_plugins(ctx):
+    # install registered plugins after upgrade
+    # assumes plugins are only for discprov
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+        for plugin in plugins:
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / "discovery-provider",
+                    "-f",
+                    ctx.obj["manifests_path"]
+                    / "discovery-provider"
+                    / f"docker-compose.{plugin}.yml",
+                    "pull",
+                ],
+                check=True,
+            )
+
+            subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / "discovery-provider",
+                    "-f",
+                    ctx.obj["manifests_path"]
+                    / "discovery-provider"
+                    / f"docker-compose.{plugin}.yml",
+                    "up",
+                    "--no-recreate",
+                    "-d",
+                    f"{plugin}",
+                ],
+            )
+    return
+
+
 def lock(ctx, group):
     lockfile = pathlib.Path(f"~/.local/share/audius-cli/{group}.lock").expanduser()
     lockfile.parent.mkdir(parents=True, exist_ok=True)
@@ -351,6 +393,8 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
+
+    launch_plugins(ctx)
 
     subprocess.run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=1h"],
@@ -711,9 +755,12 @@ def upgrade(ctx, branch):
                 ],
             )
 
+    launch_plugins(ctx)
+
     subprocess.run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=1h"],
     )
+
 
 
 @cli.command()
@@ -894,6 +941,7 @@ def plugin_deregister(ctx, name):
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
+
 
 @cli.command()
 @click.pass_context
