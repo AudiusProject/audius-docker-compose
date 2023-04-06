@@ -866,14 +866,15 @@ def launch_notifications(ctx):
 @click.argument("name", required=True)
 def plugin_register(ctx, name):
     print(f"registering plugin {name}")
-    plugins = dotenv.get_key(REGISTERED_PLUGINS)
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
     else:
         plugins = []
     plugins.append(name)
     plugins = ",".join(plugins)
-    dotenv.set_key(REGISTERED_PLUGINS, plugins)
+    dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
 
 
@@ -882,7 +883,8 @@ def plugin_register(ctx, name):
 @click.argument("name", required=True)
 def plugin_deregister(ctx, name):
     print(f"deregistering plugin {name}")
-    plugins = dotenv.get_key(REGISTERED_PLUGINS)
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
     else:
@@ -890,7 +892,7 @@ def plugin_deregister(ctx, name):
     if name in plugins:
         plugins.remove(name)
     plugins = ",".join(plugins)
-    dotenv.set_key(REGISTERED_PLUGINS, plugins)
+    dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
 
 
