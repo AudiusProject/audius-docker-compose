@@ -762,7 +762,6 @@ def upgrade(ctx, branch):
     )
 
 
-
 @cli.command()
 @click.option("--remove", is_flag=True)
 # random so nodes in the network stagger upgrades
@@ -938,6 +937,9 @@ def plugin_deregister(ctx, name):
         return []
     if name in plugins:
         plugins.remove(name)
+        # last plugin removed
+        if not plugins:
+            return []
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
