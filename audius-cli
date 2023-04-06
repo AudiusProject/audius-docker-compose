@@ -865,6 +865,7 @@ def launch_notifications(ctx):
 @click.pass_context
 @click.argument("name", required=True)
 def register_plugin(ctx, name):
+    print(f"registering plugin {name}")
     plugins = dotenv.get_key(REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
@@ -880,6 +881,7 @@ def register_plugin(ctx, name):
 @click.pass_context
 @click.argument("name", required=True)
 def deregister_plugin(ctx, name):
+    print(f"deregistering plugin {name}")
     plugins = dotenv.get_key(REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
