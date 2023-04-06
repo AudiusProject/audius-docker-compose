@@ -80,37 +80,38 @@ def launch_plugins(ctx):
     if plugins is not None:
         plugins = plugins.split(",")
         for plugin in plugins:
-            subprocess.run(
-                [
-                    "docker",
-                    "compose",
-                    "--project-directory",
-                    ctx.obj["manifests_path"] / "discovery-provider",
-                    "-f",
-                    ctx.obj["manifests_path"]
-                    / "discovery-provider"
-                    / f"docker-compose.{plugin}.yml",
-                    "pull",
-                ],
-                check=True,
-            )
+            if not plugin:
+                subprocess.run(
+                    [
+                        "docker",
+                        "compose",
+                        "--project-directory",
+                        ctx.obj["manifests_path"] / "discovery-provider",
+                        "-f",
+                        ctx.obj["manifests_path"]
+                        / "discovery-provider"
+                        / f"docker-compose.{plugin}.yml",
+                        "pull",
+                    ],
+                    check=True,
+                )
 
-            subprocess.run(
-                [
-                    "docker",
-                    "compose",
-                    "--project-directory",
-                    ctx.obj["manifests_path"] / "discovery-provider",
-                    "-f",
-                    ctx.obj["manifests_path"]
-                    / "discovery-provider"
-                    / f"docker-compose.{plugin}.yml",
-                    "up",
-                    "--no-recreate",
-                    "-d",
-                    f"{plugin}",
-                ],
-            )
+                subprocess.run(
+                    [
+                        "docker",
+                        "compose",
+                        "--project-directory",
+                        ctx.obj["manifests_path"] / "discovery-provider",
+                        "-f",
+                        ctx.obj["manifests_path"]
+                        / "discovery-provider"
+                        / f"docker-compose.{plugin}.yml",
+                        "up",
+                        "--no-recreate",
+                        "-d",
+                        f"{plugin}",
+                    ],
+                )
     return
 
 
