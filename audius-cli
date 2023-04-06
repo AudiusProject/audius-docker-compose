@@ -79,6 +79,7 @@ def launch_plugins(ctx):
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
+        print(plugins)
         for plugin in plugins:
             if not plugin:
                 subprocess.run(
