@@ -56,7 +56,7 @@ Logging is enabled by default to stream logs to a logging service for ease of de
  audius-cli launch creator-node|discovery-node
  ```
 
-## Setting override path 
+## Setting override env path
 You can use the following commands to override the path for the `override.env` file
 
 ```
