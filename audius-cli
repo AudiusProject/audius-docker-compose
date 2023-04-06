@@ -40,6 +40,8 @@ SERVICES = (
     "identity-service",
 )
 
+REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
+
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
@@ -857,6 +859,37 @@ def launch_notifications(ctx):
             "notifications",
         ],
     )
+
+
+@cli.command()
+@click.pass_context
+@click.argument("name", required=False)
+def register_plugin(ctx, name):
+    plugins = dotenv.get_key(REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+    else:
+        plugins = []
+    plugins.append(name)
+    plugins = ",".join(plugins)
+    dotenv.set_key(REGISTERED_PLUGINS, plugins)
+    return
+
+
+@cli.command()
+@click.pass_context
+@click.argument("name", required=False)
+def deregister_plugin(ctx, name):
+    plugins = dotenv.get_key(REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+    else:
+        return []
+    if name in plugins:
+        plugins.remove(name)
+    plugins = ",".join(plugins)
+    dotenv.set_key(REGISTERED_PLUGINS, plugins)
+    return
 
 
 if __name__ == "__main__":
