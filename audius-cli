@@ -895,6 +895,14 @@ def plugin_deregister(ctx, name):
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
 
+@cli.command()
+@click.pass_context
+def plugins(ctx):
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    print(f"registered plugins: {plugins}")
+    return
+
 
 if __name__ == "__main__":
     cli(obj={})
