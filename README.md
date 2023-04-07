@@ -70,3 +70,4 @@ audius-cli set-override-path discovery-provider --unset
 
 ## More options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
+
