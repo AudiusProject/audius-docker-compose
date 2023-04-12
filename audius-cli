@@ -911,7 +911,7 @@ def launch_notifications(ctx):
 @cli.command()
 @click.pass_context
 @click.argument("name", required=True)
-def plugin_register(ctx, name):
+def register_plugin(ctx, name):
     print(f"registering plugin {name}")
     override_env = get_override_path(ctx, "discovery-provider")
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
@@ -928,19 +928,19 @@ def plugin_register(ctx, name):
 @cli.command()
 @click.pass_context
 @click.argument("name", required=True)
-def plugin_deregister(ctx, name):
+def deregister_plugin(ctx, name):
     print(f"deregistering plugin {name}")
     override_env = get_override_path(ctx, "discovery-provider")
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
     else:
-        return []
+        return
     if name in plugins:
         plugins.remove(name)
         # last plugin removed
         if not plugins:
-            return []
+            return
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
@@ -948,7 +948,7 @@ def plugin_deregister(ctx, name):
 
 @cli.command()
 @click.pass_context
-def plugins(ctx):
+def print_plugins(ctx):
     override_env = get_override_path(ctx, "discovery-provider")
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     print(f"registered plugins: {plugins}")
