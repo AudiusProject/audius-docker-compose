@@ -34,9 +34,9 @@ After setting the variables, they are exported to an `override.env` file in the 
 | Variable      | Description | Example |
 | ----------- | ----------- | ----------- |
 | creatorNodeEndpoint      | The DNS of your content node. If you haven't registered the service yet, please enter the url you plan to register       | https://cn1.operator.xyz |
-| delegateOwnerWallet   | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server        | `0x07bC80Cc29bb15a5CA3D9DB9D80AcA25eB967aFc` |
+| delegateOwnerWallet   | Public key for the service used to sign responses from the server. This wallet holds no tokens.       | `0x07bC80Cc29bb15a5CA3D9DB9D80AcA25eB967aFc` |
 | delegatePrivateKey   | Private key associated with `delegateOwnerWallet`        | `2ef5a28ab4c39199085eb4707d292c980fef3dcc9dc854ba8736a545c11e81c4` |
-| spOwnerWallet   | Wallet that registered (or will register) the content node on chain        | `0x92d3ff660158Ec716f1bA28Bc65a7a0744E26A98` |
+| spOwnerWallet   | Public key that registered (or will register) the content node on chain. This wallet holds tokens.        | `0x92d3ff660158Ec716f1bA28Bc65a7a0744E26A98` |
 
 
 ### Discovery Node (Discovery Provider)
@@ -44,7 +44,7 @@ After setting the variables, they are exported to an `override.env` file in the 
 | Variable      | Description | Example |
 | ----------- | ----------- | ----------- |
 | audius_discprov_url      | The DNS of the discovery node. If you haven't registered the service yet, please enter the url you plan to register      | https://dn1.operator.xyz |
-| audius_delegate_owner_wallet      | Address of wallet that contains no tokens but that is registered on chain, used to sign JSON responses from server     | `0x07bC80Cc29bb15a5CA3D9DB9D80AcA25eB967aFc` |
+| audius_delegate_owner_wallet      | Public key for the service used to sign responses from the server. This wallet holds no tokens.     | `0x07bC80Cc29bb15a5CA3D9DB9D80AcA25eB967aFc` |
 | audius_delegate_private_key      | Private key associated with `audius_delegate_owner_wallet`    | `2ef5a28ab4c39199085eb4707d292c980fef3dcc9dc854ba8736a545c11e81c4` |
 
 
