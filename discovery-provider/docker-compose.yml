@@ -231,7 +231,10 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     environment:
-      - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key}
+      # Use the delegate private key as the signer key for the chain.
+      # Because the env_file is generated dynamically, default to blank string if not set
+      # otherwise we will always see a warning.
+      - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key:-}
     volumes:
       - ./chain/spec.json:/config/spec.json
       - ./chain/static-nodes.json:/nethermind/Data/static-nodes.json
