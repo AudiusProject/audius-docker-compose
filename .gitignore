@@ -11,5 +11,5 @@ identity-service/.env
 discovery-provider/chain/spec.json
 discovery-provider/chain/static-nodes.json
 
-# sp-utilities
-sp-utilities/node_modules/*
+# utilities
+utilities/node_modules/*
