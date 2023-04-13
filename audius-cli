@@ -40,6 +40,8 @@ SERVICES = (
     "identity-service",
 )
 
+REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
+
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
@@ -68,6 +70,49 @@ def get_override_path(ctx, service):
             "OVERRIDE_PATH", ctx.obj["manifests_path"] / service / "override.env"
         )
     )
+
+
+def launch_plugins(ctx):
+    # install registered plugins after upgrade
+    # assumes plugins are only for discprov
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+        for plugin in plugins:
+            if plugin:
+                subprocess.run(
+                    [
+                        "docker",
+                        "compose",
+                        "--project-directory",
+                        ctx.obj["manifests_path"] / "discovery-provider",
+                        "-f",
+                        ctx.obj["manifests_path"]
+                        / "discovery-provider"
+                        / f"docker-compose.{plugin}.yml",
+                        "pull",
+                    ],
+                    check=True,
+                )
+
+                subprocess.run(
+                    [
+                        "docker",
+                        "compose",
+                        "--project-directory",
+                        ctx.obj["manifests_path"] / "discovery-provider",
+                        "-f",
+                        ctx.obj["manifests_path"]
+                        / "discovery-provider"
+                        / f"docker-compose.{plugin}.yml",
+                        "up",
+                        "--no-recreate",
+                        "-d",
+                        f"{plugin}",
+                    ],
+                )
+    return
 
 
 def lock(ctx, group):
@@ -349,6 +394,8 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
+
+    launch_plugins(ctx)
 
     subprocess.run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
@@ -710,6 +757,8 @@ def upgrade(ctx, branch):
                 ],
             )
 
+    launch_plugins(ctx)
+
     subprocess.run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
     )
@@ -858,6 +907,53 @@ def launch_notifications(ctx):
             "notifications",
         ],
     )
+
+
+@cli.command()
+@click.pass_context
+@click.argument("name", required=True)
+def register_plugin(ctx, name):
+    print(f"registering plugin {name}")
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+    else:
+        plugins = []
+    plugins.append(name)
+    plugins = ",".join(plugins)
+    dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
+    return
+
+
+@cli.command()
+@click.pass_context
+@click.argument("name", required=True)
+def deregister_plugin(ctx, name):
+    print(f"deregistering plugin {name}")
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    if plugins is not None:
+        plugins = plugins.split(",")
+    else:
+        return
+    if name in plugins:
+        plugins.remove(name)
+        # last plugin removed
+        if not plugins:
+            return
+    plugins = ",".join(plugins)
+    dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
+    return
+
+
+@cli.command()
+@click.pass_context
+def print_plugins(ctx):
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    print(f"registered plugins: {plugins}")
+    return
 
 
 if __name__ == "__main__":
