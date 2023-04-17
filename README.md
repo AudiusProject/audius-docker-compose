@@ -79,6 +79,20 @@ If there's a reason to turn logging off, it can be disabled via config:
  audius-cli set-config discovery-provider audius_logging_disabled true
  audius-cli launch discovery-provider
  ```
+ 
+ ## Proxy Configuration
+ The Audius stack is intended to run on a variety of hardware with various network configurations.
+ In doing so, your node should provide
+ - HTTP/1.1 to support WebSocket connections
+ - Proper `X-Forwarded-For` headers to capture incoming traffic
+ 
+ In a minimal NGINX config, this can be accomplished like so:
+ ```
+ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+ proxy_http_version 1.1;
+ proxy_set_header Upgrade $http_upgrade;
+ proxy_set_header Connection "upgrade";
+ ```          
 
 ## Utilities
 The [utilities folder](/utilities/) contains a set of scripts and utilities to manage services like:
