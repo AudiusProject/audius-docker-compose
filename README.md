@@ -82,7 +82,7 @@ If there's a reason to turn logging off, it can be disabled via config:
  
  ## Proxy Configuration
  The Audius stack is intended to run on a variety of hardware with various network configurations.
- In doing so, your node should provide
+ In doing so, your node should provide:
  - HTTP/1.1 to support WebSocket connections
  - Proper `X-Forwarded-For` headers to capture incoming traffic
  
@@ -92,7 +92,9 @@ If there's a reason to turn logging off, it can be disabled via config:
  proxy_http_version 1.1;
  proxy_set_header Upgrade $http_upgrade;
  proxy_set_header Connection "upgrade";
- ```          
+ ```
+
+ Your exact configuration can be tested with health checks in [Utilities](#utilities).
 
 ## Utilities
 The [utilities folder](/utilities/) contains a set of scripts and utilities to manage services like:
