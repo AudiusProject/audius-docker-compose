@@ -54,6 +54,8 @@ touch creator-node/override.env
 touch creator-node/.env
 touch discovery-provider/override.env
 touch discovery-provider/.env
+touch identity-service/override.env
+touch identity-service/.env
 
 # check if ubuntu version is 20.04 or 22.04
 UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID)
