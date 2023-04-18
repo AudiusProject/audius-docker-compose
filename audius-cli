@@ -77,6 +77,8 @@ def launch_plugins(ctx):
     # assumes plugins are only for discprov
     override_env = get_override_path(ctx, "discovery-provider")
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    print("launching plugins")
+    print(plugins)
     if plugins is not None:
         plugins = plugins.split(",")
         for plugin in plugins:

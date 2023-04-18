@@ -12,4 +12,4 @@ discovery-provider/chain/spec.json
 discovery-provider/chain/static-nodes.json
 
 # utilities
-utilities/node_modules/*
+sp-utilities/node_modules/*
