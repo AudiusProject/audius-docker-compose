@@ -864,7 +864,7 @@ def launch_chain(ctx):
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
-            "--no-recreate",
+            # "--no-recreate", temporarily recreate to allow upgrading image to audius/nethermind
             "-d",
             "chain",
         ],
