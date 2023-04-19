@@ -122,6 +122,10 @@ async function claimRewards(
       console.log('Estimating Gas')
       gas = await delegateManagerContract.methods.claimRewards(spOwnerWallet).estimateGas()
       console.log('Calculated Gas:', gas)
+
+      const gasPrice = await web3.eth.getGasPrice()
+      const estimatedFee = gas * gasPrice
+      console.log('Estimated Fee:', web3.utils.fromWei(estimatedFee.toString(), 'ether'), 'ETH')
     }
 
     console.log('Claiming Rewards')
