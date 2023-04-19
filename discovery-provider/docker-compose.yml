@@ -199,7 +199,7 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/comms:${COMMS_TAG:-7a00b5c1aff16cc2e2d948205fb990a45ac111a0}
+    image: audius/comms:${COMMS_TAG:-ef22e0e84639123d8e30164e8bbcac6dfdd5a33a}
     container_name: comms
     command: discovery
     restart: unless-stopped
