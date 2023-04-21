@@ -218,13 +218,6 @@ services:
 
   chain:
     image: audius/nethermind:1.14.3
-    restart: unless-stopped
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --fail localhost:8545/health || exit 1"
-        ]
     command: --config config
     container_name: chain
     env_file:
