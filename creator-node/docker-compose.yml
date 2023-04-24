@@ -108,7 +108,7 @@ services:
     container_name: exporter_linux
 
   mediorum:
-    image: audius/mediorum:${MEDIORUM_TAG:-59371d69bda1e39d37f80dcccdee25f335c7738a}
+    image: audius/mediorum:${MEDIORUM_TAG:-786587bf13331ce98ba03f8a66644f99d8d42b2c}
     container_name: mediorum
     restart: unless-stopped
     networks:
