@@ -220,7 +220,7 @@ services:
       driver: json-file
 
   chain:
-    image: audius/nethermind:1.14.3
+    image: audius/nethermind:1.18.0
     command: --config config
     container_name: chain
     env_file:
