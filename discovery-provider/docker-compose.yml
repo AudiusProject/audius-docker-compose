@@ -235,6 +235,7 @@ services:
       - ./chain/spec.json:/config/spec.json
       - ./chain/static-nodes.json:/nethermind/Data/static-nodes.json
       - ./chain/config.cfg:/nethermind/configs/config.cfg
+      - ./chain/NLog.config:/nethermind/NLog.config
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
     labels:
