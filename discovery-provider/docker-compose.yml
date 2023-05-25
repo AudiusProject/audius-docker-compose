@@ -100,7 +100,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-cc373ba70295c2cbdcb3fa2addb9e9cc068da7fa}
+    image: audius/discovery-provider:${TAG:-19d73f0a967766333fbb4c12533a02a2365d4765}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -129,7 +129,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-cc373ba70295c2cbdcb3fa2addb9e9cc068da7fa}
+    image: audius/discovery-provider:${TAG:-19d73f0a967766333fbb4c12533a02a2365d4765}
     restart: always
     depends_on:
       db:
@@ -161,7 +161,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-cc373ba70295c2cbdcb3fa2addb9e9cc068da7fa}
+    image: audius/discovery-provider:${TAG:-19d73f0a967766333fbb4c12533a02a2365d4765}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -235,6 +235,7 @@ services:
       - ./chain/spec.json:/config/spec.json
       - ./chain/static-nodes.json:/nethermind/Data/static-nodes.json
       - ./chain/config.cfg:/nethermind/configs/config.cfg
+      - ./chain/NLog.config:/nethermind/NLog.config
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
     labels:
