@@ -92,7 +92,7 @@ async function acdcPeerCheck() {
   }
   const discoveryResp = await axios(discoveryRequestConfig)
   assert.deepStrictEqual(discoveryResp.status, 200)
-  assert.deepStrictEqual(discoveryResp.data, 'true')
+  assert.deepStrictEqual(discoveryResp.data, true)
   console.log('✓ acdc peering check')
 }
 
