@@ -1,14 +1,14 @@
-# Service Provider Utilities & Actions
+# Service Provider Utilities
 
 This project is a set of common scripts and utilities to manage services.
 
-# Setup
+## Setup
 
 ```
 npm install
 ```
 
-## [Discovery Node](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/discovery-provider)
+## Discovery Node
 
 ### Health Checks
 
@@ -19,7 +19,7 @@ export discoveryProviderEndpoint=https://discoveryprovider.domain.co
 npm run discovery:health
 ```
 
-## [Creator Node](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/creator-node)
+## Creator Node
 
 ### Health Checks
 
@@ -43,6 +43,8 @@ npm run creator:delist -- -a add -l 1,3,7 -t track
 npm run creator:delist -- --help
 ```
 
-## [Automatic claims](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/claim)
+## Automatic claims
 
 If you would like to automatically run claim operations whenever a new round is initiated, `claim.js` is included for your convenience in the claim folder.
+
+See [README](./claim)
