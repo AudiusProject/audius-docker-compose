@@ -1,17 +1,50 @@
-## Service Provider Utilities & Actions
+# Service Provider Utilities
 
 This project is a set of common scripts and utilities to manage services.
 
-### [Creator Node](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/creator-node)
-There are two utility scripts for creator node
+## Setup
 
-1. Health Checks - Run several tests against your content node to verify that it's healthy (including disk space, db connectivity, timeouts etc)
-2. Delist Content - Delist user, track or segment content from your content node
+```
+npm install
+```
 
-### [Discovery Node](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/discovery-provider)
+## Discovery Node
 
-Used for checking health and indexing progress for your discovery provider.
+### Health Checks
 
-### [Automatic claims](https://github.com/AudiusProject/audius-docker-compose/tree/master/sp-utilities/claim)
+Run before registering your service to ensure it complies with network specs:
+```
+export discoveryProviderEndpoint=https://discoveryprovider.domain.co
+
+npm run discovery:health
+```
+
+## Creator Node
+
+### Health Checks
+
+Run before registering your service to ensure it complies with network specs:
+```
+export creatorNodeEndpoint=https://creatornode.domain.co
+export delegatePrivateKey=5e468bc1b395e2eb8f3c90ef897406087b0599d139f6ca0060ba85dcc0dce8dc
+export spId=1 # if your node is not registered, set this env var to empty
+
+npm run creator:health
+```
+
+### Delist Content
+
+```
+export creatorNodeEndpoint=https://creatornode.domain.co
+export delegatePrivateKey=5e468bc1b395e2eb8f3c90ef897406087b0599d139f6ca0060ba85dcc0dce8dc
+export discoveryProviderEndpoint=https://discoveryprovider.domain.co
+
+npm run creator:delist -- -a add -l 1,3,7 -t track
+npm run creator:delist -- --help
+```
+
+## Automatic claims
 
 If you would like to automatically run claim operations whenever a new round is initiated, `claim.js` is included for your convenience in the claim folder.
+
+See [README](./claim)
