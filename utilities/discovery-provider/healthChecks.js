@@ -63,7 +63,7 @@ async function ipCheck() {
   assert.deepStrictEqual(discoveryResp.status, 200)
   assert.deepStrictEqual(ipApiResp.status, 200)
   assert.deepStrictEqual(discoveryClaimedIP, ipApiClaimedIP)
-  console.log('✓ IP check passed successfully')
+  console.log('✓ IP forwarding check passed successfully')
 }
 
 async function wsCheck() {
@@ -84,6 +84,18 @@ async function wsCheck() {
   })
 }
 
+async function acdcPeerCheck() {
+  const discoveryRequestConfig = {
+    url: `${DISCOVERY_PROVIDER_ENDPOINT}/nethermind/peer`,
+    method: 'get',
+    responseType: 'json',
+  }
+  const discoveryResp = await axios(discoveryRequestConfig)
+  assert.deepStrictEqual(discoveryResp.status, 200)
+  assert.deepStrictEqual(discoveryResp.data, 'true')
+  console.log('✓ acdc peering check')
+}
+
 async function run() {
   try {
     parseEnvVarsAndArgs()
@@ -95,6 +107,7 @@ async function run() {
     await healthCheck()
     await ipCheck()
     await wsCheck()
+    await acdcPeerCheck()
     console.log('All checks passed!')
     process.exit(0)
   } catch (e) {
