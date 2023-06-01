@@ -81,6 +81,7 @@ services:
 
   exporter_docker:
     image: prom/container-exporter
+    container_name: exporter_docker
     restart: always
     volumes:
       - /sys/fs/cgroup:/cgroup
