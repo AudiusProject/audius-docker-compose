@@ -57,7 +57,7 @@ services:
     labels:
       autoheal: "true"
     ports:
-      - "${BACKEND_PORT:-4000}:4000"
+      - "${BACKEND_PORT:-4001}:4000"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -114,7 +114,7 @@ services:
     networks:
       - creator-node-network
     ports:
-      - "${MEDIORUM_PORT:-1991}:1991"
+      - "${MEDIORUM_PORT:-4000}:1991"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
