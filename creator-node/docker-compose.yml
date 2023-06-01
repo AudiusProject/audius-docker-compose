@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
+    image: audius/creator-node:${TAG:-df9cf1bc952afb2520ab6a466bddea157d389488}
     restart: always
     depends_on:
       db:
@@ -57,7 +57,7 @@ services:
     labels:
       autoheal: "true"
     ports:
-      - "${BACKEND_PORT:-4000}:4000"
+      - "${BACKEND_PORT:-4001}:4000"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -108,13 +108,13 @@ services:
     container_name: exporter_linux
 
   mediorum:
-    image: audius/mediorum:${MEDIORUM_TAG:-204a5e06ab460769cbd015da30d43a117aee4992}
+    image: audius/mediorum:${TAG:-df9cf1bc952afb2520ab6a466bddea157d389488}
     container_name: mediorum
     restart: unless-stopped
     networks:
       - creator-node-network
     ports:
-      - "${MEDIORUM_PORT:-1991}:1991"
+      - "${MEDIORUM_PORT:-4000}:1991"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
