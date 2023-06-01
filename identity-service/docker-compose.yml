@@ -90,5 +90,12 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
+    networks:
+      - identity-service-network
+
 networks:
   identity-service-network:

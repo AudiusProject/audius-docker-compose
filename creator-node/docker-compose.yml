@@ -107,6 +107,13 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
+    networks:
+      - creator-node-network
+
   mediorum:
     image: audius/mediorum:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
     container_name: mediorum
