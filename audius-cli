@@ -117,12 +117,11 @@ def launch_plugins(ctx):
 
 
 class Lock:
-    def __init__(self):
+    def lock(self):
         self.lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/docker.lock").expanduser()
         self.lockfile_path.parent.mkdir(parents=True, exist_ok=True)
         self.lockfile_path.touch(exist_ok=True)
 
-    def lock(self):
         self.lockfile = open(self.lockfile_path, 'a')  # Open the file
         try:
             fcntl.flock(self.lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
