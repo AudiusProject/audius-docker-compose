@@ -174,15 +174,6 @@ services:
     profiles:
       - seed
 
-  autoheal:
-    image: willfarrell/autoheal
-    container_name: autoheal
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    environment:
-      - AUTOHEAL_INTERVAL=10
-      - CURL_TIMEOUT=30
-
   vector:
     extends:
       file: ../common-services.yml
