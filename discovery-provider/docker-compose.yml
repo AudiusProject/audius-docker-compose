@@ -98,9 +98,8 @@ services:
     networks:
       - discovery-provider-network
 
-  backend:
-    container_name: server
-    image: audius/discovery-provider:${TAG:-fe23dbcd55e59c2f6a975b0067d3832895115155}
+  server:
+    image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -128,8 +127,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   indexer:
-    container_name: indexer
-    image: audius/discovery-provider:${TAG:-fe23dbcd55e59c2f6a975b0067d3832895115155}
+    image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
     restart: always
     depends_on:
       db:
@@ -161,7 +159,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-fe23dbcd55e59c2f6a975b0067d3832895115155}
+    image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -175,6 +173,15 @@ services:
       - discovery-provider-network
     profiles:
       - seed
+
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - AUTOHEAL_INTERVAL=10
+      - CURL_TIMEOUT=30
 
   vector:
     extends:
@@ -212,13 +219,6 @@ services:
 
   chain:
     image: audius/nethermind:1.14.3
-    restart: unless-stopped
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --fail localhost:8545/health || exit 1"
-        ]
     command: --config config
     container_name: chain
     env_file:
@@ -236,6 +236,8 @@ services:
       - ./chain/NLog.config:/nethermind/NLog.config
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
+    labels:
+      autoheal: "true"
     ports:
       - "30300:30300"
       - "30300:30300/udp"
