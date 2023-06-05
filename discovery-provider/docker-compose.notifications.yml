@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   notifications:
-    image: audius/discovery-provider-notifications:${NOTIFICATIONS_TAG:-3410f96241780a51125c15ea073035203c356d74}
+    image: audius/discovery-provider-notifications:${TAG:-3410f96241780a51125c15ea073035203c356d74}
     container_name: notifications
     restart: unless-stopped
     networks:
