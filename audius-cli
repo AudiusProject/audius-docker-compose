@@ -16,6 +16,7 @@ import click
 import crontab
 import dotenv
 import psutil
+import fcntl
 
 GB = 1024**3
 
@@ -116,16 +117,30 @@ def launch_plugins(ctx):
 
 
 def lock(ctx, group):
-    lockfile = pathlib.Path(f"~/.local/share/audius-cli/{group}.lock").expanduser()
-    lockfile.parent.mkdir(parents=True, exist_ok=True)
-    lockfile.touch(exist_ok=True)
+    lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/{group}.lock").expanduser()
+    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
+    lockfile_path.touch(exist_ok=True)
 
-    pid, retries = lockfile.read_text(), 0
-    while pid.isdigit() and int(pid) != os.getpid() and psutil.pid_exists(int(pid)):
-        click.secho("Giving up on lock")
-        sys.exit(1)
+    lockfile = open(lockfile_path, 'a')  # Open the file
 
-    lockfile.write_text(str(os.getpid()))
+    # Lock the file (fcntl.F_LOCK)
+    try:
+        fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        print("File is locked")
+
+        # Do something with the file .
+        
+        pid = os.getpid()
+        lockfile.write(f'Locked data by process id: {pid}\n')
+        
+    except IOError:
+        print("File is already locked by another process")
+
+    finally:
+        # Unlock the file (fcntl.F_UNLOCK)
+        fcntl.flock(lockfile.fileno(), fcntl.LOCK_UN)
+        print("File is unlocked")
+        lockfile.close()
 
 
 def set_automatic_env(ctx):
