@@ -122,14 +122,8 @@ def lock(ctx, group):
 
     pid, retries = lockfile.read_text(), 0
     while pid.isdigit() and int(pid) != os.getpid() and psutil.pid_exists(int(pid)):
-        if retries == 600:  # 10 mins
-            click.secho("Giving up on lock")
-            sys.exit(1)
-        if retries % 15 == 0:
-            click.secho(f"Waiting for lock (held by pid {pid})", color="gray")
-        time.sleep(1)
-        pid = lockfile.read_text()
-        retries += 1
+        click.secho("Giving up on lock")
+        sys.exit(1)
 
     lockfile.write_text(str(os.getpid()))
 
