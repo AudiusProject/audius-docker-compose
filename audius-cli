@@ -301,8 +301,6 @@ def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
-    lock(ctx, "docker")
-
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
