@@ -116,31 +116,31 @@ def launch_plugins(ctx):
     return
 
 
-def lock(ctx, group):
-    lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/{group}.lock").expanduser()
-    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-    lockfile_path.touch(exist_ok=True)
+class Lock:
+    def __init__(self):
+        self.lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/docker.lock").expanduser()
+        self.lockfile_path.parent.mkdir(parents=True, exist_ok=True)
+        self.lockfile_path.touch(exist_ok=True)
 
-    lockfile = open(lockfile_path, 'a')  # Open the file
+    def lock(self):
+        self.lockfile = open(self.lockfile_path, 'a')  # Open the file
+        try:
+            fcntl.flock(self.lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            print("File is locked")
 
-    # Lock the file (fcntl.F_LOCK)
-    try:
-        fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        print("File is locked")
+            # Write the current process id to the file.
+            pid = os.getpid()
+            self.lockfile.write(f'Locked data by process id: {pid}\n')
 
-        # Do something with the file .
-        
-        pid = os.getpid()
-        lockfile.write(f'Locked data by process id: {pid}\n')
-        
-    except IOError:
-        print("File is already locked by another process")
+        except IOError:
+            print("File is already locked by another process")
 
-    finally:
-        # Unlock the file (fcntl.F_UNLOCK)
-        fcntl.flock(lockfile.fileno(), fcntl.LOCK_UN)
-        print("File is unlocked")
-        lockfile.close()
+    def unlock(self):
+        try:
+            fcntl.flock(self.lockfile.fileno(), fcntl.LOCK_UN)
+            print("File is unlocked")
+        finally:
+            self.lockfile.close()
 
 
 def set_automatic_env(ctx):
@@ -316,7 +316,7 @@ def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
-    lock(ctx, "docker")
+    Lock.lock()
 
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
@@ -409,6 +409,7 @@ def launch(ctx, service, seed, chain, yes):
     subprocess.run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
     )
+    Lock.unlock()
 
 
 @cli.command()
