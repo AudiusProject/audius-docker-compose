@@ -51,7 +51,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
+launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",) + ("pedalboard",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -302,8 +302,9 @@ def health_check(ctx, service):
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=launch_service_type)
+@click.option("--pedal", type=str, default="")
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, chain, yes, pedal):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -311,6 +312,10 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
+        return
+    
+    if service == "pedalboard":
+        ctx.invoke(launch_pedal, pedal)
         return
 
     try:
@@ -594,9 +599,10 @@ def get_config(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--comms", is_flag=True)
 @click.option("--notifications", is_flag=True)
+@click.option("--pedalboard", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
-def set_tag(ctx, unset, yes, comms, notifications, tag):
+def set_tag(ctx, unset, yes, comms, notifications, pedalboard, tag):
     """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
@@ -632,6 +638,9 @@ def set_tag(ctx, unset, yes, comms, notifications, tag):
             key = "COMMS_TAG"
         if notifications:
             key = "NOTIFICATIONS_TAG"
+            env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
+        if pedalboard:
+            key = "PEDALBOARD_TAG"
             env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
         if unset:
             logging.info(f"> audius-cli set-tag unset service={service!r}")
@@ -906,6 +915,49 @@ def launch_notifications(ctx):
             "--no-recreate",
             "-d",
             "notifications",
+        ],
+    )
+
+
+@cli.command()
+@click.pass_context
+@click.option("--pedal", type=str, default="")
+def launch_pedal(ctx, pedal):
+    lock(ctx, "docker")
+
+    if pedal == "":
+        print("no pedal provided")
+        return
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"]
+            / "discovery-provider"
+            / "docker-compose.pedalboard.yml",
+            "pull",
+        ],
+        check=True,
+    )
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"]
+            / "discovery-provider"
+            / "docker-compose.pedalboard.yml",
+            "up",
+            "--no-recreate",
+            "-d",
+            pedal,
         ],
     )
 
