@@ -315,7 +315,7 @@ def launch(ctx, service, seed, chain, yes, pedal):
         return
     
     if service == "pedalboard":
-        ctx.invoke(launch_pedal, pedal)
+        launch_pedal(ctx, pedal)
         return
 
     try:
