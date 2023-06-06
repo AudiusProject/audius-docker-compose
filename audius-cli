@@ -919,9 +919,6 @@ def launch_notifications(ctx):
     )
 
 
-@cli.command()
-@click.pass_context
-@click.option("--pedal", type=str, default="")
 def launch_pedal(ctx, pedal):
     lock(ctx, "docker")
 
