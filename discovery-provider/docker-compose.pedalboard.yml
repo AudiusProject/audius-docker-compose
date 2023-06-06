@@ -11,7 +11,7 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-      - pedalboard.env
+#      - pedalboard.env
     logging:
       options:
         max-size: 10m
