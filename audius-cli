@@ -51,7 +51,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
+launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",) + ("pedalboard",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -312,6 +312,9 @@ def launch(ctx, service, seed, chain, yes):
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
+    
+    if service == "pedalboard":
+        ctx.invoke(launch_pedalboard)
 
     try:
         ctx.invoke(check_config, service=service)
@@ -902,6 +905,46 @@ def launch_notifications(ctx):
         ],
     )
 
+
+@cli.command()
+@click.pass_context
+def launch_pedalboard(ctx):
+    lock(ctx, "docker")
+
+    pedals = ["trending-challenge-rewards"]
+
+    for pedal in pedals:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.pedalboard.yml",
+                "pull",
+            ],
+            check=True,
+        )
+
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.pedalboard.yml",
+                "up",
+                "--no-recreate",
+                "-d",
+                pedal,
+            ],
+        )
 
 @cli.command()
 @click.pass_context

@@ -2,16 +2,16 @@ version: "3.9"
 
 services:
 
-  notifications:
-    image: audius/discovery-provider-notifications:${TAG:-3410f96241780a51125c15ea073035203c356d74}
-    container_name: notifications
+  trending-challenge-rewards:
+    image: audius/trending-challenge-rewards:${PEDALBOARD_TAG:-072dc096aec41803dcc6cab76961c2555bad7ed1}
+    container_name: pedalboard-trending-challenge-rewards
     restart: unless-stopped
     networks:
       - dn-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-      #- notifications.env
+      - pedalboard.env
     logging:
       options:
         max-size: 10m
@@ -19,8 +19,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-    ports:
-      - "6000:6000"
 
 networks:
   dn-network:
