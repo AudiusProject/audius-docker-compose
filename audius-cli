@@ -132,8 +132,8 @@ class Lock:
             pid = os.getpid()
             self.lockfile.write(f'Locked data by process id: {pid}\n')
 
-        except IOError:
-            print("File is already locked by another process")
+        except Exception:
+            raise Exception("File is already locked by another process")
 
     def unlock(self):
         try:
