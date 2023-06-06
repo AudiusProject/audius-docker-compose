@@ -917,6 +917,7 @@ def launch_notifications(ctx):
         ],
     )
 
+
 @cli.command()
 @click.pass_context
 def launch_pedalboard(ctx):
