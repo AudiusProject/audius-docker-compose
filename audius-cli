@@ -807,8 +807,6 @@ def launch_chain(ctx):
     relevant environment variables. Launches or resets chain acoordingly.
     """
 
-    lock(ctx, "docker")
-
     network = get_network(ctx, "discovery-provider")
     env = ctx.obj["manifests_path"] / "discovery-provider" / f"{network}.env"
     env_data = dotenv.dotenv_values(env)
