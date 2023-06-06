@@ -302,9 +302,8 @@ def health_check(ctx, service):
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=launch_service_type)
-@click.option("-p", "--pedal", "pedal", default="")
 @click.pass_context
-def launch(ctx, service, seed, chain, yes, pedal):
+def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -315,7 +314,7 @@ def launch(ctx, service, seed, chain, yes, pedal):
         return
     
     if service == "pedalboard":
-        launch_pedal(ctx, pedal)
+        ctx.invoke(launch_pedalboard)
         return
 
     try:
@@ -918,45 +917,45 @@ def launch_notifications(ctx):
         ],
     )
 
-
-def launch_pedal(ctx, pedal):
+@cli.command()
+@click.pass_context
+def launch_pedalboard(ctx):
     lock(ctx, "docker")
 
-    if pedal == "":
-        print("no pedal provided")
-        return
+    pedals = ["trending-challenge-rewards"]
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "-f",
-            ctx.obj["manifests_path"]
-            / "discovery-provider"
-            / "docker-compose.pedalboard.yml",
-            "pull",
-        ],
-        check=True,
-    )
+    for pedal in pedals:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.pedalboard.yml",
+                "pull",
+            ],
+            check=True,
+        )
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "-f",
-            ctx.obj["manifests_path"]
-            / "discovery-provider"
-            / "docker-compose.pedalboard.yml",
-            "up",
-            "--no-recreate",
-            "-d",
-            pedal,
-        ],
-    )
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.pedalboard.yml",
+                "up",
+                "--no-recreate",
+                "-d",
+                pedal,
+            ],
+        )
 
 
 @cli.command()
