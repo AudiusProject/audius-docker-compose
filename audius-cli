@@ -55,6 +55,9 @@ service_type = click.Choice(SERVICES)
 launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
+lockfile_path = pathlib.Path(
+    f"~/.local/share/audius-cli/docker.lock"
+).expanduser()
 
 
 def get_network(ctx, service):
@@ -116,31 +119,29 @@ def launch_plugins(ctx):
     return
 
 
-class Lock:
-    def __init__(self):
-        self.lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/docker.lock").expanduser()
-        self.lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-        self.lockfile_path.touch(exist_ok=True)
+def lock():
+    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
+    lockfile_path.touch(exist_ok=True)
+    lockfile = open(lockfile_path, "a")  # Open the file
+    try:
+        fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        print("File is locked")
 
-    def lock(self):
-        self.lockfile = open(self.lockfile_path, 'a')  # Open the file
-        try:
-            fcntl.flock(self.lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            print("File is locked")
+        # Write the current process id to the file.
+        pid = os.getpid()
+        lockfile.write(f"Locked data by process id: {pid}\n")
 
-            # Write the current process id to the file.
-            pid = os.getpid()
-            self.lockfile.write(f'Locked data by process id: {pid}\n')
+    except Exception:
+        raise Exception("File is already locked by another process")
 
-        except Exception:
-            raise Exception("File is already locked by another process")
 
-    def unlock(self):
-        try:
-            fcntl.flock(self.lockfile.fileno(), fcntl.LOCK_UN)
-            print("File is unlocked")
-        finally:
-            self.lockfile.close()
+def unlock():
+    try:
+        lockfile = open(lockfile_path, "a")  # Open the file
+        fcntl.flock(lockfile.fileno(), fcntl.LOCK_UN)
+        print("File is unlocked")
+    finally:
+        lockfile.close()
 
 
 def set_automatic_env(ctx):
@@ -315,9 +316,7 @@ def health_check(ctx, service):
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
-    lok = Lock()
-    lok.lock()
-
+    lock()
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
@@ -410,7 +409,7 @@ def launch(ctx, service, seed, chain, yes):
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
     )
 
-    lok.unlock()
+    unlock()
 
 
 @cli.command()
