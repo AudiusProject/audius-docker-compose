@@ -22,17 +22,6 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
-  exporter_postgres_read_replica:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres_read_replica
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--read-replica" ]
-    networks:
-      - discovery-provider-network
 
   cache:
     container_name: redis
@@ -200,6 +189,13 @@ services:
       file: ../common-services.yml
       service: exporter_linux
     container_name: exporter_linux
+
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
+    networks:
+      - discovery-provider-network
 
   comms:
     image: audius/comms:${TAG:-e2b751189fbe564f83a1d54d369e11d9a735b4ae}
