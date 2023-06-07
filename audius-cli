@@ -77,42 +77,81 @@ def launch_plugins(ctx):
     # assumes plugins are only for discprov
     override_env = get_override_path(ctx, "discovery-provider")
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+    legacy_plugins = ["notifications", "es-indexer", "verified-uploads"]
     if plugins is not None:
         plugins = plugins.split(",")
         for plugin in plugins:
             if plugin:
-                subprocess.run(
-                    [
-                        "docker",
-                        "compose",
-                        "--project-directory",
-                        ctx.obj["manifests_path"] / "discovery-provider",
-                        "-f",
-                        ctx.obj["manifests_path"]
-                        / "discovery-provider"
-                        / f"docker-compose.{plugin}.yml",
-                        "pull",
-                    ],
-                    check=True,
-                )
-
-                subprocess.run(
-                    [
-                        "docker",
-                        "compose",
-                        "--project-directory",
-                        ctx.obj["manifests_path"] / "discovery-provider",
-                        "-f",
-                        ctx.obj["manifests_path"]
-                        / "discovery-provider"
-                        / f"docker-compose.{plugin}.yml",
-                        "up",
-                        "--no-recreate",
-                        "-d",
-                        f"{plugin}",
-                    ],
-                )
+                if plugin in legacy_plugins:
+                    launch_legacy_plugin(ctx, plugin)
+                else:
+                    subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "--project-directory",
+                            ctx.obj["manifests_path"] / "discovery-provider",
+                            "-f",
+                            ctx.obj["manifests_path"]
+                            / "discovery-provider"
+                            / "docker-compose.pedalboard.yml",
+                            "pull",
+                        ],
+                        check=True,
+                    )
+                                        
+                    subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "--project-directory",
+                            ctx.obj["manifests_path"] / "discovery-provider",
+                            "-f",
+                            ctx.obj["manifests_path"]
+                            / "discovery-provider"
+                            / "docker-compose.pedalboard.yml",
+                            "up",
+                            "--no-recreate",
+                            "-d",
+                            plugin,
+                        ],
+                    )
     return
+
+
+def launch_legacy_plugin(ctx, plugin):
+    if plugin:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / f"docker-compose.{plugin}.yml",
+                "pull",
+            ],
+            check=True,
+        )
+
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / f"docker-compose.{plugin}.yml",
+                "up",
+                "--no-recreate",
+                "-d",
+                f"{plugin}",
+            ],
+        )
 
 
 def lock(ctx, group):
@@ -911,40 +950,36 @@ def launch_notifications(ctx):
 def launch_pedalboard(ctx):
     lock(ctx, "docker")
 
-    plugins = ["trending-challenge-rewards"]
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"]
+            / "discovery-provider"
+            / "docker-compose.pedalboard.yml",
+            "pull",
+        ],
+        check=True,
+    )
 
-    for plugin in plugins:
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "-f",
-                ctx.obj["manifests_path"]
-                / "discovery-provider"
-                / "docker-compose.pedalboard.yml",
-                "pull",
-            ],
-            check=True,
-        )
-
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "-f",
-                ctx.obj["manifests_path"]
-                / "discovery-provider"
-                / "docker-compose.pedalboard.yml",
-                "up",
-                "--no-recreate",
-                "-d",
-                plugins,
-            ],
-        )
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"]
+            / "discovery-provider"
+            / "docker-compose.pedalboard.yml",
+            "up",
+            "--no-recreate",
+            "-d"
+        ],
+    )
 
 
 @cli.command()
