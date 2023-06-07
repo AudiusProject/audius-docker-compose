@@ -911,9 +911,9 @@ def launch_notifications(ctx):
 def launch_pedalboard(ctx):
     lock(ctx, "docker")
 
-    pedals = ["trending-challenge-rewards"]
+    plugins = ["trending-challenge-rewards"]
 
-    for pedal in pedals:
+    for plugin in plugins:
         subprocess.run(
             [
                 "docker",
@@ -942,9 +942,10 @@ def launch_pedalboard(ctx):
                 "up",
                 "--no-recreate",
                 "-d",
-                pedal,
+                plugins,
             ],
         )
+
 
 @cli.command()
 @click.pass_context
