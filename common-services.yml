@@ -78,3 +78,11 @@ services:
       - '/:/host:ro,rslave'
     cap_add:
       - SYS_TIME
+
+  exporter_docker:
+    image: prom/container-exporter
+    container_name: exporter_docker
+    restart: always
+    volumes:
+      - /sys/fs/cgroup:/cgroup
+      - /var/run/docker.sock:/var/run/docker.sock
