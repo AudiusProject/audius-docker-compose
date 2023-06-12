@@ -101,7 +101,6 @@ services:
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
-    restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
       db:
@@ -130,7 +129,6 @@ services:
   indexer:
     container_name: indexer
     image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
-    restart: always
     depends_on:
       db:
         condition: service_healthy
@@ -202,7 +200,7 @@ services:
     container_name: exporter_linux
 
   comms:
-    image: audius/comms:${COMMS_TAG:-e2b751189fbe564f83a1d54d369e11d9a735b4ae}
+    image: audius/comms:${TAG:-e2b751189fbe564f83a1d54d369e11d9a735b4ae}
     container_name: comms
     command: discovery
     restart: unless-stopped

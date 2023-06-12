@@ -16,8 +16,6 @@ import click
 import crontab
 import dotenv
 import psutil
-import fcntl
-from functools import wraps
 
 GB = 1024**3
 
@@ -56,7 +54,6 @@ service_type = click.Choice(SERVICES)
 launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
-lockfile_path = pathlib.Path(f"~/.local/share/audius-cli/docker.lock").expanduser()
 
 
 def get_network(ctx, service):
@@ -118,65 +115,23 @@ def launch_plugins(ctx):
     return
 
 
-def lock(a=None, b=None):
-    print("locking: ", os.getpid())
-    lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-    lockfile_path.touch(exist_ok=True)
-    lockfile = open(lockfile_path, "w+")  # Open the file
-    start_time = time.time()
+def lock(ctx, group):
+    lockfile = pathlib.Path(f"~/.local/share/audius-cli/{group}.lock").expanduser()
+    lockfile.parent.mkdir(parents=True, exist_ok=True)
+    lockfile.touch(exist_ok=True)
 
-    while time.time() - start_time < 600:  # 600 seconds = 10 minutes
-        try:
-            fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            print("File is locked")
+    pid, retries = lockfile.read_text(), 0
+    while pid.isdigit() and int(pid) != os.getpid() and psutil.pid_exists(int(pid)):
+        if retries == 600:  # 10 mins
+            click.secho("Giving up on lock")
+            sys.exit(1)
+        if retries % 15 == 0:
+            click.secho(f"Waiting for lock (held by pid {pid})", color="gray")
+        time.sleep(1)
+        pid = lockfile.read_text()
+        retries += 1
 
-            # Write the current process id to the file.
-            pid = os.getpid()
-            lockfile.write(f"Locked data by process id: {pid}\n")
-            return
-        except Exception:
-            raise Exception("File is already locked by another process")
-        time.sleep(15)  # Wait for 1 second
-
-
-def unlock():
-    try:
-        lockfile = open(lockfile_path, "w+")  # Open the file
-        fcntl.flock(lockfile.fileno(), fcntl.LOCK_UN)
-        print("File is unlocked")
-    finally:
-        lockfile.close()
-
-
-def file_lock_decorator():
-    def decorator_function(original_function):
-        @wraps(original_function)
-        def wrapper(*args, **kwargs):
-            print("wrapped")
-            # Open the file in write mode
-            lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-            lockfile_path.touch(exist_ok=True)
-            lockfile = open(lockfile_path, "w")  # Open the file
-
-            try:
-                # Acquire an exclusive lock on the file
-
-                fcntl.flock(lockfile, fcntl.LOCK_EX)
-                print("acquired lock")
-                # Call the original function
-                result = original_function(*args, **kwargs)
-
-            finally:
-                # Release the lock and close the file
-                fcntl.flock(lockfile, fcntl.LOCK_UN)
-                lockfile.close()
-                print("released lock")
-
-            return result
-
-        return wrapper
-
-    return decorator_function
+    lockfile.write_text(str(os.getpid()))
 
 
 def set_automatic_env(ctx):
@@ -348,10 +303,12 @@ def health_check(ctx, service):
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=launch_service_type)
 @click.pass_context
-@file_lock_decorator()
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
+
+    lock(ctx, "docker")
+
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
@@ -449,7 +406,6 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
-    print("upped")
 
     launch_plugins(ctx)
 
@@ -648,11 +604,9 @@ def get_config(ctx, service):
 @cli.command()
 @click.option("--unset", is_flag=True)
 @click.option("-y", "--yes", is_flag=True)
-@click.option("--comms", is_flag=True)
-@click.option("--notifications", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
-def set_tag(ctx, unset, yes, comms, notifications, tag):
+def set_tag(ctx, unset, yes, tag):
     """Set the commit tag"""
     if not unset and tag is None:
         tag = click.prompt(click.style("Tag", bold=True))
@@ -684,11 +638,6 @@ def set_tag(ctx, unset, yes, comms, notifications, tag):
     for service in SERVICES:
         key = "TAG"
         env_file = ctx.obj["manifests_path"] / service / ".env"
-        if comms:
-            key = "COMMS_TAG"
-        if notifications:
-            key = "NOTIFICATIONS_TAG"
-            env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
         if unset:
             logging.info(f"> audius-cli set-tag unset service={service!r}")
             dotenv.unset_key(env_file, key)
@@ -851,6 +800,8 @@ def launch_chain(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
     """
+
+    lock(ctx, "docker")
 
     network = get_network(ctx, "discovery-provider")
     env = ctx.obj["manifests_path"] / "discovery-provider" / f"{network}.env"
