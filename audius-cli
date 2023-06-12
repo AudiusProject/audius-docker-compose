@@ -381,17 +381,6 @@ def launch(ctx, service, seed, chain, yes):
         ctx.invoke(launch_chain)
         if chain:
             return
-            
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            "down",
-            "server",
-        ],
-    )
 
     subprocess.run(
         [
@@ -401,7 +390,6 @@ def launch(ctx, service, seed, chain, yes):
             ctx.obj["manifests_path"] / service,
             "up",
             "--remove-orphans",
-            "--wait",
             "-d",
         ],
         check=True,
