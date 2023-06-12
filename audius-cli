@@ -56,6 +56,11 @@ network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
 
+def run(cmd, **kwargs):
+    print(subprocess.list2cmdline(cmd))
+    return subprocess.run(cmd, **kwargs)
+
+
 def get_network(ctx, service):
     """Returns the network name for the given service."""
     return dotenv.dotenv_values(ctx.obj["manifests_path"] / service / ".env").get(
@@ -81,7 +86,7 @@ def launch_plugins(ctx):
         plugins = plugins.split(",")
         for plugin in plugins:
             if plugin:
-                subprocess.run(
+                run(
                     [
                         "docker",
                         "compose",
@@ -96,7 +101,7 @@ def launch_plugins(ctx):
                     check=True,
                 )
 
-                subprocess.run(
+                run(
                     [
                         "docker",
                         "compose",
@@ -141,7 +146,7 @@ def set_automatic_env(ctx):
         )
 
     git_hash = (
-        subprocess.run(
+        run(
             ["git", "rev-parse", "HEAD"],
             capture_output=True,
             cwd=ctx.obj["manifests_path"],
@@ -232,7 +237,7 @@ def health_check(ctx, service):
         path = ctx.obj["manifests_path"] / "discovery-provider"
         container = "notifications"
 
-    proc = subprocess.run(
+    proc = run(
         [
             "docker",
             "compose",
@@ -341,7 +346,7 @@ def launch(ctx, service, seed, chain, yes):
     if not yes:
         click.confirm(click.style("Do you want to continue?", bold=True), abort=True)
 
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
@@ -354,7 +359,7 @@ def launch(ctx, service, seed, chain, yes):
 
     if seed and service == "discovery-provider":
         # make sure backend is not running
-        subprocess.run(
+        run(
             [
                 "docker",
                 "compose",
@@ -366,7 +371,7 @@ def launch(ctx, service, seed, chain, yes):
         )
 
         click.secho("Seeding the discovery provider", fg="yellow")
-        subprocess.run(
+        run(
             [
                 "docker",
                 "compose",
@@ -382,7 +387,7 @@ def launch(ctx, service, seed, chain, yes):
         if chain:
             return
 
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
@@ -397,7 +402,7 @@ def launch(ctx, service, seed, chain, yes):
 
     launch_plugins(ctx)
 
-    subprocess.run(
+    run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
     )
 
@@ -408,7 +413,7 @@ def launch(ctx, service, seed, chain, yes):
 @click.pass_context
 def logs(ctx, service, containers):
     """Get logs for a service/container"""
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
@@ -436,7 +441,7 @@ def restart(ctx, service, containers):
         services = SERVICES
 
     for service in services:
-        proc = subprocess.run(
+        proc = run(
             [
                 "docker",
                 "compose",
@@ -450,7 +455,7 @@ def restart(ctx, service, containers):
         )
 
         if proc.stdout:
-            subprocess.run(
+            run(
                 [
                     "docker",
                     "compose",
@@ -465,7 +470,7 @@ def restart(ctx, service, containers):
                 ],
             )
 
-    subprocess.run(
+    run(
         [
             "docker",
             "image",
@@ -491,7 +496,7 @@ def down(ctx, service, containers):
         services = SERVICES
 
     for service in services:
-        subprocess.run(
+        run(
             [
                 "docker",
                 "compose",
@@ -553,7 +558,7 @@ def set_config(ctx, service, unset, required, key, value):
 @click.argument("service", type=service_type)
 @click.pass_context
 def get_config(ctx, service):
-    proc = subprocess.run(
+    proc = run(
         [
             "docker",
             "compose",
@@ -568,7 +573,7 @@ def get_config(ctx, service):
 
     # get from inside container if running otherwise fallback override.env
     if proc.stdout:
-        subprocess.run(
+        run(
             [
                 "docker",
                 "compose",
@@ -688,12 +693,12 @@ def set_network(ctx, unset, network):
 def pull(ctx, branch):
     """Pull latest updates from remote"""
     try:
-        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+        run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
         if branch:
-            subprocess.run(
+            run(
                 ["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"]
             )
-        subprocess.run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
+        run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
     except subprocess.CalledProcessError:
         click.secho("Could not pull", fg="red")
         sys.exit(1)
@@ -710,7 +715,7 @@ def upgrade(ctx, branch):
     lock(ctx, "docker")
 
     for service in SERVICES:
-        proc = subprocess.run(
+        proc = run(
             [
                 "docker",
                 "compose",
@@ -725,7 +730,7 @@ def upgrade(ctx, branch):
 
         # update if service is running
         if proc.stdout:
-            subprocess.run(
+            run(
                 [
                     "docker",
                     "compose",
@@ -738,7 +743,7 @@ def upgrade(ctx, branch):
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
-            subprocess.run(
+            run(
                 [
                     "docker",
                     "compose",
@@ -752,7 +757,7 @@ def upgrade(ctx, branch):
 
     launch_plugins(ctx)
 
-    subprocess.run(
+    run(
         ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
     )
 
@@ -821,7 +826,7 @@ def launch_chain(ctx):
         prev_network_id = prev_spec_data["params"]["networkID"]
         if prev_network_id != network_id:
             print("Resetting chain")
-            subprocess.run(
+            run(
                 [
                     "docker",
                     "rm",
@@ -830,7 +835,7 @@ def launch_chain(ctx):
                 ],
             )
             clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
-            subprocess.run(["sudo", "rm", "-rf", clique_db_path])
+            run(["sudo", "rm", "-rf", clique_db_path])
 
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
@@ -848,7 +853,7 @@ def launch_chain(ctx):
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
@@ -870,7 +875,7 @@ def launch_chain(ctx):
 def launch_notifications(ctx):
     lock(ctx, "docker")
 
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
@@ -885,7 +890,7 @@ def launch_notifications(ctx):
         check=True,
     )
 
-    subprocess.run(
+    run(
         [
             "docker",
             "compose",
