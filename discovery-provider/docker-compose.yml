@@ -22,17 +22,6 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
-  exporter_postgres_read_replica:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres_read_replica
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--read-replica" ]
-    networks:
-      - discovery-provider-network
 
   cache:
     container_name: redis
@@ -100,7 +89,12 @@ services:
 
   backend:
     container_name: server
+<<<<<<< HEAD
     image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
+=======
+    image: audius/discovery-provider:${TAG:-953a416ef18c99ff91a3e9b58312df1954dd280e}
+    restart: always
+>>>>>>> dev
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
       db:
@@ -128,7 +122,12 @@ services:
 
   indexer:
     container_name: indexer
+<<<<<<< HEAD
     image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
+=======
+    image: audius/discovery-provider:${TAG:-953a416ef18c99ff91a3e9b58312df1954dd280e}
+    restart: always
+>>>>>>> dev
     depends_on:
       db:
         condition: service_healthy
@@ -159,7 +158,11 @@ services:
       - discovery-provider-network
 
   seed:
+<<<<<<< HEAD
     image: audius/discovery-provider:${TAG:-93b5a977233bdd09f24e519db2c66160c65c63ce}
+=======
+    image: audius/discovery-provider:${TAG:-953a416ef18c99ff91a3e9b58312df1954dd280e}
+>>>>>>> dev
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -199,8 +202,19 @@ services:
       service: exporter_linux
     container_name: exporter_linux
 
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
+    networks:
+      - discovery-provider-network
+
   comms:
+<<<<<<< HEAD
     image: audius/comms:${TAG:-e2b751189fbe564f83a1d54d369e11d9a735b4ae}
+=======
+    image: audius/comms:${TAG:-953a416ef18c99ff91a3e9b58312df1954dd280e}
+>>>>>>> dev
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -218,7 +232,8 @@ services:
       driver: json-file
 
   chain:
-    image: audius/nethermind:1.14.3
+    image: audius/nethermind:1.17.4
+    restart: unless-stopped
     healthcheck:
       test:
         [
