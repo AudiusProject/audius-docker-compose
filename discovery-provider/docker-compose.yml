@@ -216,7 +216,7 @@ services:
       driver: json-file
 
   chain:
-    image: audius/nethermind:1.17.4
+    image: audius/nethermind:1.14.3
     restart: unless-stopped
     healthcheck:
       test:
