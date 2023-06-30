@@ -8,7 +8,6 @@
   "scripts": {
     "discovery:health": "node discovery-provider/healthChecks.js",
     "creator:health": "node creator-node/healthChecks.js",
-    "creator:delist": " node creator-node/delistContent/index.js"
   },
   "dependencies": {
     "@audius/libs": "1.2.116",
