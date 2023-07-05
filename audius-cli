@@ -186,6 +186,18 @@ def set_automatic_env(ctx):
     )
 
 
+def prune():
+    disk_usage_percent = psutil.disk_usage("/").percent
+    if disk_usage_percent > 95:
+        run(
+            ["docker", "system", "prune", "--all", "--force"],
+        )
+    else:
+        run(
+            ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
+        )
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -402,9 +414,7 @@ def launch(ctx, service, seed, chain, yes):
 
     launch_plugins(ctx)
 
-    run(
-        ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
-    )
+    prune()
 
 
 @cli.command()
@@ -470,17 +480,7 @@ def restart(ctx, service, containers):
                 ],
             )
 
-    run(
-        [
-            "docker",
-            "image",
-            "prune",
-            "--all",
-            "--force",
-            "--filter",
-            "until=336h",
-        ],
-    )
+    prune()
 
 
 @cli.command()
@@ -695,9 +695,7 @@ def pull(ctx, branch):
     try:
         run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
         if branch:
-            run(
-                ["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"]
-            )
+            run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
         run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
     except subprocess.CalledProcessError:
         click.secho("Could not pull", fg="red")
@@ -757,9 +755,7 @@ def upgrade(ctx, branch):
 
     launch_plugins(ctx)
 
-    run(
-        ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
-    )
+    prune()
 
 
 @cli.command()

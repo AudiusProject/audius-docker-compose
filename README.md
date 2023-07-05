@@ -99,7 +99,6 @@ If there's a reason to turn logging off, it can be disabled via config:
 ## Utilities
 The [utilities folder](/utilities/) contains a set of scripts and utilities to manage services like:
 - Running pre-registration health checks
-- Delisting content on content nodes
 - Automatic rewards claim script
 
 ## Advanced options
