@@ -858,7 +858,6 @@ def launch_chain(ctx):
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
-            "--force-recreate",  # temporarily recreate to allow upgrading
             "-d",
             "chain",
         ],
