@@ -23,16 +23,6 @@ async function configureLibs(ethRegistryAddress, ethTokenAddress, web3Provider) 
   return libs
 }
 
-async function getGasPrice() {
-  try {
-    const gasPrices = await axios.get('https://ethgasstation.info/json/ethgasAPI.json');
-    return Web3.utils.toWei((gasPrices.data.fastest / 10).toString(), 'gwei');
-  } catch (err) {
-    console.error(`Got ${err} when trying to fetch gas from ethgasstation.info, falling back web3's gas estimation`)
-    return (await Web3.eth.getGasPrice()).toString();
-  }
-}
-
 async function getClaimsManagerContract(ethRegistryAddress, ethTokenAddress, web3) {
   const audiusLibs = await configureLibs(ethRegistryAddress, ethTokenAddress, web3.eth.currentProvider)
   await audiusLibs.ethContracts.ClaimsManagerClient.init()
@@ -84,8 +74,7 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
   console.log('Initializing Round')
   await claimsManagerContract.methods.initiateRound().send({
     from: accountAddress,
-    gas,
-    gasPrice: gasPrice ? web3.utils.toWei(gasPrice, 'gwei') : (await getGasPrice()),
+    gas
   })
   console.log('Successfully initiated Round')
 
