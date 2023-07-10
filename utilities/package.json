@@ -8,6 +8,7 @@
   "scripts": {
     "discovery:health": "node discovery-provider/healthChecks.js",
     "creator:health": "node creator-node/healthChecks.js",
+    "claim:init-round": "node claim/claim.js initiate-round --transfer-rewards-to-solana"
   },
   "dependencies": {
     "@audius/libs": "1.2.116",
