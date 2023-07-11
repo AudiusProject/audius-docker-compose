@@ -74,6 +74,8 @@ services:
       driver: json-file
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    profiles:
+      - legacy_creator_node
 
   autoheal:
     image: willfarrell/autoheal
