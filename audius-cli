@@ -428,9 +428,17 @@ def launch(ctx, service, seed, chain, yes):
         if chain:
             return
 
+    # stop nodejs creator-node if we're in v2-only mode
     legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
     if service == "creator-node" and not legacy_creator_node:
-        ctx.invoke(down, service="creator-node")
+        run(
+            [
+                "docker",
+                "stop",
+                "server",
+            ],
+            capture_output=False,
+        )
   
     run(
         [
@@ -513,9 +521,17 @@ def restart(ctx, service, containers):
         )
 
         if proc.stdout:
+            # stop nodejs creator-node if we're in v2-only mode
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             if service == "creator-node" and not legacy_creator_node:
-                ctx.invoke(down, service="creator-node")
+                run(
+                    [
+                        "docker",
+                        "stop",
+                        "server",
+                    ],
+                    capture_output=False,
+                )
 
             run(
                 [
@@ -808,9 +824,17 @@ def upgrade(ctx, branch):
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
+            # stop nodejs creator-node if we're in v2-only mode
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             if service == "creator-node" and not legacy_creator_node:
-                ctx.invoke(down, service="creator-node")
+                run(
+                    [
+                        "docker",
+                        "stop",
+                        "server",
+                    ],
+                    capture_output=False,
+                )
 
             run(
                 [
