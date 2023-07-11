@@ -218,11 +218,11 @@ def is_legacy_creator_node_enabled(ctx):
 
     # Order of precedence: .env, override.env, stage.env/prod.env
     if is_v2_only is not None:
-        return is_v2_only == "true"
+        return is_v2_only != "true"
     if is_v2_only_override is not None:
-        return is_v2_only_override == "true"
+        return is_v2_only_override != "true"
     if is_v2_only_network is not None:
-        return is_v2_only_network == "true"
+        return is_v2_only_network != "true"
     
     return True
 
