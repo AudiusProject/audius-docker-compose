@@ -430,7 +430,7 @@ def launch(ctx, service, seed, chain, yes):
 
     legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
     if service == "creator-node" and not legacy_creator_node:
-        ctx.invoke(down, service="creator-node", containers=["server"])
+        ctx.invoke(down, service="creator-node")
   
     run(
         [
@@ -515,7 +515,7 @@ def restart(ctx, service, containers):
         if proc.stdout:
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             if service == "creator-node" and not legacy_creator_node:
-                ctx.invoke(down, service="creator-node", containers=["server"])
+                ctx.invoke(down, service="creator-node")
 
             run(
                 [
@@ -810,7 +810,7 @@ def upgrade(ctx, branch):
 
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             if service == "creator-node" and not legacy_creator_node:
-                ctx.invoke(down, service="creator-node", containers=["server"])
+                ctx.invoke(down, service="creator-node")
 
             run(
                 [
