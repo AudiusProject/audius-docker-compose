@@ -429,6 +429,9 @@ def launch(ctx, service, seed, chain, yes):
             return
 
     legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+    if service == "creator-node" and legacy_creator_node:
+        ctx.invoke(down, service="creator-node", containers=["server"])
+  
     run(
         [
             "docker",
@@ -511,6 +514,9 @@ def restart(ctx, service, containers):
 
         if proc.stdout:
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+            if service == "creator-node" and legacy_creator_node:
+                ctx.invoke(down, service="creator-node", containers=["server"])
+
             run(
                 [
                     "docker",
@@ -803,6 +809,9 @@ def upgrade(ctx, branch):
                 ctx.invoke(launch_chain)
 
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+            if service == "creator-node" and legacy_creator_node:
+                ctx.invoke(down, service="creator-node", containers=["server"])
+
             run(
                 [
                     "docker",
