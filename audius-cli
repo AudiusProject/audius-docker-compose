@@ -428,7 +428,7 @@ def launch(ctx, service, seed, chain, yes):
         if chain:
             return
 
-    legacy_creator_node = service == "creator-node" and ctx.invoke(is_legacy_creator_node_enabled)
+    legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
     run(
         [
             "docker",
@@ -510,7 +510,7 @@ def restart(ctx, service, containers):
         )
 
         if proc.stdout:
-            legacy_creator_node = service == "creator-node" and ctx.invoke(is_legacy_creator_node_enabled)
+            legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             run(
                 [
                     "docker",
@@ -802,7 +802,7 @@ def upgrade(ctx, branch):
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
-            legacy_creator_node = service == "creator-node" and ctx.invoke(is_legacy_creator_node_enabled)
+            legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
             run(
                 [
                     "docker",
