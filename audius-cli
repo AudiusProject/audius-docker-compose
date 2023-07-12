@@ -198,6 +198,35 @@ def prune():
         )
 
 
+def is_legacy_creator_node_enabled(ctx):
+    """
+    Returns true if the IS_V2_ONLY flag is true
+    """
+    is_v2_only = dotenv.get_key(
+        ctx.obj["manifests_path"] / "creator-node" / ".env", "IS_V2_ONLY"
+    )
+
+    is_v2_only_override = dotenv.get_key(
+        get_override_path(ctx, "creator-node"), "IS_V2_ONLY"
+    )
+
+    network = get_network(ctx, "creator-node")
+    is_v2_only_network = dotenv.get_key(
+        ctx.obj["manifests_path"] / "creator-node" / f"{network}.env",
+        "IS_V2_ONLY"
+    )
+
+    # Order of precedence: .env, override.env, stage.env/prod.env
+    if is_v2_only is not None:
+        return is_v2_only != "true"
+    if is_v2_only_override is not None:
+        return is_v2_only_override != "true"
+    if is_v2_only_network is not None:
+        return is_v2_only_network != "true"
+    
+    return True
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -399,12 +428,25 @@ def launch(ctx, service, seed, chain, yes):
         if chain:
             return
 
+    # stop nodejs creator-node if we're in v2-only mode
+    legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+    if service == "creator-node" and not legacy_creator_node:
+        run(
+            [
+                "docker",
+                "stop",
+                "server",
+            ],
+            capture_output=False,
+        )
+  
     run(
         [
             "docker",
             "compose",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
+            *(["--profile=legacy_creator_node"] if legacy_creator_node else []),
             "up",
             "--remove-orphans",
             "-d",
@@ -464,13 +506,40 @@ def restart(ctx, service, containers):
             capture_output=True,
         )
 
+        if service == "creator-node" and not proc.stdout:
+            proc = run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "ps",
+                "-q",
+                "mediorum",
+            ],
+            capture_output=True,
+        )
+
         if proc.stdout:
+            # stop nodejs creator-node if we're in v2-only mode
+            legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+            if service == "creator-node" and not legacy_creator_node:
+                run(
+                    [
+                        "docker",
+                        "stop",
+                        "server",
+                    ],
+                    capture_output=False,
+                )
+
             run(
                 [
                     "docker",
                     "compose",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
+                    *(["--profile=legacy_creator_node"] if legacy_creator_node else []),
                     "up",
                     "--build",
                     "--force-recreate",
@@ -726,6 +795,20 @@ def upgrade(ctx, branch):
             capture_output=True,
         )
 
+        if service == "creator-node" and not proc.stdout:
+            proc = run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                "ps",
+                "-q",
+                "mediorum",
+            ],
+            capture_output=True,
+        )
+  
         # update if service is running
         if proc.stdout:
             run(
@@ -741,12 +824,25 @@ def upgrade(ctx, branch):
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
 
+            # stop nodejs creator-node if we're in v2-only mode
+            legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
+            if service == "creator-node" and not legacy_creator_node:
+                run(
+                    [
+                        "docker",
+                        "stop",
+                        "server",
+                    ],
+                    capture_output=False,
+                )
+
             run(
                 [
                     "docker",
                     "compose",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
+                    *(["--profile=legacy_creator_node"] if legacy_creator_node else []),
                     "up",
                     "--remove-orphans",
                     "-d",

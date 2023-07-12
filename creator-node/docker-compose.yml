@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-c523f3346d95e6f204373fdb249a0b98825548b0}
+    image: audius/creator-node:${TAG:-b65311bcf76b71dacd9e7f5bf5598b31c388f1ca}
     restart: always
     depends_on:
       db:
@@ -74,6 +74,8 @@ services:
       driver: json-file
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    profiles:
+      - legacy_creator_node
 
   autoheal:
     image: willfarrell/autoheal
@@ -115,7 +117,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-c523f3346d95e6f204373fdb249a0b98825548b0}
+    image: audius/mediorum:${TAG:-b65311bcf76b71dacd9e7f5bf5598b31c388f1ca}
     container_name: mediorum
     restart: unless-stopped
     networks:
