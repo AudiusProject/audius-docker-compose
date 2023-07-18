@@ -358,6 +358,10 @@ def launch(ctx, service, seed, chain, yes):
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
+    
+    if service == "discovery-provider-pedalboard":
+        ctx.invoke(launch_pedalboard)
+        return
 
     try:
         ctx.invoke(check_config, service=service)
@@ -425,6 +429,7 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
+        ctx.invoke(launch_pedalboard)
         if chain:
             return
 
@@ -823,6 +828,7 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
+                ctx.invoke(launch_pedalboard)
 
             # stop nodejs creator-node if we're in v2-only mode
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
@@ -876,6 +882,31 @@ def auto_upgrade(ctx, remove, cron_expression):
             )
 
             job.setall(cron_expression)
+
+
+@cli.command()
+@click.pass_context
+def launch_pedalboard(ctx):
+    """
+    Launches all the services in pedalboard alongside indexer.
+    """
+    lock(ctx, "docker")
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "-f",
+            ctx.obj["manifests_path"]
+            / "discovery-provider"
+            / "docker-compose.pedalboard.yml",
+            "up",
+            "--no-recreate",
+            "-d"
+        ],
+    )
+    return
 
 
 @cli.command()
