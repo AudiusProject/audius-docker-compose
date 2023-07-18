@@ -889,7 +889,6 @@ def launch_pedalboard(ctx):
     """
     Launches all the services in pedalboard alongside indexer.
     """
-    lock(ctx, "docker")
     run(
         [
             "docker",
@@ -905,7 +904,6 @@ def launch_pedalboard(ctx):
             "-d"
         ],
     )
-    return
 
 
 @cli.command()
