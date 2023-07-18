@@ -38,6 +38,7 @@ SERVICES = (
     "creator-node",
     "discovery-provider",
     "identity-service",
+    "discovery-provider-pedalboard"
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
