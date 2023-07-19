@@ -901,8 +901,7 @@ def launch_pedalboard(ctx):
             / "docker-compose.pedalboard.yml",
             "up",
             "--no-recreate",
-            "-d",
-            "--services",
+            "-d"
         ]
     run_cmd.extend(required_plugins)
     run(run_cmd)
