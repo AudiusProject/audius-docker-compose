@@ -360,7 +360,7 @@ def launch(ctx, service, seed, chain, yes):
         return
     
     if service == "discovery-provider-pedalboard":
-        ctx.invoke(launch_pedalboard)
+        ctx.invoke(launch_required_plugins)
         return
 
     try:
@@ -458,7 +458,7 @@ def launch(ctx, service, seed, chain, yes):
     prune()
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-        ctx.invoke(launch_pedalboard)
+        ctx.invoke(launch_required_plugins)
         if chain:
             return
 
@@ -827,7 +827,7 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
-                ctx.invoke(launch_pedalboard)
+                ctx.invoke(launch_required_plugins)
 
             # stop nodejs creator-node if we're in v2-only mode
             legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
@@ -885,7 +885,7 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def launch_pedalboard(ctx):
+def launch_required_plugins(ctx):
     """
     Launches all the required plugins in pedalboard alongside indexer.
     """
@@ -898,7 +898,7 @@ def launch_pedalboard(ctx):
             "-f",
             ctx.obj["manifests_path"]
             / "discovery-provider"
-            / "docker-compose.pedalboard.yml",
+            / "docker-compose.plugins.yml",
             "up",
             "--no-recreate",
             "-d"
