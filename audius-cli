@@ -887,8 +887,9 @@ def auto_upgrade(ctx, remove, cron_expression):
 @click.pass_context
 def launch_pedalboard(ctx):
     """
-    Launches all the services in pedalboard alongside indexer.
+    Launches all the required plugins in pedalboard alongside indexer.
     """
+    required_plugins = ["relay"]
     run(
         [
             "docker",
@@ -901,8 +902,9 @@ def launch_pedalboard(ctx):
             / "docker-compose.pedalboard.yml",
             "up",
             "--no-recreate",
-            "-d"
-        ],
+            "-d",
+            "--services",
+        ].extend(required_plugins),
     )
 
 
