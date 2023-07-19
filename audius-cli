@@ -890,8 +890,7 @@ def launch_pedalboard(ctx):
     Launches all the required plugins in pedalboard alongside indexer.
     """
     required_plugins = ["relay"]
-    run(
-        [
+    run_cmd = [
             "docker",
             "compose",
             "--project-directory",
@@ -904,8 +903,9 @@ def launch_pedalboard(ctx):
             "--no-recreate",
             "-d",
             "--services",
-        ].extend(required_plugins),
-    )
+        ]
+    run_cmd.extend(required_plugins)
+    run(run_cmd)
 
 
 @cli.command()
