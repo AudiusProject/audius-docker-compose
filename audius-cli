@@ -51,7 +51,7 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications", "discovery-provider-pedalboard"))
+launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications", "discovery-provider-plugins"))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -359,7 +359,7 @@ def launch(ctx, service, seed, chain, yes):
         ctx.invoke(launch_notifications)
         return
     
-    if service == "discovery-provider-pedalboard":
+    if service == "discovery-provider-plugins":
         ctx.invoke(launch_required_plugins)
         return
 
