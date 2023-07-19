@@ -427,6 +427,12 @@ def launch(ctx, service, seed, chain, yes):
             ],
         )
 
+    if service == "discovery-provider":
+        ctx.invoke(launch_chain)
+        ctx.invoke(launch_required_plugins)
+        if chain:
+            return
+
     # stop nodejs creator-node if we're in v2-only mode
     legacy_creator_node = service == "creator-node" and is_legacy_creator_node_enabled(ctx)
     if service == "creator-node" and not legacy_creator_node:
@@ -456,11 +462,6 @@ def launch(ctx, service, seed, chain, yes):
     launch_plugins(ctx)
 
     prune()
-    if service == "discovery-provider":
-        ctx.invoke(launch_chain)
-        ctx.invoke(launch_required_plugins)
-        if chain:
-            return
 
 
 @cli.command()
