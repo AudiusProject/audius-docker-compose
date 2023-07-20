@@ -1,0 +1,5 @@
+{$HOST_NAME}
+
+encode zstd gzip
+
+reverse_proxy mediorum:1991
