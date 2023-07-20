@@ -259,9 +259,26 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  caddy:
+    image: caddy
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
 networks:
   discovery-provider-network:
 
-
 volumes:
   esdata:
+  caddy_data:
+  caddy_config:
