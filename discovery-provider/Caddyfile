@@ -1,4 +1,4 @@
-{$HOST_NAME}
+{$audius_discprov_url}
 
 {$CADDY_TLS}
 

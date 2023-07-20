@@ -1,4 +1,4 @@
-{$HOST_NAME}
+{$creatorNodeEndpoint}
 
 {$CADDY_TLS}
 
