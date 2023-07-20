@@ -1,0 +1,7 @@
+{$HOST_NAME}
+
+{$CADDY_TLS}
+
+encode zstd gzip
+
+reverse_proxy mediorum:1991
