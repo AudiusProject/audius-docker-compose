@@ -82,19 +82,17 @@ If there's a reason to turn logging off, it can be disabled via config:
 
 ## SSL configuration
 
-Audius stack will start a [Caddy](https://caddyserver.com/) server to listen on port 80 and 443 and proxy requests to respective backends.
-
-Caddy will automatically obtain certs from Let's Encrypt provided the following is true:
+[Caddy](https://caddyserver.com/) will automatically obtain certs from Let's Encrypt provided the following is true:
 
 * DNS points to your machine
-* The `audius_discprov_url` or `creatorNodeEndpoint` matches the DNS name
+* The `audius_discprov_url` or `creatorNodeEndpoint` matches the DNS name.  (e.g. `https://discovery2.myhost.com`... **no trailing slash!**)
 * Ports 80 and 443 are open to the internet
 
 If SSL is not working after a minute, `docker logs caddy` can provide clues.
 
-**SSL with CloudFlare Proxy**
+### SSL with CloudFlare Proxy
 
-If you are using CloudFlare Proxy, you can configure Caddy to generate a self-signed cert instead of using Let's Encrypt.
+If you are using CloudFlare Proxy, configure Caddy to generate a self-signed cert instead of using Let's Encrypt.
 
 For Creator Node:
 
