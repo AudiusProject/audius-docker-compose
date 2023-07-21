@@ -429,7 +429,6 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-        ctx.invoke(launch_required_plugins)
         if chain:
             return
 
@@ -460,6 +459,8 @@ def launch(ctx, service, seed, chain, yes):
     )
 
     launch_plugins(ctx)
+    if service == "discovery-provider":
+        ctx.invoke(launch_required_plugins)
 
     prune()
 
