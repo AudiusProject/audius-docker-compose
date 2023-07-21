@@ -79,22 +79,35 @@ If there's a reason to turn logging off, it can be disabled via config:
  audius-cli set-config discovery-provider audius_logging_disabled true
  audius-cli launch discovery-provider
  ```
- 
- ## Proxy Configuration
- The Audius stack is intended to run on a variety of hardware with various network configurations.
- In doing so, your node should provide:
- - HTTP/1.1 to support WebSocket connections
- - Proper `X-Forwarded-For` headers to capture incoming traffic
- 
- In a minimal NGINX config, this can be accomplished like so:
- ```
- proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
- proxy_http_version 1.1;
- proxy_set_header Upgrade $http_upgrade;
- proxy_set_header Connection "upgrade";
- ```
 
- Your exact configuration can be tested with health checks in [Utilities](#utilities).
+## SSL configuration
+
+[Caddy](https://caddyserver.com/) will automatically obtain certs from Let's Encrypt provided the following is true:
+
+* DNS points to your machine
+* The `audius_discprov_url` or `creatorNodeEndpoint` matches the DNS name.  (e.g. `https://discovery2.myhost.com`... **no trailing slash!**)
+* Ports 80 and 443 are open to the internet
+
+If SSL is not working after a minute, `docker logs caddy` can provide clues.
+
+### SSL with CloudFlare Proxy
+
+If you are using CloudFlare Proxy, configure Caddy to generate a self-signed cert instead of using Let's Encrypt.
+
+For Creator Node:
+
+```
+audius-cli set-config creator-node CADDY_TLS 'tls internal'
+audius-cli launch creator-node
+```
+
+For Discovery Provider:
+
+```
+audius-cli set-config discovery-provider CADDY_TLS 'tls internal'
+audius-cli launch discovery-provider
+```
+
 
 ## Utilities
 The [utilities folder](/utilities/) contains a set of scripts and utilities to manage services like:

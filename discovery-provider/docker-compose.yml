@@ -89,7 +89,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-891e120d06b1d6291caf1140f334a749b38796a9}
+    image: audius/discovery-provider:${TAG:-8bcbaf1d5ed58f7f0e5036e6cf93c577413cd224}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -118,7 +118,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-891e120d06b1d6291caf1140f334a749b38796a9}
+    image: audius/discovery-provider:${TAG:-8bcbaf1d5ed58f7f0e5036e6cf93c577413cd224}
     restart: always
     depends_on:
       db:
@@ -150,7 +150,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-891e120d06b1d6291caf1140f334a749b38796a9}
+    image: audius/discovery-provider:${TAG:-8bcbaf1d5ed58f7f0e5036e6cf93c577413cd224}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -198,7 +198,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-891e120d06b1d6291caf1140f334a749b38796a9}
+    image: audius/comms:${TAG:-8bcbaf1d5ed58f7f0e5036e6cf93c577413cd224}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -259,9 +259,26 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  caddy:
+    image: caddy
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
 networks:
   discovery-provider-network:
 
-
 volumes:
   esdata:
+  caddy_data:
+  caddy_config:
