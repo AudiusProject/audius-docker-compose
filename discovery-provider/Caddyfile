@@ -1,0 +1,9 @@
+{$audius_discprov_url}
+
+{$CADDY_TLS}
+
+encode zstd gzip
+
+reverse_proxy /comms* comms:8925
+
+reverse_proxy backend:5000
