@@ -895,7 +895,7 @@ def launch_required_plugins(ctx):
     network = get_network(ctx, "discovery-provider")
     if network != "stage":
         return
-    
+
     print(f"on network '{network}', starting relay")
 
     required_plugins = ["relay"]
