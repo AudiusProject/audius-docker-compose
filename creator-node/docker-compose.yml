@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-ef8a4d10c2e04762db0a4f35535ddbcc3fe286d0}
+    image: audius/creator-node:${TAG:-cad7cf46e7c8376e929eb61a6666a98a15e31929}
     restart: always
     depends_on:
       db:
@@ -117,7 +117,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-ef8a4d10c2e04762db0a4f35535ddbcc3fe286d0}
+    image: audius/mediorum:${TAG:-cad7cf46e7c8376e929eb61a6666a98a15e31929}
     container_name: mediorum
     restart: unless-stopped
     networks:
