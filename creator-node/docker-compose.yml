@@ -45,7 +45,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/creator-node:${TAG:-fed95dfe6839a0e74ea72bab0000929cd55ae549}
+    image: audius/creator-node:${TAG:-a8055a7108baa2637f8a4c7745a2360fd437740d}
     restart: always
     depends_on:
       db:
@@ -117,7 +117,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-fed95dfe6839a0e74ea72bab0000929cd55ae549}
+    image: audius/mediorum:${TAG:-a8055a7108baa2637f8a4c7745a2360fd437740d}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -129,7 +129,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     volumes:
       - /var/k8s/mediorum:/tmp/mediorum
-      - /var/k8s/creator-node-backend:/file_storage:ro # share fs with node.js app... ro mode for safety
+      - /var/k8s/creator-node-backend:/file_storage
     environment:
       - LOGSPOUT=ignore
     logging:
