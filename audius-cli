@@ -724,6 +724,14 @@ def auto_upgrade(ctx, remove, cron_expression):
 
         if not remove:
             log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
+
+            try:
+                open(log_file, "x").close()
+            except FileExistsError:
+                pass
+            except:
+                logging.warn(f"Unable to create `{log_file}` file")
+            
             job = cron.new(
                 (
                     f"date >> {log_file};"
