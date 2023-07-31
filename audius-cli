@@ -44,10 +44,6 @@ SERVICES = (
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
-# Until a refactor occurs for all the calls to `compose up`
-# need to reference this string in multiple places and ensure it dosent drift
-AUTO_UPGRADE_CRON_COMMENT = "audius-cli auto-upgrade"
-
 service_type = click.Choice(SERVICES)
 launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications",))
 network_type = click.Choice(["prod", "stage"])
@@ -92,7 +88,7 @@ def lock(ctx, group):
 def set_automatic_env(ctx):
     with crontab.CronTab(user=True) as cron:
         auto_upgrade = (
-            "true" if any(cron.find_comment(AUTO_UPGRADE_CRON_COMMENT)) else "false"
+            "true" if any(cron.find_comment("audius-cli auto-upgrade")) else "false"
         )
 
     git_hash = (
@@ -723,7 +719,7 @@ def upgrade(ctx, branch):
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
-        for job in cron.find_comment(AUTO_UPGRADE_CRON_COMMENT):
+        for job in cron.find_comment("audius-cli auto-upgrade"):
             cron.remove(job)
 
         if not remove:
@@ -731,9 +727,10 @@ def auto_upgrade(ctx, remove, cron_expression):
             job = cron.new(
                 (
                     f"date >> {log_file};"
+                    f"/usr/local/bin/audius-cli set-tag --unset --yes >> {log_file} 2>&1;"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
-                AUTO_UPGRADE_CRON_COMMENT,
+                "audius-cli auto-upgrade",
             )
 
             job.setall(cron_expression)
