@@ -327,7 +327,7 @@ def launch(ctx, service, seed, chain, yes):
     if service == "discovery-provider-notifications":
         ctx.invoke(launch_notifications)
         return
-    
+
     if service == "discovery-provider-plugins":
         ctx.invoke(launch_required_plugins)
         return

@@ -23,6 +23,22 @@ services:
     ports:
       - "6001:6001"
 
+  sla-auditor:
+    image: audius/relay:${TAG:-798418cd733b9ddab238714694fffb6b8c0ede73}
+    container_name: sla-auditor
+    restart: unless-stopped
+    networks:
+      - dn-network
+    environment:
+      - ENVIRONMENT=${NETWORK}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
 networks:
   dn-network:
     name: discovery-provider_discovery-provider-network
