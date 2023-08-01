@@ -244,6 +244,8 @@ def health_check(ctx, service):
     if service == "discovery-provider-notifications":
         path = ctx.obj["manifests_path"] / "discovery-provider"
         container = "notifications"
+    elif service == "creator-node":
+        container = "mediorum"
 
     proc = run(
         [
@@ -461,21 +463,7 @@ def restart(ctx, service, containers):
                 ctx.obj["manifests_path"] / service,
                 "ps",
                 "-q",
-                "backend",
-            ],
-            capture_output=True,
-        )
-
-        if service == "creator-node" and not proc.stdout:
-            proc = run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / service,
-                "ps",
-                "-q",
-                "mediorum",
+                "mediorum" if service == "creator-node" else "backend",
             ],
             capture_output=True,
         )
@@ -582,7 +570,7 @@ def get_config(ctx, service):
             ctx.obj["manifests_path"] / service,
             "ps",
             "-q",
-            "backend",
+            "mediorum" if service == "creator-node" else "backend",
         ],
         capture_output=True,
     )
@@ -596,7 +584,7 @@ def get_config(ctx, service):
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 "exec",
-                "backend",
+                "mediorum" if service == "creator-node" else "backend",
                 "env",
             ]
         )
@@ -737,21 +725,7 @@ def upgrade(ctx, branch):
                 ctx.obj["manifests_path"] / service,
                 "ps",
                 "-q",
-                "backend",
-            ],
-            capture_output=True,
-        )
-
-        if service == "creator-node" and not proc.stdout:
-            proc = run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / service,
-                "ps",
-                "-q",
-                "mediorum",
+                "mediorum" if service == "creator-node" else "backend",
             ],
             capture_output=True,
         )
