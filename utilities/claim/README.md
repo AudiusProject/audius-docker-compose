@@ -41,7 +41,7 @@ Initiates new round for claiming rewards
 Options:
   --eth-registry-address <ethRegistryAddress>  Registry contract address (default: "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C")
   --eth-token-address <ethTokenAddress>        Token contract address (default: "0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998")
-  --web3-provider <web3Provider>               Web3 provider to use (default: "https://mainnet.infura.io/v3/a3ed533ddfca4c76ab4df7556e2745e1")
+  --web3-provider <web3Provider>               Web3 provider to use
   --gas <gas>                                  ammount of gas to use (default: 100000)
   --gas-price <gasPrice>                       gas price in gwei
   -h, --help                                   display help for command
@@ -55,7 +55,7 @@ Claim rewards for given spOwnerWallet
 Options:
   --eth-registry-address <ethRegistryAddress>  Registry contract address (default: "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C")
   --eth-token-address <ethTokenAddress>        Token contract address (default: "0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998")
-  --web3-provider <web3Provider>               Web3 provider to use (default: "https://mainnet.infura.io/v3/a3ed533ddfca4c76ab4df7556e2745e1")
+  --web3-provider <web3Provider>               Web3 provider to use
   --gas <gas>                                  ammount of gas to use (default: 1000000)
   --gas-price <gasPrice>                       gas price in gwei
   -h, --help                                   display help for command
