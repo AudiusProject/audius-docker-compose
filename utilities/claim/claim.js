@@ -121,7 +121,7 @@ async function claimRewards(
     await delegateManagerContract.methods.claimRewards(spOwnerWallet).send({
       from: accountAddress,
       gas,
-      gasPrice: gasPrice ? web3.utils.toWei(gasPrice, 'gwei') : (await getGasPrice()),
+      gasPrice: gasPrice ? web3.utils.toWei(gasPrice, 'gwei') : (await web3.eth.getGasPrice()),
     })
     console.log('Claimed Rewards successfully')
   } else {
