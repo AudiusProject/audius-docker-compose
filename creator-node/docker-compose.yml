@@ -43,40 +43,6 @@ services:
     networks:
       - creator-node-network
 
-  backend:
-    container_name: server
-    image: audius/creator-node:${TAG:-21331ef071ef153d7ba17d8f3b572eb847cacce7}
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    volumes:
-      - /var/k8s/creator-node-backend:/file_storage # Use k8s location for backward compatibility
-    labels:
-      autoheal: "true"
-    ports:
-      - "${BACKEND_PORT:-4001}:4000"
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    environment:
-      - audiusContentInfraSetup=audius-docker-compose
-    networks:
-      - creator-node-network
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    profiles:
-      - legacy_creator_node
-
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal
