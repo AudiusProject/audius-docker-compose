@@ -7,7 +7,7 @@ const audius = require('@audius/libs')
 
 const defaultRegistryAddress = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
 const defaultTokenAddress = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
-const defaultWeb3Provider = 'https://mainnet.infura.io/v3/a3ed533ddfca4c76ab4df7556e2745e1'
+const defaultWeb3Provider = 'https://eth-mainnet.g.alchemy.com/v2/4hFRA61i6OFXz2UmkyFsSvgXBQBBOGgW'
 
 async function configureLibs(ethRegistryAddress, ethTokenAddress, web3Provider) {
   const configuredWeb3 = await audius.Utils.configureWeb3(web3Provider, null, false)
