@@ -27,7 +27,7 @@ function parseEnvVarsAndArgs () {
 
 async function healthCheck () {
   let requestConfig = {
-    url: `${CREATOR_NODE_ENDPOINT}/health_check`,
+    url: `${CREATOR_NODE_ENDPOINT}/health_check?allow_unregistered=true`,
     method: 'get',
     responseType: 'json'
   }
