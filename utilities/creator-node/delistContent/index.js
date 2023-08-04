@@ -66,19 +66,20 @@ async function getTrackInfo(trackId) {
   }
 }
 
-async function getTracksForUser(userId) {
-  const resp = await axios({
-    url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
-    method: 'get',
-    params: { user_id: userId },
-    responseType: 'json',
-    timeout: 3000,
-  })
+// We currently just delist the track and the user separately.
+// async function getTracksForUser(userId) {
+//   const resp = await axios({
+//     url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
+//     method: 'get',
+//     params: { user_id: userId },
+//     responseType: 'json',
+//     timeout: 3000,
+//   })
 
-  return resp.data.data.map((track) => {
-    return { trackId: track.track_id, trackCid: track.track_cid, ownerId: track.owner_id }
-  })
-}
+//   return resp.data.data.map((track) => {
+//     return { trackId: track.track_id, trackCid: track.track_cid, ownerId: track.owner_id }
+//   })
+// }
 
 async function setTrackDelisted(idStr, delisted) {
   const idType = getIdType(idStr)
@@ -101,12 +102,12 @@ async function setUserDelisted(idStr, delisted) {
 
   const userId = idType === 'HASH_ID' ? hashIds.decode(idStr) : idStr
 
-  // If delisting a user, delist all of their tracks as well
-  if (delisted) {
-    for (const track of await getTracksForUser(userId)) {
-      await sendDelistRequest(track, delisted)
-    }
-  }
+  // We don't currently delist all tracks for a user, but the option is here
+  // if (delisted) {
+  //   for (const track of await getTracksForUser(userId)) {
+  //     await sendDelistRequest(track, delisted)
+  //   }
+  // }
 
   await sendDelistRequest({ userId }, delisted)
 }
@@ -137,7 +138,7 @@ const COMMANDER_HELP_STRING =
 async function main() {
   program
     .command('delist <trackOrUser> <ids>')
-    .description(`Prevent content from being served by your content node. When delisting a user, all of their tracks will be delisted as well.`)
+    .description(`Prevent content from being served by your content node.`)
     .usage(COMMANDER_HELP_STRING)
     .action(async (trackOrUser, ids) => setAllDelisted(trackOrUser.toLowerCase(), ids.split(','), true))
 
