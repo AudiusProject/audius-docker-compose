@@ -8,6 +8,8 @@
   "scripts": {
     "discovery:health": "node discovery-provider/healthChecks.js",
     "creator:health": "node creator-node/healthChecks.js",
+    "creator:delist": " node creator-node/delistContent/index.js delist",
+    "creator:undelist": " node creator-node/delistContent/index.js undelist",
     "claim:init-round": "node claim/claim.js initiate-round --transfer-rewards-to-solana"
   },
   "dependencies": {
