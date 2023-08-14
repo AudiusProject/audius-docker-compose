@@ -10,6 +10,9 @@ services:
       - dn-network
     environment:
       - ENVIRONMENT=${NETWORK}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     logging:
       options:
         max-size: 10m
