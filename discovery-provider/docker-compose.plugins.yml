@@ -24,7 +24,7 @@ services:
       - "6001:6001"
 
   sla-auditor:
-    image: audius/relay:${TAG:-798418cd733b9ddab238714694fffb6b8c0ede73}
+    image: audius/sla-auditor:${TAG:-798418cd733b9ddab238714694fffb6b8c0ede73}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
