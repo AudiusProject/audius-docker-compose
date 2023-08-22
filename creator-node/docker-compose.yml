@@ -114,7 +114,7 @@ services:
       - "-c"
     command:
       # - "mediorum-cmd segments --delete && tail -f /dev/null"
-      - "mediorum-cmd segments && tail -f /dev/null"
+      - "tail -f /dev/null"
     restart: unless-stopped
     networks:
       - creator-node-network
