@@ -118,8 +118,6 @@ services:
     restart: unless-stopped
     networks:
       - creator-node-network
-    ports:
-      - "${MEDIORUM_PORT:-4000}:1991"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
