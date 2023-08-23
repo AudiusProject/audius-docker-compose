@@ -107,14 +107,13 @@ services:
       driver: json-file
 
   mediorum-cmd:
-    image: endliine/mediorum:linux
+    image: audius/mediorum:8489edc75391dbd2fd3e07b9dd434b42347a6db1
     container_name: mediorum-cmd
     entrypoint:
       - "sh"
       - "-c"
     command:
-      # - "mediorum-cmd segments --delete && tail -f /dev/null"
-      - "tail -f /dev/null"
+      - "mediorum-cmd segments --delete && tail -f /dev/null"
     restart: unless-stopped
     networks:
       - creator-node-network
