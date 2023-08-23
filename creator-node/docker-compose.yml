@@ -106,6 +106,33 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  mediorum-cmd:
+    image: audius/mediorum:8489edc75391dbd2fd3e07b9dd434b42347a6db1
+    container_name: mediorum-cmd
+    entrypoint:
+      - "sh"
+      - "-c"
+    command:
+      - "mediorum-cmd segments --delete && tail -f /dev/null"
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/mediorum:/tmp/mediorum
+      - /var/k8s/creator-node-backend:/file_storage
+    environment:
+      - LOGSPOUT=ignore
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   caddy:
     image: caddy
     container_name: caddy
