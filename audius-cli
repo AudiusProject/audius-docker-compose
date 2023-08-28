@@ -802,14 +802,6 @@ def launch_required_plugins(ctx):
     """
     Launches all the required plugins in pedalboard alongside indexer.
     """
-
-    # only release on stage for now
-    network = get_network(ctx, "discovery-provider")
-    if network != "stage":
-        return
-
-    print(f"on network '{network}', starting relay")
-
     required_plugins = ["relay"]
     run_cmd = [
             "docker",
