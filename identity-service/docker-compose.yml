@@ -20,7 +20,7 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    command: [ "--identity-service" ]
+    command: ["--identity-service"]
     ports:
       - "127.0.0.1:9187:9187"
     networks:
@@ -41,7 +41,7 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    command: [ "--identity-service" ]
+    command: ["--identity-service"]
     ports:
       - "127.0.0.1:9121:9121"
     networks:
@@ -69,7 +69,7 @@ services:
     image: willfarrell/autoheal
     container_name: autoheal
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
       - AUTOHEAL_INTERVAL=300
       - CURL_TIMEOUT=300
