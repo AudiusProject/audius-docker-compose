@@ -66,7 +66,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
+          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1",
         ]
       interval: 10s
       timeout: 5s
@@ -79,7 +79,7 @@ services:
       [
         "/bin/sh",
         "-c",
-        '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"'
+        '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"',
       ]
     env_file:
       - ${NETWORK:-prod}.env
@@ -89,7 +89,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-bb4dc61bc4b396065fa0e061c22d902850182d33}
+    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -118,7 +118,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-bb4dc61bc4b396065fa0e061c22d902850182d33}
+    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
     restart: always
     depends_on:
       db:
@@ -141,7 +141,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pgrep alembic || curl -f http://server:5000/health_check || exit 1"
+          "pgrep alembic || curl -f http://server:5000/health_check || exit 1",
         ]
       interval: 5s
       timeout: 5s
@@ -150,7 +150,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-bb4dc61bc4b396065fa0e061c22d902850182d33}
+    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -198,7 +198,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-bb4dc61bc4b396065fa0e061c22d902850182d33}
+    image: audius/comms:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -219,11 +219,7 @@ services:
     image: audius/nethermind:1.14.3
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --fail localhost:8545/health || exit 1"
-        ]
+      test: ["CMD-SHELL", "curl --fail localhost:8545/health || exit 1"]
     command: --config config
     container_name: chain
     env_file:
