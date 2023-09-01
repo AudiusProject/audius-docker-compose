@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: postgres
+    extends:
+      file: ../common-services.yml
+      service: base-postgres
+    environment:
+      POSTGRES_DB: audius_creator_node
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/creator-node-db:/var/lib/postgresql/data
+      - /var/k8s/creator-node-db-backup:/creator-node-db-backup

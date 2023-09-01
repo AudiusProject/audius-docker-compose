@@ -107,13 +107,13 @@ services:
       driver: json-file
 
   mediorum-cmd:
-    image: audius/mediorum:8489edc75391dbd2fd3e07b9dd434b42347a6db1
+    image: audius/mediorum:${TAG:-ee748749ef08612c2c679c7170d77b034a64fafb}
     container_name: mediorum-cmd
     entrypoint:
       - "sh"
       - "-c"
     command:
-      - "tail -f /dev/null"
+      - "mediorum-cmd reaper && tail -f /dev/null"
     restart: unless-stopped
     networks:
       - creator-node-network
