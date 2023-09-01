@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: postgres
+    extends:
+      file: ../common-services.yml
+      service: base-postgres
+    environment:
+      POSTGRES_DB: audius_creator_node
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/creator-node-db:/var/lib/postgresql/data
+      - /var/k8s/creator-node-db-backup:/creator-node-db-backup
+    networks:
+      - creator-node-network
+    
+  # if using s3 for backups
+  # awscli:
+  #   container_name: awscli
+  #   image: amazon/aws-cli
+  #   env_file:
+  #     - ${OVERRIDE_PATH:-override.env}
+  #   entrypoint:
+  #     - sh
+  #   command:
+  #     - -c
+  #     - tail -f /dev/null
+  #   volumes:
+  #     - /var/k8s/creator-node-db-backup:/creator-node-db-backup
+
+networks:
+  creator-node-network:
+
+volumes:
+  caddy_data:
+  caddy_config:
