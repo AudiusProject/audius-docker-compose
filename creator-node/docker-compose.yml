@@ -95,6 +95,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     volumes:
       - /var/k8s/mediorum:/tmp/mediorum
+      - /var/k8s/creator-node-backend:/file_storage
     environment:
       - LOGSPOUT=ignore
     logging:
