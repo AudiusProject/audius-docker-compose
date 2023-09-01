@@ -20,7 +20,7 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
+    command: ["--creator-node"]
     networks:
       - creator-node-network
 
@@ -39,7 +39,7 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
+    command: ["--creator-node"]
     networks:
       - creator-node-network
 
@@ -47,7 +47,7 @@ services:
     image: willfarrell/autoheal
     container_name: autoheal
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "/var/run/docker.sock:/var/run/docker.sock"
     environment:
       - AUTOHEAL_INTERVAL=10
       - CURL_TIMEOUT=30
