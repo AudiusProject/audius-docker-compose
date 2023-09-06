@@ -132,6 +132,32 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+  
+  # TODO: probably configure max memory usage at the container level
+  radix:
+    image: audius/mediorum-radix:${RADIX_TAG:938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    container_name: radix
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    ports:
+      - ${AUDIUS_RADIX_PORT:-1989}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/mediorum:/tmp/mediorum
+      - /var/k8s/creator-node-backend:/file_storage
+    environment:
+      - LOGSPOUT=ignore
+      - AUDIUS_IS_RADIX_SERVER=true
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   caddy:
     image: caddy
