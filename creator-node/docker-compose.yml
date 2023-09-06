@@ -135,7 +135,7 @@ services:
   
   # TODO: probably configure max memory usage at the container level
   radix:
-    image: audius/mediorum-radix:${RADIX_TAG:938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    image: audius/mediorum:${RADIX_TAG:938aa50fe603734c0c43ee1394136fdbdb07ae2f}
     container_name: radix
     restart: unless-stopped
     networks:
