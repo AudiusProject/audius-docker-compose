@@ -132,6 +132,32 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+  
+  radix:
+    image: audius/mediorum:${RADIX_TAG:2e41f24d58c8d28df9332ed7bcf1b632d27caa53}
+    mem_limit: 4g
+    container_name: radix
+    restart: unless-stopped
+    networks:
+      - creator-node-network
+    ports:
+      - ${AUDIUS_RADIX_PORT:-1989}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - /var/k8s/mediorum:/tmp/mediorum
+      - /var/k8s/creator-node-backend:/file_storage
+    environment:
+      - LOGSPOUT=ignore
+      - AUDIUS_IS_RADIX_SERVER=true
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   caddy:
     image: caddy
