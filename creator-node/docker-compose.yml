@@ -133,9 +133,9 @@ services:
         max-buffer-size: 100m
       driver: json-file
   
-  # TODO: probably configure max memory usage at the container level
   radix:
     image: audius/mediorum:${RADIX_TAG:938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    mem_limit: 4g
     container_name: radix
     restart: unless-stopped
     networks:
