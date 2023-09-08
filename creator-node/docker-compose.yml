@@ -83,7 +83,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-1cd422f9911f614ea48fcdce6fe8eb4202813a15}
+    image: audius/mediorum:${TAG:-161b19cba416ecd5ebd306a622c431cac627ab58}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -107,7 +107,7 @@ services:
       driver: json-file
 
   mediorum-cmd:
-    image: audius/mediorum:${TAG:-1cd422f9911f614ea48fcdce6fe8eb4202813a15}
+    image: audius/mediorum:${TAG:-161b19cba416ecd5ebd306a622c431cac627ab58}
     container_name: mediorum-cmd
     entrypoint:
       - "sh"
