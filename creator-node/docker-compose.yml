@@ -134,7 +134,7 @@ services:
       driver: json-file
   
   radix:
-    image: audius/mediorum:${RADIX_TAG:2e41f24d58c8d28df9332ed7bcf1b632d27caa53}
+    image: audius/mediorum:${RADIX_TAG:-2e41f24d58c8d28df9332ed7bcf1b632d27caa53}
     mem_limit: 4g
     container_name: radix
     restart: unless-stopped
