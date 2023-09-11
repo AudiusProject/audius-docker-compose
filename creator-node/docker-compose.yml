@@ -105,33 +105,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-
-  mediorum-cmd:
-    image: audius/mediorum:${TAG:-161b19cba416ecd5ebd306a622c431cac627ab58}
-    container_name: mediorum-cmd
-    entrypoint:
-      - "sh"
-      - "-c"
-    command:
-      - "mediorum-cmd reaper && tail -f /dev/null"
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    volumes:
-      - /var/k8s/mediorum:/tmp/mediorum
-      - /var/k8s/creator-node-backend:/file_storage
-    environment:
-      - LOGSPOUT=ignore
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
   
   radix:
     image: audius/mediorum:${RADIX_TAG:-2e41f24d58c8d28df9332ed7bcf1b632d27caa53}
