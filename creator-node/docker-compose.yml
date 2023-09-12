@@ -133,7 +133,7 @@ services:
       driver: json-file
 
   caddy:
-    image: caddy
+    image: audius/caddy:2.7.4
     container_name: caddy
     restart: unless-stopped
     env_file:
