@@ -89,7 +89,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    image: audius/discovery-provider:${TAG:-c3d8f4fa0a4af50e0282a6ba6b6a852f0fc18fc7}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -118,7 +118,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    image: audius/discovery-provider:${TAG:-c3d8f4fa0a4af50e0282a6ba6b6a852f0fc18fc7}
     restart: always
     depends_on:
       db:
@@ -141,7 +141,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pgrep alembic || curl -f http://server:5000/health_check || exit 1"
+          "pgrep -f pg_migrate.sh || pgrep -f celery || exit 1"
         ]
       interval: 5s
       timeout: 5s
@@ -150,7 +150,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    image: audius/discovery-provider:${TAG:-c3d8f4fa0a4af50e0282a6ba6b6a852f0fc18fc7}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -198,7 +198,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-938aa50fe603734c0c43ee1394136fdbdb07ae2f}
+    image: audius/comms:${TAG:-c3d8f4fa0a4af50e0282a6ba6b6a852f0fc18fc7}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -260,7 +260,7 @@ services:
       driver: json-file
 
   caddy:
-    image: caddy
+    image: audius/caddy:2.7.4
     container_name: caddy
     restart: unless-stopped
     env_file:

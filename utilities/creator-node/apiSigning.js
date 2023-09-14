@@ -17,6 +17,15 @@ const generateTimestampAndSignature = (data, privateKey) => {
   return { timestamp, signature: signedResponse.signature }
 }
 
+const generateSignature = (data, privateKey) => {
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(data))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return signedResponse.signature
+}
+
 const sortKeys = x => {
   if (typeof x !== 'object' || !x) { return x }
   if (Array.isArray(x)) { return x.map(sortKeys) }
@@ -29,6 +38,7 @@ const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
 }
 
 module.exports = {
+  generateSignature,
   generateTimestampAndSignature,
   sortKeys,
   generateTimestampAndSignatureForSPVerification

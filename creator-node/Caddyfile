@@ -1,7 +1,28 @@
-{$creatorNodeEndpoint}
+{
+    order cache before rewrite
+    order request_header before cache
+    debug
+}
 
-{$CADDY_TLS}
+{$creatorNodeEndpoint} {
+  {$CADDY_TLS}
+  encode zstd gzip
 
-encode zstd gzip
+  route /content/* {
+    request_header -Cache-Control
+    header Cache-Control "public, max-age=86400, must-revalidate"
 
-reverse_proxy mediorum:1991
+    cache {
+      log_level debug
+      cache_name ContentCache
+      ttl 1h
+      stale 1h
+    }
+
+    reverse_proxy mediorum:1991
+  }
+
+  reverse_proxy mediorum:1991
+}
+
+
