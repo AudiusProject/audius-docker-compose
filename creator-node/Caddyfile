@@ -8,6 +8,23 @@
   {$CADDY_TLS}
   encode zstd gzip
 
+  route /content/* {
+    request_header -Cache-Control
+    header Cache-Control "public, max-age=86400, must-revalidate"
+
+    cache {
+      log_level debug
+      cache_name ContentCache
+      ttl 1h
+      stale 1h
+      key {
+        headers Authorization Content-Type Range
+      }
+    }
+
+    reverse_proxy mediorum:1991
+  }
+
   reverse_proxy mediorum:1991
 }
 
