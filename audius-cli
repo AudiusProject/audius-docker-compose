@@ -47,7 +47,6 @@ EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d2041667269000000000000
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 service_type = click.Choice(SERVICES)
-launch_service_type = click.Choice(SERVICES + ("discovery-provider-notifications", "discovery-provider-plugins"))
 network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
@@ -71,49 +70,6 @@ def get_override_path(ctx, service):
             "OVERRIDE_PATH", ctx.obj["manifests_path"] / service / "override.env"
         )
     )
-
-
-def launch_plugins(ctx):
-    # install registered plugins after upgrade
-    # assumes plugins are only for discprov
-    override_env = get_override_path(ctx, "discovery-provider")
-    plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
-    if plugins is not None:
-        plugins = plugins.split(",")
-        for plugin in plugins:
-            if plugin:
-                run(
-                    [
-                        "docker",
-                        "compose",
-                        "--project-directory",
-                        ctx.obj["manifests_path"] / "discovery-provider",
-                        "-f",
-                        ctx.obj["manifests_path"]
-                        / "discovery-provider"
-                        / f"docker-compose.{plugin}.yml",
-                        "pull",
-                    ],
-                    check=True,
-                )
-
-                run(
-                    [
-                        "docker",
-                        "compose",
-                        "--project-directory",
-                        ctx.obj["manifests_path"] / "discovery-provider",
-                        "-f",
-                        ctx.obj["manifests_path"]
-                        / "discovery-provider"
-                        / f"docker-compose.{plugin}.yml",
-                        "up",
-                        "--no-recreate",
-                        "-d",
-                        f"{plugin}",
-                    ],
-                )
-    return
 
 
 def lock(ctx, group):
@@ -234,7 +190,7 @@ def check_config(ctx, service):
 
 
 @cli.command()
-@click.argument("service", type=launch_service_type)
+@click.argument("service", type=service_type)
 @click.pass_context
 def health_check(ctx, service):
     """Check the health of a service"""
@@ -316,21 +272,13 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
-@click.argument("service", type=launch_service_type)
+@click.argument("service", type=service_type)
 @click.pass_context
 def launch(ctx, service, seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
     lock(ctx, "docker")
-
-    if service == "discovery-provider-notifications":
-        ctx.invoke(launch_notifications)
-        return
-
-    if service == "discovery-provider-plugins":
-        ctx.invoke(launch_required_plugins)
-        return
 
     try:
         ctx.invoke(check_config, service=service)
@@ -398,9 +346,8 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-        if chain:
-            return
-  
+        ctx.invoke(launch_plugins)
+
     run(
         [
             "docker",
@@ -413,10 +360,6 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
-
-    launch_plugins(ctx)
-    if service == "discovery-provider":
-        ctx.invoke(launch_required_plugins)
 
     prune()
 
@@ -729,7 +672,7 @@ def upgrade(ctx, branch):
             ],
             capture_output=True,
         )
-  
+
         # update if service is running
         if proc.stdout:
             run(
@@ -744,6 +687,7 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
+                ctx.invoke(launch_plugins)
 
             run(
                 [
@@ -756,11 +700,6 @@ def upgrade(ctx, branch):
                     "-d",
                 ],
             )
-
-            if service == "discovery-provider":
-                ctx.invoke(launch_required_plugins)
-
-    launch_plugins(ctx)
 
     prune()
 
@@ -800,26 +739,37 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
-def launch_required_plugins(ctx):
+def launch_plugins(ctx):
     """
-    Launches all the required plugins in pedalboard alongside indexer.
+    Launches all the plugins: required & registered.
     """
+    override_env = get_override_path(ctx, "discovery-provider")
+    plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+
+    registered_plugins = []
+    if plugins_env is not None:
+        registered_plugins = list(filter(lambda x: x != '', plugins_env.split(",")))
+
     required_plugins = ["relay"]
-    run_cmd = [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "-f",
-            ctx.obj["manifests_path"]
-            / "discovery-provider"
-            / "docker-compose.plugins.yml",
-            "up",
-            "--no-recreate",
-            "-d"
-        ]
-    run_cmd.extend(required_plugins)
-    run(run_cmd)
+
+    plugins = required_plugins + registered_plugins
+    print(plugins)
+
+    # run_cmd = [
+    #         "docker",
+    #         "compose",
+    #         "--project-directory",
+    #         ctx.obj["manifests_path"] / "discovery-provider",
+    #         "-f",
+    #         ctx.obj["manifests_path"]
+    #         / "discovery-provider"
+    #         / "docker-compose.plugins.yml",
+    #         "up",
+    #         "--no-recreate",
+    #         "-d"
+    #     ]
+    # run_cmd.extend(plugins)
+    # run(run_cmd)
 
 
 @cli.command()
@@ -905,42 +855,42 @@ def launch_chain(ctx):
     print("launched chain")
 
 
-@cli.command()
-@click.pass_context
-def launch_notifications(ctx):
-    lock(ctx, "docker")
+# @cli.command()
+# @click.pass_context
+# def launch_notifications(ctx):
+#     lock(ctx, "docker")
 
-    run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "-f",
-            ctx.obj["manifests_path"]
-            / "discovery-provider"
-            / "docker-compose.notifications.yml",
-            "pull",
-        ],
-        check=True,
-    )
+#     run(
+#         [
+#             "docker",
+#             "compose",
+#             "--project-directory",
+#             ctx.obj["manifests_path"] / "discovery-provider",
+#             "-f",
+#             ctx.obj["manifests_path"]
+#             / "discovery-provider"
+#             / "docker-compose.notifications.yml",
+#             "pull",
+#         ],
+#         check=True,
+#     )
 
-    run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
-            "-f",
-            ctx.obj["manifests_path"]
-            / "discovery-provider"
-            / "docker-compose.notifications.yml",
-            "up",
-            "--no-recreate",
-            "-d",
-            "notifications",
-        ],
-    )
+#     run(
+#         [
+#             "docker",
+#             "compose",
+#             "--project-directory",
+#             ctx.obj["manifests_path"] / "discovery-provider",
+#             "-f",
+#             ctx.obj["manifests_path"]
+#             / "discovery-provider"
+#             / "docker-compose.notifications.yml",
+#             "up",
+#             "--no-recreate",
+#             "-d",
+#             "notifications",
+#         ],
+#     )
 
 
 @cli.command()
