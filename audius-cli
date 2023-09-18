@@ -344,10 +344,6 @@ def launch(ctx, service, seed, chain, yes):
             ],
         )
 
-    if service == "discovery-provider":
-        ctx.invoke(launch_chain)
-        ctx.invoke(launch_plugins)
-
     run(
         [
             "docker",
@@ -360,6 +356,10 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
+
+    if service == "discovery-provider":
+        ctx.invoke(launch_chain)
+        ctx.invoke(launch_plugins)
 
     prune()
 
@@ -685,10 +685,6 @@ def upgrade(ctx, branch):
                 ],
             )
 
-            if service == "discovery-provider":
-                ctx.invoke(launch_chain)
-                ctx.invoke(launch_plugins)
-
             run(
                 [
                     "docker",
@@ -700,6 +696,10 @@ def upgrade(ctx, branch):
                     "-d",
                 ],
             )
+
+            if service == "discovery-provider":
+                ctx.invoke(launch_chain)
+                ctx.invoke(launch_plugins)
 
     prune()
 
