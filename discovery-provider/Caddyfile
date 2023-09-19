@@ -6,4 +6,6 @@ encode zstd gzip
 
 reverse_proxy /comms* comms:8925
 
+reverse_proxy /healthz* healthz
+
 reverse_proxy backend:5000
