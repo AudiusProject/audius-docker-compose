@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     networks:
       - dn-network
-    environment:
+    env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     logging:
