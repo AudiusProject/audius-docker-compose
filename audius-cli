@@ -744,7 +744,6 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
-                ctx.invoke(launch_required_plugins)
 
             run(
                 [
@@ -757,6 +756,9 @@ def upgrade(ctx, branch):
                     "-d",
                 ],
             )
+
+            if service == "discovery-provider":
+                ctx.invoke(launch_required_plugins)
 
     launch_plugins(ctx)
 
