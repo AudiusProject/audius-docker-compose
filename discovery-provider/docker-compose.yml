@@ -265,7 +265,7 @@ services:
       file: ../common-services.yml
       service: healthz
     networks:
-      - creator-node-network
+      - discovery-provider-network
 
   caddy:
     image: audius/caddy:2.7.4
