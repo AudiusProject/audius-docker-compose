@@ -9,6 +9,5 @@
   encode zstd gzip
 
   reverse_proxy mediorum:1991
+  reverse_proxy /healthz* healthz
 }
-
-

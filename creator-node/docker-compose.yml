@@ -83,7 +83,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-c1391ca294720cf61fa56ab219e8a9b97df77e00}
+    image: audius/mediorum:${TAG:-bc28f396b2606af49c65591119454484b900cf96}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -105,6 +105,14 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+
+  healthz:
+    container_name: healthz
+    extends:
+      file: ../common-services.yml
+      service: healthz
+    networks:
+      - creator-node-network
 
   caddy:
     image: audius/caddy:2.7.4
