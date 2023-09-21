@@ -259,6 +259,14 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  healthz:
+    container_name: healthz
+    extends:
+      file: ../common-services.yml
+      service: healthz
+    networks:
+      - creator-node-network
+
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
