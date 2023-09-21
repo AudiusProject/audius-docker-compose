@@ -54,7 +54,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-bc28f396b2606af49c65591119454484b900cf96}
+    image: audius/healthz:e9b6d3f1c3f527836e5a5364511b3433360593cc
     container_name: healthz
     restart: unless-stopped
 
