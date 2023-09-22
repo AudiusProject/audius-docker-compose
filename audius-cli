@@ -903,7 +903,7 @@ def deregister_plugin(ctx, name):
         return
     if name in plugins:
         plugins.remove(name)
-    plugins = set(plugins)
+    plugins = set(filter(True, plugins))
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
