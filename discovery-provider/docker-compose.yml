@@ -259,6 +259,40 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  acdc-blockscout-db:
+    image: postgres:13.6
+    environment:
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  acdc-blockscout:
+    image: blockscout/blockscout:4.1.3
+    command: 'mix do ecto.create, ecto.migrate, phx.server'
+    environment:
+      ETHEREUM_JSONRPC_VARIANT: 'nethermind'
+      ETHEREUM_JSONRPC_HTTP_URL: 'http://chain:8545'
+      ETHEREUM_JSONRPC_WS_URL: 'ws://chain:8545'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?ssl=false'
+      ECTO_USE_SSL: false
+    ports:
+      - "9546:4000"
+    depends_on:
+      acdc-blockscout-db:
+        condition: service_healthy
+      chain:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: global
+
   healthz:
     container_name: healthz
     extends:
