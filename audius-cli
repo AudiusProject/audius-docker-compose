@@ -881,8 +881,11 @@ def register_plugin(ctx, name):
     else:
         plugins = []
     plugins.append(name)
+    print(f" plugins {plugins}")
     plugins = set(plugins)
+    print(f" plugins {plugins}")
     plugins = ",".join(plugins)
+    print(f" plugins {plugins}")
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
 
