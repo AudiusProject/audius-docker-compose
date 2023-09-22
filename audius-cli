@@ -881,6 +881,7 @@ def register_plugin(ctx, name):
     else:
         plugins = []
     plugins.append(name)
+    plugins = set(plugins)
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
@@ -899,9 +900,7 @@ def deregister_plugin(ctx, name):
         return
     if name in plugins:
         plugins.remove(name)
-        # last plugin removed
-        if not plugins:
-            return
+    plugins = set(plugins)
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
