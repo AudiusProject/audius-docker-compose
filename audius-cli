@@ -882,7 +882,7 @@ def register_plugin(ctx, name):
         plugins = []
     plugins.append(name)
     print(f" plugins {plugins}")
-    plugins = set(filter(True, plugins))
+    plugins = set(filter(lambda x: x != "", plugins))
     print(f" plugins {plugins}")
     plugins = ",".join(plugins)
     print(f" plugins {plugins}")
@@ -903,7 +903,7 @@ def deregister_plugin(ctx, name):
         return
     if name in plugins:
         plugins.remove(name)
-    plugins = set(filter(True, plugins))
+    plugins = set(filter(lambda x: x != "", plugins))
     plugins = ",".join(plugins)
     dotenv.set_key(override_env, REGISTERED_PLUGINS, plugins)
     return
