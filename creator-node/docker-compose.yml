@@ -90,6 +90,7 @@ services:
       - creator-node-network
     ports:
       - "${MEDIORUM_PORT:-4000}:1991"
+      - 127.0.0.1:6060:6060
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
