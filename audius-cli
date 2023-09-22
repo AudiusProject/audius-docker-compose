@@ -272,9 +272,10 @@ def health_check(ctx, service):
 @click.option("-y", "--yes", is_flag=True)
 @click.option("--seed", is_flag=True)
 @click.option("--chain", is_flag=True)
+@click.option("-b", "--block-explorer", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, chain, block_explorer, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -350,6 +351,7 @@ def launch(ctx, service, seed, chain, yes):
             "compose",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
+            *(["--profile=block-explorer"] if block_explorer else []),
             "up",
             "--remove-orphans",
             "-d",

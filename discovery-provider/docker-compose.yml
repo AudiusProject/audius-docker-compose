@@ -271,6 +271,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - block-explorer
 
   acdc-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -292,6 +294,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - block-explorer
 
   healthz:
     container_name: healthz
