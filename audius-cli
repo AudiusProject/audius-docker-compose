@@ -882,7 +882,7 @@ def register_plugin(ctx, name):
         plugins = []
     plugins.append(name)
     print(f" plugins {plugins}")
-    plugins = set(filter(None, plugins))
+    plugins = set(filter(True, plugins))
     print(f" plugins {plugins}")
     plugins = ",".join(plugins)
     print(f" plugins {plugins}")
