@@ -275,7 +275,7 @@ services:
       - block-explorer
 
   acdc-blockscout:
-    image: blockscout/blockscout:4.1.3
+    image: blockscout/blockscout:5.2.3
     command: 'mix do ecto.create, ecto.migrate, phx.server'
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
