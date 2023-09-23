@@ -268,7 +268,13 @@ services:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
-    logging: *default-logging
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     deploy:
       mode: global
     profiles:
@@ -291,7 +297,13 @@ services:
         condition: service_healthy
       chain:
         condition: service_healthy
-    logging: *default-logging
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     deploy:
       mode: global
     profiles:
