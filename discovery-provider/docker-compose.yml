@@ -262,6 +262,9 @@ services:
   acdc-blockscout-db:
     image: postgres:13.6
     container_name: acdc-blockscout-db
+    shm_size: 2g
+    restart: always
+    command: postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: 'postgres'
       POSTGRES_PASSWORD: 'postgres'
@@ -299,6 +302,7 @@ services:
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ECTO_USE_SSL: false
+      MIX_ENV: 'prod'
     ports:
       - "127.0.0.1:9546:4000"
     depends_on:
