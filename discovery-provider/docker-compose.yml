@@ -261,13 +261,25 @@ services:
 
   acdc-blockscout-db:
     image: postgres:13.6
+    container_name: acdc-blockscout-db
     environment:
+      POSTGRES_DB: 'postgres'
       POSTGRES_PASSWORD: 'postgres'
       POSTGRES_USER: 'postgres'
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
+    ports:
+      - "127.0.0.1:5454:5432"
+    deploy:
+      mode: global
+    volumes:
+      - blockscout-postgres-data:/var/lib/postgresql/data
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
     logging:
       options:
         max-size: 10m
@@ -275,28 +287,31 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
 
   acdc-blockscout:
     image: blockscout/blockscout:5.2.3
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
+    command: ["./bin/blockscout", "start"]
+    container_name: acdc-blockscout
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
       ETHEREUM_JSONRPC_HTTP_URL: 'http://chain:8545'
       ETHEREUM_JSONRPC_WS_URL: 'ws://chain:8545'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?ssl=false'
+      DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ECTO_USE_SSL: false
     ports:
-      - "9546:4000"
+      - "127.0.0.1:9546:4000"
     depends_on:
       acdc-blockscout-db:
         condition: service_healthy
       chain:
         condition: service_healthy
+    deploy:
+      mode: global
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
     logging:
       options:
         max-size: 10m
@@ -304,10 +319,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
 
   healthz:
     container_name: healthz
@@ -340,3 +351,4 @@ volumes:
   esdata:
   caddy_data:
   caddy_config:
+  blockscout-postgres-data:
