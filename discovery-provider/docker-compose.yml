@@ -293,7 +293,7 @@ services:
 
   acdc-blockscout:
     image: blockscout/blockscout:5.2.3
-    command: ["./bin/blockscout", "start"]
+    command: bash -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     container_name: acdc-blockscout
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
