@@ -590,6 +590,11 @@ def set_tag(ctx, unset, yes, tag):
 @click.pass_context
 def get_tag(ctx):
     print("sup")
+    for service in SERVICES:
+        key = "TAG"
+        env_file = ctx.obj["manifests_path"] / service / ".env"
+        tag = dotenv.get_key(env_file, key)
+        print(f"tag for {service} {tag}")
 
 
 @cli.command()
