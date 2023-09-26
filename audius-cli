@@ -862,6 +862,7 @@ def launch_chain(ctx):
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
             "-d",
+            "--no-recreate",
             "chain",
         ],
     )
