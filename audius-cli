@@ -589,7 +589,7 @@ def set_tag(ctx, unset, yes, tag):
 @cli.command()
 @click.pass_context
 def get_tag(ctx):
-    logging.info("sup")
+    print("sup")
 
 
 @cli.command()
