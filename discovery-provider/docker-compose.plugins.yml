@@ -80,7 +80,7 @@ services:
     volumes:
       - blockscout-postgres-data:/var/lib/postgresql/data
     networks:
-      - discovery-provider-network
+      - dn-network
     profiles:
       - block-explorer
     logging:
@@ -112,7 +112,7 @@ services:
     deploy:
       mode: global
     networks:
-      - discovery-provider-network
+      - dn-network
     profiles:
       - block-explorer
     logging:
