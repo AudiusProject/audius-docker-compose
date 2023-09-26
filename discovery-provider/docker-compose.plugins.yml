@@ -93,7 +93,8 @@ services:
 
   acdc-blockscout:
     image: blockscout/blockscout:5.2.3
-    command: bash -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
+    command: bash -c "while ! curl --fail --silent http://localhost:8545/health; do sleep 1; done
+ && bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     container_name: acdc-blockscout
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
@@ -106,8 +107,6 @@ services:
       - "4000:4000"
     depends_on:
       acdc-blockscout-db:
-        condition: service_healthy
-      chain:
         condition: service_healthy
     deploy:
       mode: global
