@@ -703,7 +703,7 @@ def upgrade(ctx, branch):
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
                     "up",
-                    "--remove-orphans",  # THIS IS REMOVING THE PLUGINS
+                    #"--remove-orphans",  # THIS IS REMOVING THE PLUGINS
                     "-d",
                 ],
             )
