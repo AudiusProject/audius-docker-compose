@@ -8,4 +8,6 @@ reverse_proxy /comms* comms:8925
 
 reverse_proxy /healthz* healthz
 
+reverse_proxy /acdc-blockscout* acdc-blockscout:4000
+
 reverse_proxy backend:5000
