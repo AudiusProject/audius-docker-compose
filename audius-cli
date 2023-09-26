@@ -589,6 +589,7 @@ def set_tag(ctx, unset, yes, tag):
 @cli.command()
 @click.pass_context
 def get_tag(ctx):
+    logging.info("sup")
     for service in SERVICES:
         key = "TAG"
         env_file = ctx.obj["manifests_path"] / service / ".env"
