@@ -297,8 +297,7 @@ services:
     container_name: acdc-blockscout
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
-      ETHEREUM_JSONRPC_HTTP_URL: 'http://chain:8545'
-      ETHEREUM_JSONRPC_WS_URL: 'ws://chain:8545'
+      ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ECTO_USE_SSL: false
