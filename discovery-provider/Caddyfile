@@ -8,6 +8,19 @@ reverse_proxy /comms* comms:8925
 
 reverse_proxy /healthz* healthz
 
-reverse_proxy /acdc-blockscout* acdc-blockscout:4000
+# Reverse proxy to acdc-blockscout:4000
+{
+    @blockscout_proxy {
+        path /acdc-blockscout* /_next* /node-api* /apps* /account* /accounts* /static* /auth/profile* /auth/unverified-email* /txs* /tx* /blocks* /block* /login* /address* /stats* /search-results* /token* /tokens* /visualize* /api-docs* /csv-export* /verified-contracts* /graphiql* /withdrawals* /l2-output-roots* /l2-txn-batches* /l2-withdrawals* /l2-deposits*
+    }
+}
+
+@blockscout_proxy {
+    reverse_proxy acdc-blockscout:4000
+}
+
+route @blockscout_proxy {
+    reverse_proxy @blockscout_proxy
+}
 
 reverse_proxy backend:5000
