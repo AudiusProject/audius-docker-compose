@@ -587,6 +587,16 @@ def set_tag(ctx, unset, yes, tag):
 
 
 @cli.command()
+@click.pass_context
+def get_tag(ctx):
+    for service in SERVICES:
+        key = "TAG"
+        env_file = ctx.obj["manifests_path"] / service / ".env"
+        tag = dotenv.get_key(env_file, key)
+        logging.info(f"tag for {service} {tag}")
+
+
+@cli.command()
 @click.option("--unset", is_flag=True)
 @click.argument("service", required=True)
 @click.argument("path", type=click.Path(), required=False)
@@ -692,7 +702,7 @@ def upgrade(ctx, branch):
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
                     "up",
-                    "--remove-orphans",
+                    "--remove-orphans",  # THIS IS REMOVING THE PLUGINS
                     "-d",
                 ],
             )
