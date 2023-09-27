@@ -93,11 +93,13 @@ services:
 
   acdc-blockscout:
     image: blockscout/blockscout:5.2.3
+    restart: unless-stopped
     command: bash -c "while ! curl --fail --silent chain:8545/health; do sleep 1; done && bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     container_name: acdc-blockscout
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
       ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
+      INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ECTO_USE_SSL: false
