@@ -89,7 +89,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-80b3ba17384a0c1266f7b30c3118d2d3f274449f}
+    image: audius/discovery-provider:8e0607bbb9a7eca90c1a78a54ecc370e4157b626
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -196,6 +196,25 @@ services:
       service: exporter_docker
     networks:
       - discovery-provider-network
+
+  trpc:
+    image: audius/trpc:demo
+    container_name: trpc
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    ports:
+      - 2022:2022
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
 
   comms:
     image: audius/comms:${TAG:-80b3ba17384a0c1266f7b30c3118d2d3f274449f}
