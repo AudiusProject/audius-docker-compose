@@ -91,6 +91,26 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  acdc-blockscout-frontend:
+    image: ghcr.io/blockscout/frontend:latest
+    restart: unless-stopped
+    container_name: acdc-blockscout-frontend
+    ports:
+      - "3000:3000"
+    deploy:
+      mode: global
+    networks:
+      - dn-network
+    profiles:
+      - block-explorer
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   acdc-blockscout:
     image: blockscout/blockscout:5.2.3
     restart: unless-stopped
@@ -104,6 +124,10 @@ services:
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ECTO_USE_SSL: false
       MIX_ENV: 'prod'
+      API_V2_ENABLED: 'true'
+      FRONT_PROXY_PASS: 'acdc-blockscout-frontend:3000'
+    env_file:
+      - blockscout.env
     ports:
       - "4000:4000"
     depends_on:
