@@ -8,4 +8,8 @@ reverse_proxy /comms* comms:8925
 
 reverse_proxy /healthz* healthz
 
+handle_path /t2/* {
+	reverse_proxy trpc:2022
+}
+
 reverse_proxy backend:5000

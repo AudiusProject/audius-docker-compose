@@ -89,7 +89,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:8e0607bbb9a7eca90c1a78a54ecc370e4157b626
+    image: audius/discovery-provider:498a0e02f4939a530c3d5a0572e7c3517406eed5
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
