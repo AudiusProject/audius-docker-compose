@@ -80,7 +80,7 @@ services:
     deploy:
       mode: global
     volumes:
-      - blockscout-postgres-data:/var/lib/postgresql/data
+      - blockscout-db-data:/var/lib/postgresql/data
     networks:
       - dn-network
     profiles:
@@ -98,7 +98,7 @@ services:
     container_name: redis_db
     command: redis-server
     volumes:
-      - ./blockscout-redis-data:/data
+      - blockscout-redis-data:/data
     networks:
       - dn-network
     profiles:
@@ -108,6 +108,11 @@ services:
     image: ghcr.io/blockscout/frontend:latest
     restart: unless-stopped
     container_name: acdc-blockscout-frontend
+    environment:
+      NEXT_PUBLIC_APP_HOST: 'blockscout1.staging.audius.co/acdc-blockscout/'
+      NEXT_PUBLIC_NETWORK_NAME: 'ACDC Chain'
+      NEXT_PUBLIC_NETWORK_ID: '1056801'
+      NEXT_PUBLIC_API_HOST: 'blockscout1.staging.audius.co'
     ports:
       - "3000:3000"
     deploy:
@@ -148,6 +153,8 @@ services:
       acdc-blockscout-db:
         condition: service_healthy
       - acdc-blockscout-redis
+    volumes:
+      - blockscout-logs/:/app/logs/
     deploy:
       mode: global
     networks:
@@ -196,7 +203,7 @@ services:
     ports:
       - 7433:5432
     volumes:
-      - ./blockscout-stats-db-data:/var/lib/postgresql/data/
+      - ./blockscout-stats-data:/var/lib/postgresql/data/
     depends_on:
       - acdc-blockscout-backend
     networks:
@@ -226,7 +233,7 @@ services:
     image: nginx
     container_name: acdc-blockscout-proxy
     volumes:
-      - "../blockscout-proxy:/etc/nginx/templates"
+      - "blockscout-proxy:/etc/nginx/templates"
     environment:
       BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://acdc-blockscout-backend:4000}
       FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://acdc-blockscout-frontend:3000}
@@ -248,7 +255,8 @@ networks:
     external: true
 
 volumes:
-  blockscout-postgres-data:
+  blockscout-logs:
+  blockscout-db-data:
   blockscout-redis-data:
-  blockscout-stats-db-data:
-  ../blockscout-proxy:
+  blockscout-stats-data:
+  blockscout-proxy:
