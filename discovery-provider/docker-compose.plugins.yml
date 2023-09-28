@@ -95,7 +95,7 @@ services:
 
   acdc-blockscout-redis:
     image: 'redis:alpine'
-    container_name: redis_db
+    container_name: acdc-blockscout-redis
     command: redis-server
     volumes:
       - blockscout-redis-data:/data
@@ -109,10 +109,11 @@ services:
     restart: unless-stopped
     container_name: acdc-blockscout-frontend
     environment:
-      NEXT_PUBLIC_APP_HOST: 'blockscout1.staging.audius.co/acdc-blockscout/'
+      NEXT_PUBLIC_APP_HOST: 'blockscout1.staging.audius.co'
       NEXT_PUBLIC_NETWORK_NAME: 'ACDC Chain'
       NEXT_PUBLIC_NETWORK_ID: '1056801'
       NEXT_PUBLIC_API_HOST: 'blockscout1.staging.audius.co'
+      NODE_ENV: 'development'
     ports:
       - "3000:3000"
     deploy:
@@ -121,19 +122,12 @@ services:
       - dn-network
     profiles:
       - block-explorer
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
 
   acdc-blockscout-backend:
     image: blockscout/blockscout:5.2.3
     restart: unless-stopped
     command: bash -c "while ! curl --fail --silent chain:8545/health; do sleep 1; done && bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
-    container_name: acdc-blockscout
+    container_name: acdc-blockscout-backend
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
       ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
@@ -152,9 +146,10 @@ services:
     depends_on:
       acdc-blockscout-db:
         condition: service_healthy
-      - acdc-blockscout-redis
+      acdc-blockscout-redis:
+        condition: service_started
     volumes:
-      - blockscout-logs/:/app/logs/
+      - blockscout-logs:/app/logs/
     deploy:
       mode: global
     networks:
@@ -203,7 +198,7 @@ services:
     ports:
       - 7433:5432
     volumes:
-      - ./blockscout-stats-data:/var/lib/postgresql/data/
+      - blockscout-stats-data:/var/lib/postgresql/data/
     depends_on:
       - acdc-blockscout-backend
     networks:
@@ -219,31 +214,11 @@ services:
     container_name: 'acdc-blockscout-stats'
     environment:
       - STATS__DB_URL=postgres://postgres:@acdc-blockscout-stats-db:5432/stats
-      - STATS__BLOCKSCOUT_DB_URL=postgresql://postgres:@acdc-blockscout-stats-db:7432/blockscout?ssl=false
+      - STATS__BLOCKSCOUT_DB_URL=postgresql://postgres:@acdc-blockscout-stats-db:7432/blockscout?sslmode=disable
       - STATS__CREATE_DATABASE=true
       - STATS__RUN_MIGRATIONS=true
     depends_on:
       - acdc-blockscout-stats-db
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
-
-  acdc-blockscout-proxy:
-    image: nginx
-    container_name: acdc-blockscout-proxy
-    volumes:
-      - "blockscout-proxy:/etc/nginx/templates"
-    environment:
-      BACK_PROXY_PASS: ${BACK_PROXY_PASS:-http://acdc-blockscout-backend:4000}
-      FRONT_PROXY_PASS: ${FRONT_PROXY_PASS:-http://acdc-blockscout-frontend:3000}
-    ports:
-      - 80:80
-      - 8080:8080
-      - 8081:8081
-    depends_on:
-      - acdc-blockscout-backend
-      - acdc-blockscout-stats
     networks:
       - dn-network
     profiles:
@@ -259,4 +234,3 @@ volumes:
   blockscout-db-data:
   blockscout-redis-data:
   blockscout-stats-data:
-  blockscout-proxy:

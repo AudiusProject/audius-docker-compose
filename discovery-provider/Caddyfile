@@ -4,17 +4,12 @@
 
 encode zstd gzip
 
-reverse_proxy /comms* comms:8925
-
-reverse_proxy /healthz* healthz
-
-# Reverse proxy to acdc-blockscout:4000
 @blockscout_proxy {
-    path /acdc-blockscout* /_next* /node-api* /apps* /account* /accounts* /static* /auth/profile* /auth/unverified-email* /txs* /tx* /blocks* /block* /login* /address* /stats* /search-results* /token* /tokens* /visualize* /api-docs* /csv-export* /verified-contracts* /graphiql* /withdrawals* /l2-output-roots* /l2-txn-batches* /l2-withdrawals* /l2-deposits*
+    path / /_next* /node-api* /apps* /account* /accounts* /static* /auth/profile* /auth/unverified-email* /txs* /tx* /blocks* /block* /login* /address* /stats* /search-results* /token* /tokens* /visualize* /api-docs* /csv-export* /verified-contracts* /graphiql* /withdrawals* /l2-output-roots* /l2-txn-batches* /l2-withdrawals* /l2-deposits*
 }
 
 route @blockscout_proxy {
-    reverse_proxy acdc-blockscout:4000
+    reverse_proxy acdc-blockscout-frontend:3000
 }
 
-reverse_proxy backend:5000
+reverse_proxy acdc-blockscout-backend:4000
