@@ -60,7 +60,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-demo}
+    image: audius/trpc:demo
     container_name: trpc
     restart: unless-stopped
     networks:
