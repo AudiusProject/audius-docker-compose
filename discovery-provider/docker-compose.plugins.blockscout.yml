@@ -106,19 +106,6 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  acdc-blockscout-visualizer:
-    image: ghcr.io/blockscout/visualizer:${VISUALIZER_DOCKER_TAG:-latest}
-    pull_policy: always
-    platform: linux/amd64
-    restart: always
-    container_name: 'acdc-blockscout-visualizer'
-    ports:
-      - "8050:8050"
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
-
   acdc-blockscout-sig-provider:
     image: ghcr.io/blockscout/sig-provider:${SIG_PROVIDER_DOCKER_TAG:-latest}
     pull_policy: always
@@ -127,44 +114,6 @@ services:
     container_name: 'acdc-blockscout-sig-provider'
     ports:
       - "8051:8050"
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
-
-  acdc-blockscout-stats-db:
-    image: postgres:14
-    restart: always
-    container_name: 'acdc-blockscout-stats-db'
-    command: postgres -c 'max_connections=200'
-    environment:
-        POSTGRES_PASSWORD: ''
-        POSTGRES_USER: 'postgres'
-        POSTGRES_HOST_AUTH_METHOD: 'trust'
-    ports:
-      - 7433:5432
-    volumes:
-      - blockscout-stats-data:/var/lib/postgresql/data/
-    depends_on:
-      - acdc-blockscout-backend
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
-
-  acdc-blockscout-stats:
-    image: ghcr.io/blockscout/stats:${STATS_DOCKER_TAG:-latest}
-    pull_policy: always
-    platform: linux/amd64
-    restart: always
-    container_name: 'acdc-blockscout-stats'
-    environment:
-      STATS__DB_URL: 'postgres://postgres:@acdc-blockscout-stats-db:5432/stats'
-      STATS__BLOCKSCOUT_DB_URL: 'postgresql://postgres:@acdc-blockscout-stats-db:7433/blockscout?sslmode=disable'
-      STATS__CREATE_DATABASE: 'true'
-      STATS__RUN_MIGRATIONS: 'true'
-    depends_on:
-      - acdc-blockscout-stats-db
     networks:
       - dn-network
     profiles:
@@ -179,5 +128,4 @@ volumes:
   blockscout-logs:
   blockscout-db-data:
   blockscout-redis-data:
-  blockscout-stats-data:
 
