@@ -4,12 +4,8 @@
 
 encode zstd gzip
 
-@blockscout_proxy {
-    path / /_next* /node-api* /apps* /account* /accounts* /static* /auth/profile* /auth/unverified-email* /txs* /tx* /blocks* /block* /login* /address* /stats* /search-results* /token* /tokens* /visualize* /api-docs* /csv-export* /verified-contracts* /graphiql* /withdrawals* /l2-output-roots* /l2-txn-batches* /l2-withdrawals* /l2-deposits*
-}
+reverse_proxy /comms* comms:8925
 
-route @blockscout_proxy {
-    reverse_proxy acdc-blockscout-frontend:3000
-}
+reverse_proxy /healthz* healthz
 
-reverse_proxy acdc-blockscout-backend:4000
+reverse_proxy backend:5000
