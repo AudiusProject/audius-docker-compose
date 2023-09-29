@@ -749,7 +749,7 @@ def launch_plugins(ctx):
     if plugins_env is not None:
         registered_plugins = list(filter(lambda x: x != '', plugins_env.split(",")))
 
-    required_plugins = ["relay"]
+    required_plugins = ["relay", "trpc"]
 
     plugins = required_plugins + registered_plugins
 
