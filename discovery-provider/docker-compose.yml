@@ -220,7 +220,7 @@ services:
     container_name: trpc
     restart: unless-stopped
     networks:
-      - dn-network
+      - discovery-provider-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
