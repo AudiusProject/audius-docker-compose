@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: 'postgres'
       POSTGRES_USER: 'postgres'
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 10s
       timeout: 5s
     ports:
@@ -102,7 +102,7 @@ services:
       acdc-blockscout-db:
         condition: service_healthy
       acdc-blockscout-redis:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - blockscout-logs:/app/logs/
     deploy:
