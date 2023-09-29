@@ -1,4 +1,5 @@
 override.env
+blockscout.env
 audius-cli.log
 auto-upgrade.log
 
