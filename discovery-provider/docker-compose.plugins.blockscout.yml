@@ -171,9 +171,9 @@ acdc-blockscout-stats:
     - block-explorer
 
 networks:
-dn-network:
-  name: discovery-provider_discovery-provider-network
-  external: true
+  dn-network:
+    name: discovery-provider_discovery-provider-network
+    external: true
 
 volumes:
 blockscout-logs:
