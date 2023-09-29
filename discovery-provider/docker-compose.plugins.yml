@@ -78,6 +78,45 @@ services:
     ports:
       - "2022:2022"
 
+  verified-notifications:
+    image: audius/verified-notifications:bec40b7222f743a8d67308ca86b97fa1d30bfa5a
+    container_name: verified-notifications
+    restart: unless-stopped
+    networks:
+      - dn-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "6003:6003"
+
+
+  trending-challenge-rewards:
+    image: audius/trending-challenge-rewards:4ae89f438b5808a54272ceff22f7d7ab412451f3
+    container_name: trending-challenge-rewards
+    restart: unless-stopped
+    networks:
+      - dn-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "6003:6003"
+
 networks:
   dn-network:
     name: discovery-provider_discovery-provider-network
