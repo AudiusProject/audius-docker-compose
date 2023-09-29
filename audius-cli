@@ -747,8 +747,10 @@ def launch_plugins(ctx):
     plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
 
     registered_plugins = []
+    launch_blockscout = False
     if plugins_env is not None:
-        registered_plugins = list(filter(lambda x: x != '', plugins_env.split(",")))
+        registered_plugins = list(filter(lambda x: x not in ('', 'acdc-blockscout'), plugins_env.split(",")))
+        launch_blockscout = "acdc-blockscout" in plugins_env
 
     required_plugins = ["relay"]
 
@@ -784,6 +786,38 @@ def launch_plugins(ctx):
         ]
     run_cmd.extend(plugins)
     run(run_cmd)
+
+    if launch_blockscout:
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.plugins.blockscout.yml",
+                "pull",
+            ],
+            check=True,
+        )
+
+        run_cmd = [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "-f",
+                ctx.obj["manifests_path"]
+                / "discovery-provider"
+                / "docker-compose.plugins.blockscout.yml",
+                "--profile",
+                "block-explorer",
+                "up",
+                "-d"
+            ]
+        run(run_cmd)
 
 
 @cli.command()
