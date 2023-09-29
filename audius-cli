@@ -723,7 +723,7 @@ def auto_upgrade(ctx, remove, cron_expression):
                 pass
             except:
                 logging.warn(f"Unable to create `{log_file}` file")
-            
+
             job = cron.new(
                 (
                     f"date >> {log_file};"
@@ -749,7 +749,7 @@ def launch_plugins(ctx):
     if plugins_env is not None:
         registered_plugins = list(filter(lambda x: x != '', plugins_env.split(",")))
 
-    required_plugins = ["relay", "trpc"]
+    required_plugins = ["relay"]
 
     plugins = required_plugins + registered_plugins
 
