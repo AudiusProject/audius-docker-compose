@@ -215,6 +215,25 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  trpc:
+    image: audius/trpc:demo
+    container_name: trpc
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "2022:2022"
+
   chain:
     image: audius/nethermind:1.14.3
     restart: unless-stopped
