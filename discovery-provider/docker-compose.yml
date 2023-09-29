@@ -12,6 +12,7 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - discovery-provider-network
+
   exporter_postgres:
     extends:
       file: ../common-services.yml
