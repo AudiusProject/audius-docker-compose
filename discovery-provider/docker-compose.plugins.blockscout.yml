@@ -24,10 +24,6 @@ services:
       mode: global
     volumes:
       - blockscout-db-data:/var/lib/postgresql/data
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
     logging:
       options:
         max-size: 10m
@@ -35,13 +31,29 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    networks:
+      - dn-network
+    profiles:
+      - block-explorer
 
   acdc-blockscout-redis:
     image: 'redis:alpine'
+    restart: always
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'PING']
+      interval: 10s
+      timeout: 5s
     container_name: acdc-blockscout-redis
     command: redis-server
     volumes:
       - blockscout-redis-data:/data
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     networks:
       - dn-network
     profiles:
@@ -73,14 +85,15 @@ services:
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
       ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
+      CHAIN_ID: '1056801'
       INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
+      ACCOUNT_REDIS_URL: 'redis://acdc-blockscout-redis:6379'
       ECTO_USE_SSL: false
-      MIX_ENV: 'prod'
       API_V2_ENABLED: 'true'
-      FRONT_PROXY_PASS: 'acdc-blockscout-frontend:3000'
-      CHAIN_ID: '1056801'
+      MICROSERVICE_SC_VERIFIER_ENABLED: 'true'
+      MICROSERVICE_SC_VERIFIER_URL: 'smart-contract-verifier:8050'
     env_file:
       - blockscout.env
     ports:
@@ -94,10 +107,6 @@ services:
       - blockscout-logs:/app/logs/
     deploy:
       mode: global
-    networks:
-      - dn-network
-    profiles:
-      - block-explorer
     logging:
       options:
         max-size: 10m
@@ -105,15 +114,17 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    networks:
+      - dn-network
+    profiles:
+      - block-explorer
 
-  acdc-blockscout-sig-provider:
-    image: ghcr.io/blockscout/sig-provider:${SIG_PROVIDER_DOCKER_TAG:-latest}
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
     pull_policy: always
     platform: linux/amd64
     restart: always
-    container_name: 'acdc-blockscout-sig-provider'
-    ports:
-      - "8051:8050"
+    container_name: 'smart-contract-verifier'
     networks:
       - dn-network
     profiles:
