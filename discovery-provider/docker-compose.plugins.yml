@@ -58,3 +58,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+
+networks:
+  dn-network:
+    name: discovery-provider_discovery-provider-network
+    external: true
