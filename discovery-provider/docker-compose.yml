@@ -217,7 +217,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:demo
+    image: audius/trpc:${TAG:-1cd4f15909c8383fa67442aed38a70325e6de3f9}
     container_name: trpc
     restart: unless-stopped
     networks:
