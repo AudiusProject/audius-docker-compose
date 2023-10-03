@@ -83,7 +83,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-ddf5cb5ee51649e3260b0b78cb8fd380908f81cd}
+    image: audius/mediorum:${TAG:-181a6ae987bb24dd12d1f76f8cdd308b3e9feb75}
     container_name: mediorum
     restart: unless-stopped
     networks:
