@@ -60,7 +60,7 @@ services:
       - block-explorer
 
   acdc-blockscout-frontend:
-    image: audius/blockscout-frontend:0.0.2
+    image: audius/blockscout-frontend:0.0.3
     restart: unless-stopped
     container_name: acdc-blockscout-frontend
     env_file:
