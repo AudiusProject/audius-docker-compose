@@ -65,11 +65,12 @@ services:
     container_name: acdc-blockscout-frontend
     env_file:
       - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     environment:
       NEXT_PUBLIC_NETWORK_NAME: 'ACDC Chain'
     ports:
       - "3000:3000"
-    deploy: 
+    deploy:
       mode: global
     networks:
       - dn-network
