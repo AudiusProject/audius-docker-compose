@@ -60,17 +60,16 @@ services:
       - block-explorer
 
   acdc-blockscout-frontend:
-    image: ghcr.io/blockscout/frontend:latest
+    image: audius/blockscout-frontend:0.0.2
     restart: unless-stopped
     container_name: acdc-blockscout-frontend
+    env_file:
+      - ${NETWORK:-prod}.env
     environment:
-      NEXT_PUBLIC_APP_HOST: 'blockscout1.staging.audius.co'
       NEXT_PUBLIC_NETWORK_NAME: 'ACDC Chain'
-      NEXT_PUBLIC_NETWORK_ID: '1056801'
-      NEXT_PUBLIC_API_HOST: 'blockscout1.staging.audius.co'
     ports:
       - "3000:3000"
-    deploy:
+    deploy: 
       mode: global
     networks:
       - dn-network
@@ -82,20 +81,20 @@ services:
     restart: unless-stopped
     command: bash -c "while ! curl --fail --silent chain:8545/health; do sleep 1; done && bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
     container_name: acdc-blockscout-backend
+    env_file:
+      - blockscout.env
+      - ${NETWORK:-prod}.env
     environment:
       ETHEREUM_JSONRPC_VARIANT: 'nethermind'
       ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
-      CHAIN_ID: '1056801'
       INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
       DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
       ACCOUNT_REDIS_URL: 'redis://acdc-blockscout-redis:6379'
-      ECTO_USE_SSL: false
+      ECTO_USE_SSL: 'false'
       API_V2_ENABLED: 'true'
       MICROSERVICE_SC_VERIFIER_ENABLED: 'true'
       MICROSERVICE_SC_VERIFIER_URL: 'smart-contract-verifier:8050'
-    env_file:
-      - blockscout.env
     ports:
       - "4000:4000"
     depends_on:
