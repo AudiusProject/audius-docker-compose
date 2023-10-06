@@ -751,10 +751,6 @@ def launch_plugins(ctx):
         registered_plugins = list(filter(lambda x: x not in ('', 'acdc-blockscout'), plugins_env.split(",")))
         launch_blockscout = "acdc-blockscout" in plugins_env
 
-    required_plugins = ["relay"]
-
-    plugins = required_plugins + registered_plugins
-
     run(
         [
             "docker",
@@ -783,7 +779,7 @@ def launch_plugins(ctx):
             "--no-recreate",
             "-d"
         ]
-    run_cmd.extend(plugins)
+    run_cmd.extend(registered_plugins)
     run(run_cmd)
 
     if launch_blockscout:
