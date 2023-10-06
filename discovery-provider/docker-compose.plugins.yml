@@ -1,28 +1,6 @@
 version: "3.9"
 
 services:
-
-  relay:
-    image: audius/relay:${TAG:-28f3e68b097a3530f229e8fa23d3a35fce316c38}
-    container_name: relay
-    restart: unless-stopped
-    networks:
-      - dn-network
-    environment:
-      - ENVIRONMENT=${NETWORK}
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    ports:
-      - "6001:6001"
-
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-28f3e68b097a3530f229e8fa23d3a35fce316c38}
     container_name: notifications
