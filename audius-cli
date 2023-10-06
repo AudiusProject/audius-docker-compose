@@ -751,6 +751,9 @@ def launch_plugins(ctx):
         registered_plugins = list(filter(lambda x: x not in ('', 'acdc-blockscout'), plugins_env.split(",")))
         launch_blockscout = "acdc-blockscout" in plugins_env
 
+    if not registered_plugins:
+        return
+
     run(
         [
             "docker",
