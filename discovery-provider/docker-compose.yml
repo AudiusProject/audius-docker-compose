@@ -93,7 +93,7 @@ services:
     container_name: relay
     restart: unless-stopped
     networks:
-      - dn-network
+      - discovery-provider-network
     environment:
       - ENVIRONMENT=${NETWORK}
     env_file:
