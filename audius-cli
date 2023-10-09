@@ -595,6 +595,7 @@ def unset_tag(ctx):
         env_file = ctx.obj["manifests_path"] / service / ".env"
         logging.info(f"> audius-cli unset-tag service={service!r}")
         dotenv.unset_key(env_file, key)
+    click.echo("Tag unset.")
 
 
 @cli.command()
