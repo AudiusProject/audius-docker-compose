@@ -588,7 +588,7 @@ def set_tag(ctx, unset, yes, tag):
 
 @cli.command()
 @click.pass_context
-def set_tag(ctx):
+def unset_tag(ctx):
     """Unset the commit tag"""
     for service in SERVICES:
         key = "TAG"
