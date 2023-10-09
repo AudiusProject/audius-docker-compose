@@ -578,12 +578,13 @@ def set_tag(ctx, unset, yes, tag):
     for service in SERVICES:
         key = "TAG"
         env_file = ctx.obj["manifests_path"] / service / ".env"
-        if unset:
-            # No longer supporting `audius-cli set-tag --unset` because nodes run it on a cron, and we don't want to be unsetting the tag on every auto-upgrade anymore.
-            click.echo("Please use `audius-cli unset-tag` instead")
-        else:
+        if not unset:
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, key, tag)
+
+    # No longer supporting `audius-cli set-tag --unset` because nodes run it on a cron, and we don't want to be unsetting the tag on every auto-upgrade anymore.
+    if unset:
+        click.echo("Please use `audius-cli unset-tag` instead")
 
 
 @cli.command()
