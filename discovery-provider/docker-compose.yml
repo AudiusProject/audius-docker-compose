@@ -88,6 +88,27 @@ services:
     networks:
       - discovery-provider-network
 
+  relay:
+    image: audius/relay:${TAG:-28f3e68b097a3530f229e8fa23d3a35fce316c38}
+    container_name: relay
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    environment:
+      - ENVIRONMENT=${NETWORK}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "6001:6001"
+
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-391210226780228d2465eacd7e330ddf02767972}
