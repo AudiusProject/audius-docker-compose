@@ -542,7 +542,7 @@ def get_config(ctx, service):
 
 
 @cli.command()
-@click.option("--unset", is_flag=True) # No longer used. Use `audius-cli unset-tag` instead.
+@click.option("--unset", is_flag=True)
 @click.option("-y", "--yes", is_flag=True)
 @click.argument("tag", required=False)
 @click.pass_context
@@ -569,34 +569,25 @@ def set_tag(ctx, unset, yes, tag):
 
         if not yes:
             click.confirm(
-                click.style("Do you want to continue?", bold=True),
+                click.style("Do you want to continue? This will disable auto-upgrade if it's enabled.", bold=True),
                 abort=True,
                 default=True,
             )
+    
+    if not unset:
+        click.echo("Disabling auto-upgrade (if enabled) in order to use a different tag...")
+        ctx.invoke(auto_upgrade, remove=True)
 
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         key = "TAG"
         env_file = ctx.obj["manifests_path"] / service / ".env"
-        if not unset:
+        if unset:
+            logging.info(f"> audius-cli set-tag unset service={service!r}")
+            dotenv.unset_key(env_file, key)
+        else:
             logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
             dotenv.set_key(env_file, key, tag)
-
-    # No longer supporting `audius-cli set-tag --unset` because nodes run it on a cron, and we don't want to be unsetting the tag on every auto-upgrade anymore.
-    if unset:
-        click.echo("Please use `audius-cli unset-tag` instead")
-
-
-@cli.command()
-@click.pass_context
-def unset_tag(ctx):
-    """Unset the commit tag"""
-    for service in SERVICES:
-        key = "TAG"
-        env_file = ctx.obj["manifests_path"] / service / ".env"
-        logging.info(f"> audius-cli unset-tag service={service!r}")
-        dotenv.unset_key(env_file, key)
-    click.echo("Tag unset.")
 
 
 @cli.command()
@@ -725,6 +716,7 @@ def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
         for job in cron.find_comment("audius-cli auto-upgrade"):
+            print(f"Removed auto-upgrade cron. If you want to re-enable, run: audius-cli auto-upgrade \"{job.slices}\"")
             cron.remove(job)
 
         if not remove:
@@ -740,8 +732,7 @@ def auto_upgrade(ctx, remove, cron_expression):
             job = cron.new(
                 (
                     f"date >> {log_file};"
-                    # This used to reset the TAG env var, but we don't want to do that anymore. Some nodes still run this command, but it no longer has any effect.
-                    # f"/usr/local/bin/audius-cli set-tag --unset --yes >> {log_file} 2>&1;"
+                    f"/usr/local/bin/audius-cli set-tag --unset --yes >> {log_file} 2>&1;"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
                 "audius-cli auto-upgrade",
