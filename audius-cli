@@ -569,10 +569,14 @@ def set_tag(ctx, unset, yes, tag):
 
         if not yes:
             click.confirm(
-                click.style("Do you want to continue?", bold=True),
+                click.style("Do you want to continue? This will disable auto-upgrade if it's enabled.", bold=True),
                 abort=True,
                 default=True,
             )
+    
+    if not unset:
+        click.echo("Disabling auto-upgrade (if enabled) in order to use a different tag...")
+        ctx.invoke(auto_upgrade, remove=True)
 
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
@@ -713,6 +717,7 @@ def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
         for job in cron.find_comment("audius-cli auto-upgrade"):
+            print(f"Removed auto-upgrade cron. If you want to re-enable, run: audius-cli auto-upgrade \"{job.slices}\"")
             cron.remove(job)
 
         if not remove:
