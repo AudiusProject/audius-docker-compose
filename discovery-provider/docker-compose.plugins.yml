@@ -37,6 +37,21 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  dashboard:
+    image: audius/dashboard:${TAG:-54614964eaed3cbb31edadee66c8bded434fb6bf}
+    container_name: dashboard
+    restart: unless-stopped
+    command: ["npm", "run", "start:${NETWORK:-prod}"]
+    networks:
+      - dn-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
 networks:
   dn-network:
     name: discovery-provider_discovery-provider-network
