@@ -107,10 +107,9 @@ services:
       driver: json-file
 
   healthz:
+    image: audius/healthz:${TAG:-e9b6d3f1c3f527836e5a5364511b3433360593cc}
     container_name: healthz
-    extends:
-      file: ../common-services.yml
-      service: healthz
+    restart: unless-stopped
     networks:
       - creator-node-network
 
