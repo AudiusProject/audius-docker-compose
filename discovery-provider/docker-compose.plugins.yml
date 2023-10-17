@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-e4b5bf3ca74ee087c7b295cc24077d29f0f311f9}
+    image: audius/discovery-provider-notifications:${TAG:-b697b1ec5cfa99eb044e6c5c4067a820a2ddc878}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -21,7 +21,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-e4b5bf3ca74ee087c7b295cc24077d29f0f311f9}
+    image: audius/sla-auditor:${TAG:-b697b1ec5cfa99eb044e6c5c4067a820a2ddc878}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
@@ -38,7 +38,7 @@ services:
       driver: json-file
 
   dashboard:
-    image: audius/dashboard:${TAG:-e4b5bf3ca74ee087c7b295cc24077d29f0f311f9}
+    image: audius/dashboard:${TAG:-b697b1ec5cfa99eb044e6c5c4067a820a2ddc878}
     container_name: dashboard
     restart: unless-stopped
     command: ["npm", "run", "start:${NETWORK:-prod}"]
