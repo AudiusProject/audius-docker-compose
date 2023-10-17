@@ -142,6 +142,7 @@ services:
     container_name: indexer
     image: audius/discovery-provider:${TAG:-c1624b67cebd6e5cbcdfd9958180ff92ae550491}
     restart: always
+    mem_limit: 2.8g
     depends_on:
       db:
         condition: service_healthy
