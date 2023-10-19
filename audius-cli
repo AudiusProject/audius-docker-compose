@@ -641,15 +641,30 @@ def set_network(ctx, unset, network):
 @cli.command()
 @click.argument("branch", required=False)
 @click.pass_context
-def pull(ctx, branch):
-    """Pull latest updates from remote"""
+def pull_reset(ctx, branch):
+    """Pull latest updates from remote and hard reset"""
     try:
-        run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+
         if branch:
-            run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
-        run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
-    except subprocess.CalledProcessError:
-        click.secho("Could not pull", fg="red")
+            subprocess.run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
+
+        # Get the name of the current branch
+        current_branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], 
+            cwd=ctx.obj["manifests_path"],
+            text=True
+        ).strip()
+
+        # Run git reset with the current branch
+        subprocess.run(
+            ["git", "reset", "--hard", f"origin/{current_branch}"], 
+            check=True, 
+            cwd=ctx.obj["manifests_path"]
+        )
+
+    except subprocess.CalledProcessError as e:
+        click.secho(f"Could not pull and hard reset: {e}", fg="red")
         sys.exit(1)
 
 
@@ -658,7 +673,7 @@ def pull(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
-    ctx.forward(pull)
+    ctx.forward(pull_reset)
     set_automatic_env(ctx)
 
     lock(ctx, "docker")
