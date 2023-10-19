@@ -858,6 +858,9 @@ def launch_chain(ctx):
     prev_network_id = None
     network_id = spec_data["params"]["networkID"]
 
+    if os.path.isdir(spec_output):
+        os.rmdir(spec_output)
+
     if os.path.isfile(spec_output):
         prev_spec_data = json.load(open(spec_output))
         prev_network_id = prev_spec_data["params"]["networkID"]
@@ -886,6 +889,8 @@ def launch_chain(ctx):
     static_peers_file = (
         ctx.obj["manifests_path"] / "discovery-provider" / "chain" / "static-nodes.json"
     )
+    if os.path.isdir(static_peers_file):
+        os.rmdir(static_peers_file)
     with open(static_peers_file, "w") as f:
         json.dump(peers, f, ensure_ascii=False, indent=2)
         f.write("\n")
