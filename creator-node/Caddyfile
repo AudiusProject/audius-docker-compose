@@ -10,4 +10,8 @@
 
   reverse_proxy mediorum:1991
   reverse_proxy /healthz* healthz
+  route /dashboard* {
+      redir /dashboard /dashboard/ 308
+      reverse_proxy dashboard:5173
+  }
 }
