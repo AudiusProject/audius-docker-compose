@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  dashboard:
+    image: audius/dashboard:${TAG:-25c74033d015f9392294b67474d77807e00ac240}
+    container_name: dashboard
+    restart: unless-stopped
+    command: ["npm", "run", "start:${NETWORK:-prod}"]
+    networks:
+      - cn-network
+
+networks:
+  cn-network:
+    name: creator-node_creator-node-network
+    external: true
