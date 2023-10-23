@@ -359,7 +359,9 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-        ctx.invoke(launch_plugins)
+
+    if service == "discovery-provider" or service == "creator-node":
+        ctx.invoke(launch_plugins, service)
 
     prune()
 
@@ -717,7 +719,9 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
-                ctx.invoke(launch_plugins)
+
+            if service == "discovery-provider" or service == "creator-node":
+                ctx.invoke(launch_plugins, service)
 
     prune()
 
@@ -757,12 +761,13 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 
 @cli.command()
+@click.argument("service", type=service_type)
 @click.pass_context
-def launch_plugins(ctx):
+def launch_plugins(ctx, service):
     """
     Launches all the plugins: required & registered.
     """
-    override_env = get_override_path(ctx, "discovery-provider")
+    override_env = get_override_path(ctx, service)
     plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
 
     registered_plugins = []
@@ -779,10 +784,10 @@ def launch_plugins(ctx):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
+            ctx.obj["manifests_path"] / service,
             "-f",
             ctx.obj["manifests_path"]
-            / "discovery-provider"
+            / service
             / "docker-compose.plugins.yml",
             "pull",
         ],
@@ -793,10 +798,10 @@ def launch_plugins(ctx):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
+            ctx.obj["manifests_path"] / service,
             "-f",
             ctx.obj["manifests_path"]
-            / "discovery-provider"
+            / service
             / "docker-compose.plugins.yml",
             "up",
             "--no-recreate",
@@ -805,16 +810,16 @@ def launch_plugins(ctx):
     run_cmd.extend(registered_plugins)
     run(run_cmd)
 
-    if launch_blockscout:
+    if service == "discovery-provider" and launch_blockscout:
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
+                ctx.obj["manifests_path"] / service,
                 "-f",
                 ctx.obj["manifests_path"]
-                / "discovery-provider"
+                / service
                 / "docker-compose.plugins.blockscout.yml",
                 "pull",
             ],
@@ -825,10 +830,10 @@ def launch_plugins(ctx):
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
+                ctx.obj["manifests_path"] / service,
                 "-f",
                 ctx.obj["manifests_path"]
-                / "discovery-provider"
+                / service
                 / "docker-compose.plugins.blockscout.yml",
                 "--profile",
                 "block-explorer",
