@@ -929,10 +929,11 @@ def launch_chain(ctx):
 
 @cli.command()
 @click.pass_context
+@click.argument("service", type=service_type)
 @click.argument("name", required=True)
-def register_plugin(ctx, name):
-    print(f"registering plugin {name}")
-    override_env = get_override_path(ctx, "discovery-provider")
+def register_plugin(ctx, service, name):
+    print(f"registering plugin {name} on {service}")
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
@@ -947,10 +948,11 @@ def register_plugin(ctx, name):
 
 @cli.command()
 @click.pass_context
+@click.argument("service", type=service_type)
 @click.argument("name", required=True)
-def deregister_plugin(ctx, name):
-    print(f"deregistering plugin {name}")
-    override_env = get_override_path(ctx, "discovery-provider")
+def deregister_plugin(ctx, service, name):
+    print(f"deregistering plugin {name} on {service}")
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
@@ -966,10 +968,11 @@ def deregister_plugin(ctx, name):
 
 @cli.command()
 @click.pass_context
-def print_plugins(ctx):
-    override_env = get_override_path(ctx, "discovery-provider")
+@click.argument("service", type=service_type)
+def print_plugins(ctx, service):
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
-    print(f"registered plugins: {plugins}")
+    print(f"registered plugins on {service}: {plugins}")
     return
 
 
