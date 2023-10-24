@@ -361,7 +361,7 @@ def launch(ctx, service, seed, chain, yes):
         ctx.invoke(launch_chain)
 
     if service == "discovery-provider" or service == "creator-node":
-        ctx.invoke(launch_plugins, service)
+        ctx.invoke(launch_plugins, service=service)
 
     prune()
 
@@ -721,7 +721,7 @@ def upgrade(ctx, branch):
                 ctx.invoke(launch_chain)
 
             if service == "discovery-provider" or service == "creator-node":
-                ctx.invoke(launch_plugins, service)
+                ctx.invoke(launch_plugins, service=service)
 
     prune()
 
