@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-671931fb525246fa674b153e309995420a3cc944}
+    image: audius/discovery-provider-notifications:${TAG:-fe53cfc508a83cafd9575dfd97c7cfb730abf3fb}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -21,7 +21,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-671931fb525246fa674b153e309995420a3cc944}
+    image: audius/sla-auditor:${TAG:-fe53cfc508a83cafd9575dfd97c7cfb730abf3fb}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
@@ -38,19 +38,12 @@ services:
       driver: json-file
 
   dashboard:
-    image: audius/dashboard:${TAG:-671931fb525246fa674b153e309995420a3cc944}
+    image: audius/dashboard:${TAG:-fe53cfc508a83cafd9575dfd97c7cfb730abf3fb}
     container_name: dashboard
     restart: unless-stopped
     command: ["npm", "run", "start:${NETWORK:-prod}"]
     networks:
       - dn-network
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
 
 networks:
   dn-network:

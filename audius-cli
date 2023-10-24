@@ -359,7 +359,9 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-        ctx.invoke(launch_plugins)
+
+    if service == "discovery-provider" or service == "creator-node":
+        ctx.invoke(launch_plugins, service)
 
     prune()
 
@@ -641,15 +643,30 @@ def set_network(ctx, unset, network):
 @cli.command()
 @click.argument("branch", required=False)
 @click.pass_context
-def pull(ctx, branch):
-    """Pull latest updates from remote"""
+def pull_reset(ctx, branch):
+    """Pull latest updates from remote and hard reset"""
     try:
-        run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+        subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
+
         if branch:
-            run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
-        run(["git", "pull"], check=True, cwd=ctx.obj["manifests_path"])
-    except subprocess.CalledProcessError:
-        click.secho("Could not pull", fg="red")
+            subprocess.run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
+
+        # Get the name of the current branch
+        current_branch = subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], 
+            cwd=ctx.obj["manifests_path"],
+            text=True
+        ).strip()
+
+        # Run git reset with the current branch
+        subprocess.run(
+            ["git", "reset", "--hard", f"origin/{current_branch}"], 
+            check=True, 
+            cwd=ctx.obj["manifests_path"]
+        )
+
+    except subprocess.CalledProcessError as e:
+        click.secho(f"Could not pull and hard reset: {e}", fg="red")
         sys.exit(1)
 
 
@@ -658,7 +675,7 @@ def pull(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
-    ctx.forward(pull)
+    ctx.forward(pull_reset)
     set_automatic_env(ctx)
 
     lock(ctx, "docker")
@@ -702,7 +719,9 @@ def upgrade(ctx, branch):
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
-                ctx.invoke(launch_plugins)
+
+            if service == "discovery-provider" or service == "creator-node":
+                ctx.invoke(launch_plugins, service)
 
     prune()
 
@@ -742,12 +761,13 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 
 @cli.command()
+@click.argument("service", type=service_type)
 @click.pass_context
-def launch_plugins(ctx):
+def launch_plugins(ctx, service):
     """
     Launches all the plugins: required & registered.
     """
-    override_env = get_override_path(ctx, "discovery-provider")
+    override_env = get_override_path(ctx, service)
     plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
 
     registered_plugins = []
@@ -764,10 +784,10 @@ def launch_plugins(ctx):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
+            ctx.obj["manifests_path"] / service,
             "-f",
             ctx.obj["manifests_path"]
-            / "discovery-provider"
+            / service
             / "docker-compose.plugins.yml",
             "pull",
         ],
@@ -778,10 +798,10 @@ def launch_plugins(ctx):
             "docker",
             "compose",
             "--project-directory",
-            ctx.obj["manifests_path"] / "discovery-provider",
+            ctx.obj["manifests_path"] / service,
             "-f",
             ctx.obj["manifests_path"]
-            / "discovery-provider"
+            / service
             / "docker-compose.plugins.yml",
             "up",
             "--no-recreate",
@@ -790,16 +810,16 @@ def launch_plugins(ctx):
     run_cmd.extend(registered_plugins)
     run(run_cmd)
 
-    if launch_blockscout:
+    if service == "discovery-provider" and launch_blockscout:
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
+                ctx.obj["manifests_path"] / service,
                 "-f",
                 ctx.obj["manifests_path"]
-                / "discovery-provider"
+                / service
                 / "docker-compose.plugins.blockscout.yml",
                 "pull",
             ],
@@ -810,10 +830,10 @@ def launch_plugins(ctx):
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
+                ctx.obj["manifests_path"] / service,
                 "-f",
                 ctx.obj["manifests_path"]
-                / "discovery-provider"
+                / service
                 / "docker-compose.plugins.blockscout.yml",
                 "--profile",
                 "block-explorer",
@@ -914,10 +934,11 @@ def launch_chain(ctx):
 
 @cli.command()
 @click.pass_context
+@click.argument("service", type=service_type)
 @click.argument("name", required=True)
-def register_plugin(ctx, name):
-    print(f"registering plugin {name}")
-    override_env = get_override_path(ctx, "discovery-provider")
+def register_plugin(ctx, service, name):
+    print(f"registering plugin {name} on {service}")
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
@@ -932,10 +953,11 @@ def register_plugin(ctx, name):
 
 @cli.command()
 @click.pass_context
+@click.argument("service", type=service_type)
 @click.argument("name", required=True)
-def deregister_plugin(ctx, name):
-    print(f"deregistering plugin {name}")
-    override_env = get_override_path(ctx, "discovery-provider")
+def deregister_plugin(ctx, service, name):
+    print(f"deregistering plugin {name} on {service}")
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     if plugins is not None:
         plugins = plugins.split(",")
@@ -951,10 +973,11 @@ def deregister_plugin(ctx, name):
 
 @cli.command()
 @click.pass_context
-def print_plugins(ctx):
-    override_env = get_override_path(ctx, "discovery-provider")
+@click.argument("service", type=service_type)
+def print_plugins(ctx, service):
+    override_env = get_override_path(ctx, service)
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
-    print(f"registered plugins: {plugins}")
+    print(f"registered plugins on {service}: {plugins}")
     return
 
 
