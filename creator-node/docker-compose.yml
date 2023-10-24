@@ -83,7 +83,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-f03b0c0e623f103a9332c0dedc442141a10cfb1a}
+    image: audius/mediorum:${TAG:-63d3c7f5f4058502145c35b93802aa608440e37a}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -108,7 +108,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-f03b0c0e623f103a9332c0dedc442141a10cfb1a}
+    image: audius/healthz:${TAG:-63d3c7f5f4058502145c35b93802aa608440e37a}
     container_name: healthz
     restart: unless-stopped
     networks:
