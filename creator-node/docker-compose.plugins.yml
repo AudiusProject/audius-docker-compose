@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   dashboard:
-    image: audius/dashboard:${TAG:-b6da96fa9cf4ab45fe3fec747051cf4dcf174917}
+    image: audius/dashboard:${TAG:-e176fece62be591c420e9f789bf1e8db0669bf45}
     container_name: dashboard
     restart: unless-stopped
     command: ["npm", "run", "start:${NETWORK:-prod}"]
