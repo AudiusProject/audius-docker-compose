@@ -804,7 +804,6 @@ def launch_plugins(ctx, service):
             / service
             / "docker-compose.plugins.yml",
             "up",
-            "--no-recreate",
             "-d"
         ]
     run_cmd.extend(registered_plugins)
