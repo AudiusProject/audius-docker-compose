@@ -140,7 +140,7 @@ def set_automatic_env(ctx):
 
 def prune():
     disk_usage_percent = psutil.disk_usage("/").percent
-    if disk_usage_percent > 95:
+    if disk_usage_percent > 90:
         run(
             ["docker", "system", "prune", "--all", "--force"],
         )
