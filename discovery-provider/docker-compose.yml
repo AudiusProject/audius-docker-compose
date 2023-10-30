@@ -89,7 +89,7 @@ services:
       - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/relay:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     container_name: relay
     restart: unless-stopped
     networks:
@@ -111,7 +111,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/discovery-provider:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -140,7 +140,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/discovery-provider:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     restart: always
     mem_limit: 2.8g
     depends_on:
@@ -173,7 +173,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/discovery-provider:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -221,7 +221,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/comms:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -239,7 +239,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/trpc:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -302,7 +302,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-9c6fe3526599f8843f743416cdea1fc4e113d05e}
+    image: audius/healthz:${TAG:-09ddbda054d1fb6db21a08e4b9bd574a1d6741ce}
     container_name: healthz
     restart: unless-stopped
     networks:
