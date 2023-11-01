@@ -129,6 +129,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - dashboard-dist:/dashboard-dist
 
 networks:
   creator-node-network:
@@ -136,3 +137,4 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
+  dashboard-dist:

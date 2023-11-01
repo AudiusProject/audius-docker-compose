@@ -5,11 +5,17 @@ services:
     image: audius/dashboard:${TAG:-740b6e01e84274066c1683d64425303957cb0486}
     container_name: dashboard
     restart: unless-stopped
-    command: ["npm", "run", "start:${NETWORK:-prod}"]
+    command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
     networks:
       - cn-network
+    volumes:
+      - dashboard-dist:/app/dist
 
 networks:
   cn-network:
     name: creator-node_creator-node-network
+    external: true
+
+volumes:
+  dashboard-dist:
     external: true

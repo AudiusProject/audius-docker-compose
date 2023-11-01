@@ -323,6 +323,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - dashboard-dist:/dashboard-dist
 
 networks:
   discovery-provider-network:
@@ -331,3 +332,4 @@ volumes:
   esdata:
   caddy_data:
   caddy_config:
+  dashboard-dist:
