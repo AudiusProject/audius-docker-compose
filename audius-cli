@@ -776,9 +776,8 @@ def launch_plugins(ctx, service):
         registered_plugins = list(filter(lambda x: x not in ('', 'acdc-blockscout'), plugins_env.split(",")))
         launch_blockscout = "acdc-blockscout" in plugins_env
 
-    # Make dashboard plugin always enabled
-    if "dashboard" not in registered_plugins:
-        registered_plugins.append("dashboard")
+    if not registered_plugins:
+        return
 
     run(
         [

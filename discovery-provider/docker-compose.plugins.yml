@@ -37,22 +37,7 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  dashboard:
-    image: audius/dashboard:${TAG:-740b6e01e84274066c1683d64425303957cb0486}
-    container_name: dashboard
-    restart: unless-stopped
-    command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
-    networks:
-      - dn-network
-    volumes:
-      - dashboard-dist:/app/dist
-
 networks:
   dn-network:
     name: discovery-provider_discovery-provider-network
-    external: true
-
-volumes:
-  dashboard-dist:
-    name: discovery-provider_dashboard-dist
     external: true
