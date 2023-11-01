@@ -18,4 +18,5 @@ networks:
 
 volumes:
   dashboard-dist:
+    name: creator-node_dashboard-dist
     external: true

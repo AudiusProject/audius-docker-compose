@@ -54,4 +54,5 @@ networks:
 
 volumes:
   dashboard-dist:
+    name: discovery-provider_dashboard-dist
     external: true
