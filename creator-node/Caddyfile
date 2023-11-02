@@ -12,6 +12,8 @@
   reverse_proxy /healthz* healthz
   route /dashboard* {
       redir /dashboard /dashboard/ 308
-      reverse_proxy dashboard:5173
+      uri strip_prefix /dashboard
+      root * /dashboard-dist
+      file_server
   }
 }
