@@ -16,15 +16,15 @@
   }
 }
 
-# Use the snippet for port 80 and 443. Automatic HTTPS settings are implicitly enabled
+# Use the snippet for port 80 and 443
 {$creatorNodeEndpoint}:80, {$creatorNodeEndpoint}:443 {
   {$CADDY_TLS}
   encode zstd gzip
   import common
 }
 
-# Use the snippet for port 4000 with auto_https off because SPs already SSL-terminated downstream
+# Use the snippet for port 4000, allowing SPs to handle SSL downstream in their load balancer
 {$creatorNodeEndpoint}:4000 {
-  auto_https off
+  tls off
   import common
 }

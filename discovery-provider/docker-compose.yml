@@ -123,8 +123,6 @@ services:
         condition: service_healthy
     labels:
       autoheal: "true"
-    ports:
-      - "5000:1991"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}

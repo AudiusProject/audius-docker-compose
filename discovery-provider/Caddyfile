@@ -8,17 +8,17 @@
       root * /dashboard-dist
       file_server
   }
-  reverse_proxy backend:1991
+  reverse_proxy backend:5000
 }
 
-# Use the snippet for port 80 and 443. Automatic HTTPS settings are implicitly enabled
+# Use the snippet for port 80 and 443
 {$audius_discprov_url}:80, {$audius_discprov_url}:443 {
   {$CADDY_TLS}
   encode zstd gzip
   import common
 }
 
-# Use the snippet for port 5000 with auto_https off because SPs already SSL-terminated downstream
+# Use the snippet for port 5000, allowing SPs to handle SSL downstream in their load balancer
 {$audius_discprov_url}:5000 {
   auto_https off
   import common
