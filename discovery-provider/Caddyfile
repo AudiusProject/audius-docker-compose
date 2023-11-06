@@ -1,18 +1,25 @@
-{$audius_discprov_url}
-
-{$CADDY_TLS}
-
-encode zstd gzip
-
-reverse_proxy /comms* comms:8925
-
-reverse_proxy /healthz* healthz
-
-route /dashboard* {
-    redir /dashboard /dashboard/ 308
-    uri strip_prefix /dashboard
-    root * /dashboard-dist
-    file_server
+# Define a snippet for common reverse proxy configuration
+(common) {
+  reverse_proxy /comms* comms:8925
+  reverse_proxy /healthz* healthz
+  route /dashboard* {
+      redir /dashboard /dashboard/ 308
+      uri strip_prefix /dashboard
+      root * /dashboard-dist
+      file_server
+  }
+  reverse_proxy backend:1991
 }
 
-reverse_proxy backend:5000
+# Use the snippet for port 80 and 443. Automatic HTTPS settings are implicitly enabled
+{$audius_discprov_url}:80, {$audius_discprov_url}:443 {
+  {$CADDY_TLS}
+  encode zstd gzip
+  import common
+}
+
+# Use the snippet for port 5000 with auto_https off because SPs already SSL-terminated downstream
+{$audius_discprov_url}:5000 {
+  auto_https off
+  import common
+}

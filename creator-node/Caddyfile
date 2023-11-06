@@ -4,16 +4,27 @@
     debug
 }
 
-{$creatorNodeEndpoint} {
-  {$CADDY_TLS}
-  encode zstd gzip
-
+# Define a snippet for common reverse proxy configuration
+(common) {
   reverse_proxy mediorum:1991
   reverse_proxy /healthz* healthz
   route /dashboard* {
-      redir /dashboard /dashboard/ 308
-      uri strip_prefix /dashboard
-      root * /dashboard-dist
-      file_server
+    redir /dashboard /dashboard/ 308
+    uri strip_prefix /dashboard
+    root * /dashboard-dist
+    file_server
   }
+}
+
+# Use the snippet for port 80 and 443. Automatic HTTPS settings are implicitly enabled
+{$creatorNodeEndpoint}:80, {$creatorNodeEndpoint}:443 {
+  {$CADDY_TLS}
+  encode zstd gzip
+  import common
+}
+
+# Use the snippet for port 4000 with auto_https off because SPs already SSL-terminated downstream
+{$creatorNodeEndpoint}:4000 {
+  auto_https off
+  import common
 }

@@ -124,7 +124,7 @@ services:
     labels:
       autoheal: "true"
     ports:
-      - "5000:5000"
+      - "5000:1991"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -319,6 +319,7 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 5000:5000
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
