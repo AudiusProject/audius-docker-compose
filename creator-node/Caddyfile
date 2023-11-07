@@ -4,7 +4,7 @@
     debug
 }
 
-# Define a snippet for common reverse proxy configuration
+# Snippet for common reverse proxy configuration
 (common) {
   reverse_proxy mediorum:1991
   reverse_proxy /healthz* healthz
@@ -16,15 +16,16 @@
   }
 }
 
-# Use the snippet for port 80 and 443
-{$creatorNodeEndpoint}:80, {$creatorNodeEndpoint}:443 {
-  {$CADDY_TLS}
+# Assume we're already SSL-terminated when hitting port 4000 directly
+:4000 {
+  tls internal
   encode zstd gzip
   import common
 }
 
-# Use the snippet for port 4000, allowing SPs to handle SSL downstream in their load balancer
-{$creatorNodeEndpoint}:4000 {
-  tls off
+# Respect TLS env var for ports 80 and 443
+{$creatorNodeEndpoint} {
+  {$CADDY_TLS}
+  encode zstd gzip
   import common
 }

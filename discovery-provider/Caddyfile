@@ -11,15 +11,16 @@
   reverse_proxy backend:5000
 }
 
-# Use the snippet for port 80 and 443
-{$audius_discprov_url}:80, {$audius_discprov_url}:443 {
-  {$CADDY_TLS}
+# Assume we're already SSL-terminated when hitting port 5000 directly
+:5000 {
+  tls internal
   encode zstd gzip
   import common
 }
 
-# Use the snippet for port 5000, allowing SPs to handle SSL downstream in their load balancer
-{$audius_discprov_url}:5000 {
-  auto_https off
+# Respect TLS env var for ports 80 and 443
+{$audius_discprov_url} {
+  {$CADDY_TLS}
+  encode zstd gzip
   import common
 }
