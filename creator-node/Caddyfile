@@ -1,31 +1,31 @@
 {
-    order cache before rewrite
-    order request_header before cache
-    debug
+	order cache before rewrite
+	order request_header before cache
+	debug
 }
 
 # Snippet for common reverse proxy configuration
 (common) {
-  reverse_proxy mediorum:1991
-  reverse_proxy /healthz* healthz
-  route /dashboard* {
-    redir /dashboard /dashboard/ 308
-    uri strip_prefix /dashboard
-    root * /dashboard-dist
-    file_server
-  }
+	reverse_proxy mediorum:1991
+	reverse_proxy /healthz* healthz
+	route /dashboard* {
+		redir /dashboard /dashboard/ 308
+		uri strip_prefix /dashboard
+		root * /dashboard-dist
+		file_server
+	}
 }
 
 # Assume we're already SSL-terminated when hitting port 4000 directly
 :4000 {
-  tls internal
-  encode zstd gzip
-  import common
+	tls internal
+	encode zstd gzip
+	import common
 }
 
 # Respect TLS env var for ports 80 and 443
 {$creatorNodeEndpoint} {
-  {$CADDY_TLS}
-  encode zstd gzip
-  import common
+	{$CADDY_TLS}
+	encode zstd gzip
+	import common
 }
