@@ -335,6 +335,18 @@ services:
     volumes:
       - dashboard-dist:/app/dist
 
+  uptime:
+    image: audius/uptime:${TAG:-8006dc83f1ac85ce88142336685b6054a54b3861}
+    container_name: uptime
+    restart: unless-stopped
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    volumes:
+      - /var/k8s/bolt:/bolt
+
 networks:
   discovery-provider-network:
 
