@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-25fd376074c9ad098372688394edf2dc5ec68c2e}
+    image: audius/discovery-provider-notifications:${TAG:-19f2dd523e2fe453d8014a69258b5056aaf3103c}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -21,7 +21,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-25fd376074c9ad098372688394edf2dc5ec68c2e}
+    image: audius/sla-auditor:${TAG:-19f2dd523e2fe453d8014a69258b5056aaf3103c}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
