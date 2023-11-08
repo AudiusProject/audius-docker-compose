@@ -13,33 +13,12 @@ services:
     networks:
       - discovery-provider-network
 
-  exporter_postgres:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-
   cache:
     container_name: redis
     restart: always
     extends:
       file: ../common-services.yml
       service: base-redis
-    networks:
-      - discovery-provider-network
-  exporter_redis:
-    extends:
-      file: ../common-services.yml
-      service: exporter_redis
-    container_name: exporter_redis
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -71,22 +50,6 @@ services:
         ]
       interval: 10s
       timeout: 5s
-  exporter_elasticsearch:
-    extends:
-      file: ../common-services.yml
-      service: exporter_elasticsearch
-    container_name: exporter_elasticsearch
-    entrypoint:
-      [
-        "/bin/sh",
-        "-c",
-        '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"'
-      ]
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
 
   relay:
     image: audius/relay:${TAG:-25fd376074c9ad098372688394edf2dc5ec68c2e}
@@ -204,19 +167,6 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-
-  exporter_linux:
-    extends:
-      file: ../common-services.yml
-      service: exporter_linux
-    container_name: exporter_linux
-
-  exporter_docker:
-    extends:
-      file: ../common-services.yml
-      service: exporter_docker
     networks:
       - discovery-provider-network
 
