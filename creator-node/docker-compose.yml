@@ -142,7 +142,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-8006dc83f1ac85ce88142336685b6054a54b3861}
+    image: audius/uptime:${TAG:-89d08ee45c3f648dd11a51000dd9a47be9510c26}
     container_name: uptime
     restart: unless-stopped
     env_file:
