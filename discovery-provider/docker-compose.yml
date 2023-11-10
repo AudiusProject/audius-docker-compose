@@ -52,7 +52,7 @@ services:
       timeout: 5s
 
   relay:
-    image: audius/relay:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/relay:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: relay
     restart: unless-stopped
     networks:
@@ -74,7 +74,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/discovery-provider:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -103,7 +103,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/discovery-provider:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     restart: always
     mem_limit: 2.8g
     depends_on:
@@ -136,7 +136,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/discovery-provider:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -171,7 +171,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/comms:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -189,7 +189,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/trpc:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -252,7 +252,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/healthz:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -276,7 +276,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/dashboard:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: dashboard
     restart: unless-stopped
     command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
@@ -286,7 +286,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-99919c63bde8b09f96a4aa999d53acea1c9e30ad}
+    image: audius/uptime:${TAG:-0c1fc5bf0e1d3f66511dfd9c4f549ba7032b6baa}
     container_name: uptime
     restart: unless-stopped
     env_file:
