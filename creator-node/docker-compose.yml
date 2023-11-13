@@ -12,24 +12,12 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
-    networks:
-      - creator-node-network
 
   cache:
     container_name: redis
     extends:
       file: ../common-services.yml
       service: base-redis
-    networks:
-      - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
     networks:
       - creator-node-network
 
