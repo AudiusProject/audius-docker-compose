@@ -12,19 +12,6 @@ services:
       - /var/k8s/identity-service-db:/var/lib/postgresql/data # Use k8s location for consistency
     networks:
       - identity-service-network
-  exporter_postgres:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--identity-service" ]
-    ports:
-      - "127.0.0.1:9187:9187"
-    networks:
-      - identity-service-network
 
   cache:
     container_name: redis
@@ -33,23 +20,10 @@ services:
       service: base-redis
     networks:
       - identity-service-network
-  exporter_redis:
-    extends:
-      file: ../common-services.yml
-      service: exporter_redis
-    container_name: exporter_redis
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--identity-service" ]
-    ports:
-      - "127.0.0.1:9121:9121"
-    networks:
-      - identity-service-network
 
   backend:
     container_name: server
-    image: audius/identity-service:${TAG:-e313506a0973f2ab2a4efb5495d2dcdba658248c}
+    image: audius/identity-service:${TAG:-3ded93cd1916d195463ebfe32534f0a8f452788e}
     depends_on:
       db:
         condition: service_healthy
@@ -81,19 +55,6 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - identity-service-network
-
-  exporter_linux:
-    extends:
-      file: ../common-services.yml
-      service: exporter_linux
-    container_name: exporter_linux
-
-  exporter_docker:
-    extends:
-      file: ../common-services.yml
-      service: exporter_docker
     networks:
       - identity-service-network
 
