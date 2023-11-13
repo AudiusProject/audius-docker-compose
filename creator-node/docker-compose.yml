@@ -12,24 +12,12 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
-    networks:
-      - creator-node-network
 
   cache:
     container_name: redis
     extends:
       file: ../common-services.yml
       service: base-redis
-    networks:
-      - creator-node-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    command: [ "--creator-node" ]
     networks:
       - creator-node-network
 
@@ -60,7 +48,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-5ff8e615683f8e0e0d6b6180a6d1d4a7df47f086}
+    image: audius/mediorum:${TAG:-e5d53dc0a8de1ab72e0ea2a913544b7b34a299c5}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -85,7 +73,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-5ff8e615683f8e0e0d6b6180a6d1d4a7df47f086}
+    image: audius/healthz:${TAG:-e5d53dc0a8de1ab72e0ea2a913544b7b34a299c5}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -109,7 +97,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-5ff8e615683f8e0e0d6b6180a6d1d4a7df47f086}
+    image: audius/dashboard:${TAG:-e5d53dc0a8de1ab72e0ea2a913544b7b34a299c5}
     container_name: dashboard
     restart: unless-stopped
     command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
@@ -119,7 +107,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-5ff8e615683f8e0e0d6b6180a6d1d4a7df47f086}
+    image: audius/uptime:${TAG:-e5d53dc0a8de1ab72e0ea2a913544b7b34a299c5}
     container_name: uptime
     restart: unless-stopped
     env_file:
