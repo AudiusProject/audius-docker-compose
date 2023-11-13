@@ -12,6 +12,11 @@ services:
       - /var/k8s/creator-node-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
     networks:
       - creator-node-network
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -26,6 +31,11 @@ services:
       service: base-redis
     networks:
       - creator-node-network
+  exporter_redis:
+    extends:
+      file: ../common-services.yml
+      service: exporter_redis
+    container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -56,6 +66,19 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - creator-node-network
+
+  exporter_linux:
+    extends:
+      file: ../common-services.yml
+      service: exporter_linux
+    container_name: exporter_linux
+
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
     networks:
       - creator-node-network
 

@@ -12,6 +12,11 @@ services:
       - /var/k8s/identity-service-db:/var/lib/postgresql/data # Use k8s location for consistency
     networks:
       - identity-service-network
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -28,6 +33,11 @@ services:
       service: base-redis
     networks:
       - identity-service-network
+  exporter_redis:
+    extends:
+      file: ../common-services.yml
+      service: exporter_redis
+    container_name: exporter_redis
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -71,6 +81,19 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - identity-service-network
+
+  exporter_linux:
+    extends:
+      file: ../common-services.yml
+      service: exporter_linux
+    container_name: exporter_linux
+
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
     networks:
       - identity-service-network
 
