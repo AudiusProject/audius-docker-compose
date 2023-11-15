@@ -98,8 +98,6 @@ services:
       - audius_elasticsearch_run_indexer=false
     networks:
       - discovery-provider-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   indexer:
     container_name: indexer
