@@ -276,6 +276,7 @@ services:
   dashboard:
     image: audius/dashboard:${TAG:-96f418b8af280220323ac455e8b82454efc54cba}
     container_name: dashboard
+    mem_limit: 300m
     restart: unless-stopped
     command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
     networks:
