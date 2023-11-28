@@ -354,7 +354,7 @@ def launch(ctx, service, seed, chain, yes):
             "--project-directory",
             ctx.obj["manifests_path"] / service,
             "up",
-            *plugins,
+            plugins,
             "--remove-orphans",
             "-d",
         ],
