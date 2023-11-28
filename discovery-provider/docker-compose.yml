@@ -301,7 +301,7 @@ services:
     container_name: notifications
     restart: unless-stopped
     networks:
-      - dn-network
+      - discovery-provider-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -322,7 +322,7 @@ services:
     container_name: sla-auditor
     restart: unless-stopped
     networks:
-      - dn-network
+      - discovery-provider-network
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
