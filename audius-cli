@@ -999,13 +999,13 @@ def format_plugins(ctx, service):
         )
 
     if not registered_plugins:
-        return []
+        return ""
 
     profiles = []
     for plugin in registered_plugins:
         profiles.append(f"--profile {plugin}")
 
-    return profiles
+    return " ".join(profiles)
 
 
 if __name__ == "__main__":
