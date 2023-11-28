@@ -17,6 +17,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - notifications
     ports:
       - "6000:6000"
 
@@ -29,6 +31,8 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - sla-auditor
     logging:
       options:
         max-size: 10m
