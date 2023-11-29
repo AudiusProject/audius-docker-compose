@@ -428,7 +428,8 @@ services:
       MICROSERVICE_SC_VERIFIER_ENABLED: 'true'
       MICROSERVICE_SC_VERIFIER_URL: 'smart-contract-verifier:8050'
     env_file:
-      - blockscout.env
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     ports:
       - "4000:4000"
     depends_on:
