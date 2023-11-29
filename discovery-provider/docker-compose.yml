@@ -336,6 +336,133 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  # blockscout plugin
+  acdc-blockscout-db:
+    image: postgres:13.6
+    container_name: acdc-blockscout-db
+    shm_size: 2g
+    restart: always
+    command: postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    environment:
+      POSTGRES_DB: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+    ports:
+      - "127.0.0.1:5454:5432"
+    deploy:
+      mode: global
+    volumes:
+      - blockscout-db-data:/var/lib/postgresql/data
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
+
+  acdc-blockscout-redis:
+    image: 'redis:alpine'
+    restart: always
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'PING']
+      interval: 10s
+      timeout: 5s
+    container_name: acdc-blockscout-redis
+    command: redis-server
+    volumes:
+      - blockscout-redis-data:/data
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
+
+  acdc-blockscout-frontend:
+    image: ghcr.io/blockscout/frontend:latest
+    restart: unless-stopped
+    container_name: acdc-blockscout-frontend
+    environment:
+      NEXT_PUBLIC_APP_HOST: 'blockscout1.staging.audius.co'
+      NEXT_PUBLIC_NETWORK_NAME: 'ACDC Chain'
+      NEXT_PUBLIC_NETWORK_ID: '1056801'
+      NEXT_PUBLIC_API_HOST: 'blockscout1.staging.audius.co'
+    ports:
+      - "3000:3000"
+    deploy:
+      mode: global
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
+
+  acdc-blockscout-backend:
+    image: blockscout/blockscout:5.2.3
+    restart: unless-stopped
+    command: bash -c "while ! curl --fail --silent chain:8545/health; do sleep 1; done && bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
+    container_name: acdc-blockscout-backend
+    environment:
+      ETHEREUM_JSONRPC_VARIANT: 'nethermind'
+      ETHEREUM_JSONRPC_HTTP_URL: 'chain:8545'
+      CHAIN_ID: '1056801'
+      INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      DATABASE_URL: 'postgresql://postgres:postgres@acdc-blockscout-db:5432/postgres?sslmode=disable'
+      ACCOUNT_REDIS_URL: 'redis://acdc-blockscout-redis:6379'
+      ECTO_USE_SSL: false
+      API_V2_ENABLED: 'true'
+      MICROSERVICE_SC_VERIFIER_ENABLED: 'true'
+      MICROSERVICE_SC_VERIFIER_URL: 'smart-contract-verifier:8050'
+    env_file:
+      - blockscout.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      acdc-blockscout-db:
+        condition: service_healthy
+      acdc-blockscout-redis:
+        condition: service_healthy
+    volumes:
+      - blockscout-logs:/app/logs/
+    deploy:
+      mode: global
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
+
+  smart-contract-verifier:
+    image: ghcr.io/blockscout/smart-contract-verifier:${SMART_CONTRACT_VERIFIER_DOCKER_TAG:-latest}
+    pull_policy: always
+    platform: linux/amd64
+    restart: always
+    container_name: 'smart-contract-verifier'
+    networks:
+      - discovery-provider-network
+    profiles:
+      - block-explorer
+
 networks:
   discovery-provider-network:
 
