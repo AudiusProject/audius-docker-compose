@@ -17,6 +17,12 @@ import crontab
 import dotenv
 import psutil
 
+from web3 import Web3
+
+import random
+
+from web3.providers import BaseProvider, HTTPProvider
+
 GB = 1024**3
 
 RECOMMENDED_CPU_COUNT = 8
@@ -267,6 +273,106 @@ def health_check(ctx, service):
         click.secho("Service is not healthy", fg="red")
         sys.exit(1)
 
+
+@cli.command()
+@click.argument("service", type=click.Choice(('creator-node', 'discovery-provider')))
+@click.pass_context
+def min_version(ctx, service):
+    """Check the minimum required version for a service"""
+    if service == "creator-node":
+        service = "content-node"
+    elif service == "discovery-provider":
+        service = "discovery-node"
+    
+    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
+    override_env = get_override_path(ctx, service)
+
+    env_data = dotenv.dotenv_values(env)
+    override_env_data = dotenv.dotenv_values(override_env)
+
+    rpc_env_var = "audius_web3_eth_provider_url" if service == "discovery-node" else "ethProviderUrl"
+    rpc_url = override_env_data.get(rpc_env_var, env_data.get(rpc_env_var))
+    if not rpc_url:
+        click.secho(f"{rpc_env_var} env var is not set", fg="red")
+        sys.exit(1)
+    
+    eth_registry_address_env_var = "audius_eth_contracts_registry" if service == "discovery-node" else "ethRegistryAddress"
+    eth_registry_address_str = override_env_data.get(eth_registry_address_env_var, env_data.get(eth_registry_address_env_var))
+    if not eth_registry_address_str:
+        click.secho(f"{eth_registry_address_env_var} env var is not set", fg="red")
+        sys.exit(1)
+
+    eth_registry_address = Web3.toChecksumAddress(eth_registry_address_str)
+    eth_web3 = get_eth_web3(rpc_url)
+    eth_abi_values = load_eth_abi_values()
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    contract_address = eth_registry_instance.functions.getContract(
+        "ServiceTypeManagerProxy".encode("utf-8") # Possibly without the "Proxy"
+    ).call()
+    contract_instance = eth_web3.eth.contract(
+        address=contract_address, abi=eth_abi_values["ServiceTypeManagerProxy"]["abi"]
+    )
+    min_version = contract_instance.functions.getCurrentVersion(
+        service.encode("utf-8")
+    ).call()
+    click.secho(f"Minimum required version for {service} is {min_version}", fg="green")
+    sys.exit(0)
+
+
+def load_eth_abi_values():
+    abiDir = os.path.join(os.getcwd(), "eth-contracts", "ABIs")
+    jsonFiles = os.listdir(abiDir)
+    loaded_abi_values = {}
+    for contractJsonFile in jsonFiles:
+        fullPath = os.path.join(abiDir, contractJsonFile)
+        with open(fullPath) as f:
+            data = json.load(f)
+            loaded_abi_values[data["contractName"]] = data
+    return loaded_abi_values
+
+
+def get_eth_web3(rpc_url):
+    # pylint: disable=W0603
+    global eth_web3
+    if not eth_web3:
+        provider = MultiProvider(rpc_url)
+        for p in provider.providers:
+            p.middlewares.clear()
+        # Remove the default JSON-RPC retry middleware
+        # as it correctly cannot handle eth_getLogs block range
+        # throttle down.
+        # See https://web3py.readthedocs.io/en/stable/examples.html
+        eth_web3 = Web3(provider)
+        eth_web3.strict_bytes_type_checking = False
+        return eth_web3
+    return eth_web3
+
+
+class MultiProvider(BaseProvider):
+    """
+    Implements a custom web3 provider
+
+    ref: https://web3py.readthedocs.io/en/stable/internals.html#writing-your-own-provider
+    """
+
+    def __init__(self, providers):
+        self.providers = [HTTPProvider(provider) for provider in providers.split(",")]
+
+    def make_request(self, method, params):
+        for provider in random.sample(self.providers, k=len(self.providers)):
+            try:
+                return provider.make_request(method, params)
+            except Exception:
+                continue
+        raise Exception("All requests failed")
+
+    def isConnected(self):
+        return any(provider.isConnected() for provider in self.providers)
+
+    def __str__(self):
+        return f"MultiProvider({self.providers})"
 
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
