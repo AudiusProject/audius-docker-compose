@@ -345,7 +345,6 @@ def launch(ctx, service, seed, chain, yes):
         )
 
     plugins = format_plugins(ctx, service)
-    print(plugins)
 
     run(
         [
@@ -353,8 +352,8 @@ def launch(ctx, service, seed, chain, yes):
             "compose",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
+            *plugins,
             "up",
-            plugins,
             "--remove-orphans",
             "-d",
         ],
@@ -999,13 +998,13 @@ def format_plugins(ctx, service):
         )
 
     if not registered_plugins:
-        return ""
+        return []
 
     profiles = []
     for plugin in registered_plugins:
-        profiles.append(f"--profile {plugin}")
+        profiles.extend(["--profile", plugin])
 
-    return " ".join(profiles)
+    return profiles
 
 
 if __name__ == "__main__":
