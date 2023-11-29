@@ -277,7 +277,7 @@ services:
     image: audius/dashboard:${TAG:-f2a815007c0cba55f7db960530f536548f7ab401}
     container_name: dashboard
     restart: unless-stopped
-    entrypoint: "./entrypoint.sh"
+    entrypoint: "./scripts/entrypoint.sh"
     environment:
       - NETWORK=${NETWORK:-prod}
     networks:
