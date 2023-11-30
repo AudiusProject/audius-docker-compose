@@ -1,8 +1,0 @@
-version: "3.9"
-
-services:
-
-networks:
-  cn-network:
-    name: creator-node_creator-node-network
-    external: true

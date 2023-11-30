@@ -445,12 +445,15 @@ def launch(ctx, service, seed, chain, yes):
             ],
         )
 
+    plugins = get_registered_plugins(ctx, service)
+
     run(
         [
             "docker",
             "compose",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
+            *plugins,
             "up",
             "--remove-orphans",
             "-d",
@@ -460,9 +463,6 @@ def launch(ctx, service, seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-
-    if service == "discovery-provider":
-        ctx.invoke(launch_plugins, service=service)
 
     prune()
 
@@ -514,6 +514,8 @@ def restart(ctx, service, containers):
             capture_output=True,
         )
 
+        plugins = get_registered_plugins(ctx, service)
+
         if proc.stdout:
             run(
                 [
@@ -521,6 +523,7 @@ def restart(ctx, service, containers):
                     "compose",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
+                    *plugins,
                     "up",
                     "--build",
                     "--force-recreate",
@@ -672,13 +675,18 @@ def set_tag(ctx, unset, yes, tag):
 
         if not yes:
             click.confirm(
-                click.style("Do you want to continue? This will disable auto-upgrade if it's enabled.", bold=True),
+                click.style(
+                    "Do you want to continue? This will disable auto-upgrade if it's enabled.",
+                    bold=True,
+                ),
                 abort=True,
                 default=True,
             )
-    
+
     if not unset:
-        click.echo("Disabling auto-upgrade (if enabled) in order to use a different tag...")
+        click.echo(
+            "Disabling auto-upgrade (if enabled) in order to use a different tag..."
+        )
         ctx.invoke(auto_upgrade, remove=True)
 
     logging.info(f"audius-cli set-tag tag={tag!r}")
@@ -750,20 +758,22 @@ def pull_reset(ctx, branch):
         subprocess.run(["git", "fetch"], check=True, cwd=ctx.obj["manifests_path"])
 
         if branch:
-            subprocess.run(["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"])
+            subprocess.run(
+                ["git", "checkout", branch], check=True, cwd=ctx.obj["manifests_path"]
+            )
 
         # Get the name of the current branch
         current_branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"], 
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             cwd=ctx.obj["manifests_path"],
-            text=True
+            text=True,
         ).strip()
 
         # Run git reset with the current branch
         subprocess.run(
-            ["git", "reset", "--hard", f"origin/{current_branch}"], 
-            check=True, 
-            cwd=ctx.obj["manifests_path"]
+            ["git", "reset", "--hard", f"origin/{current_branch}"],
+            check=True,
+            cwd=ctx.obj["manifests_path"],
         )
 
     except subprocess.CalledProcessError as e:
@@ -807,22 +817,23 @@ def upgrade(ctx, branch):
                 ],
             )
 
+            plugins = get_registered_plugins(ctx, service)
+
             run(
                 [
                     "docker",
                     "compose",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
+                    *plugins,
                     "up",
+                    "--remove-orphans",
                     "-d",
                 ],
             )
 
             if service == "discovery-provider":
                 ctx.invoke(launch_chain)
-
-            if service == "discovery-provider":
-                ctx.invoke(launch_plugins, service=service)
 
     prune()
 
@@ -836,7 +847,9 @@ def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
         for job in cron.find_comment("audius-cli auto-upgrade"):
-            print(f"Removed auto-upgrade cron. If you want to re-enable, run: audius-cli auto-upgrade \"{job.slices}\"")
+            print(
+                f'Removed auto-upgrade cron. If you want to re-enable, run: audius-cli auto-upgrade "{job.slices}"'
+            )
             cron.remove(job)
 
         if not remove:
@@ -859,88 +872,6 @@ def auto_upgrade(ctx, remove, cron_expression):
             )
 
             job.setall(cron_expression)
-
-
-@cli.command()
-@click.argument("service", type=service_type)
-@click.pass_context
-def launch_plugins(ctx, service):
-    """
-    Launches all the plugins: required & registered.
-    """
-    override_env = get_override_path(ctx, service)
-    plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
-
-    registered_plugins = []
-    launch_blockscout = False
-    if plugins_env is not None:
-        registered_plugins = list(filter(lambda x: x not in ('', 'acdc-blockscout'), plugins_env.split(",")))
-        launch_blockscout = "acdc-blockscout" in plugins_env
-
-    if not registered_plugins:
-        return
-
-    run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            "-f",
-            ctx.obj["manifests_path"]
-            / service
-            / "docker-compose.plugins.yml",
-            "pull",
-        ],
-        check=True,
-    )
-
-    run_cmd = [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            "-f",
-            ctx.obj["manifests_path"]
-            / service
-            / "docker-compose.plugins.yml",
-            "up",
-            "-d"
-        ]
-    run_cmd.extend(registered_plugins)
-    run(run_cmd)
-
-    if service == "discovery-provider" and launch_blockscout:
-        run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / service,
-                "-f",
-                ctx.obj["manifests_path"]
-                / service
-                / "docker-compose.plugins.blockscout.yml",
-                "pull",
-            ],
-            check=True,
-        )
-
-        run_cmd = [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / service,
-                "-f",
-                ctx.obj["manifests_path"]
-                / service
-                / "docker-compose.plugins.blockscout.yml",
-                "--profile",
-                "block-explorer",
-                "up",
-                "-d"
-            ]
-        run(run_cmd)
 
 
 @cli.command()
@@ -1074,6 +1005,30 @@ def print_plugins(ctx, service):
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     print(f"registered plugins on {service}: {plugins}")
     return
+
+
+def get_registered_plugins(ctx, service):
+    """
+    Formats registered plugins into a "--profile {plugin}" format
+    so it can be passed into an up command.
+    """
+    override_env = get_override_path(ctx, service)
+    plugins_env = dotenv.get_key(override_env, REGISTERED_PLUGINS)
+
+    registered_plugins = []
+    if plugins_env is not None:
+        registered_plugins = list(
+            filter(lambda x: x not in ("", "acdc-blockscout"), plugins_env.split(","))
+        )
+
+    if not registered_plugins:
+        return []
+
+    profiles = []
+    for plugin in registered_plugins:
+        profiles.extend(["--profile", plugin])
+
+    return profiles
 
 
 if __name__ == "__main__":

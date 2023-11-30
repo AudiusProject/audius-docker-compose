@@ -295,6 +295,47 @@ services:
     volumes:
       - /var/k8s/bolt:/bolt
 
+  # plugins
+  notifications:
+    image: audius/discovery-provider-notifications:${TAG:-f2a815007c0cba55f7db960530f536548f7ab401}
+    container_name: notifications
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    profiles:
+      - notifications
+    ports:
+      - "6000:6000"
+
+  sla-auditor:
+    image: audius/sla-auditor:${TAG:-f2a815007c0cba55f7db960530f536548f7ab401}
+    container_name: sla-auditor
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - sla-auditor
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
 networks:
   discovery-provider-network:
 
