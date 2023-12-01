@@ -362,6 +362,16 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    command: >
+      /bin/bash -c "
+      set -e;
+      export PGPASSWORD=$$MB_DB_PASS;
+      until pg_isready -h $$MB_DB_HOST -U $$MB_DB_USER; do echo 'Waiting for PostgreSQL...'; sleep 1; done;
+      if ! psql -h $$MB_DB_HOST -U $$MB_DB_USER -lqt | cut -d \| -f 1 | grep -qw $$MB_DB_DBNAME; then
+        psql -h $$MB_DB_HOST -U $$MB_DB_USER -c 'CREATE DATABASE \"$$MB_DB_DBNAME\"';
+      fi;
+      exec java -jar /app/metabase.jar
+      "
 
 networks:
   discovery-provider-network:
