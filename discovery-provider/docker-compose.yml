@@ -339,7 +339,7 @@ services:
       driver: json-file
 
   metabase:
-    image: metabase/metabase:latest
+    image: metabase/metabase:v0.47.8
     container_name: metabase
     hostname: metabase
     volumes:
