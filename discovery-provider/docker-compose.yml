@@ -348,7 +348,7 @@ services:
       - 3000:3000
     environment:
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: audius_metabase
+      MB_DB_DBNAME: audius_discovery
       MB_DB_PORT: 5432
       MB_DB_USER: postgres
       MB_DB_PASS: postgres
@@ -362,16 +362,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    command: >
-      /bin/bash -c "
-      set -e;
-      export PGPASSWORD=$$MB_DB_PASS;
-      while ! nc -z $$MB_DB_HOST $$MB_DB_PORT; do echo 'Waiting for PostgreSQL...'; sleep 1; done;
-      if ! psql -h $$MB_DB_HOST -U $$MB_DB_USER -lqt | cut -d \| -f 1 | grep -qw $$MB_DB_DBNAME; then
-        psql -h $$MB_DB_HOST -U $$MB_DB_USER -c 'CREATE DATABASE \"$$MB_DB_DBNAME\"';
-      fi;
-      exec java -jar /app/metabase.jar
-      "
+
 
 networks:
   discovery-provider-network:
