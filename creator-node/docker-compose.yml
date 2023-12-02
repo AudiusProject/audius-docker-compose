@@ -86,7 +86,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 1000
-    entrypoint: ["/bin/sh", "-c", "if [ ! -f /var/lib/postgresql/15/data/upgrade_cleaned ]; then /usr/lib/postgresql/15/bin/vacuumdb --all --analyze-in-stages && rm -rf /var/lib/postgresql/11/data/* && touch /var/lib/postgresql/15/data/upgrade_cleaned && tail -f /dev/null; fi && tail -f /dev/null"]
+    entrypoint: ["/bin/sh", "-c", "if [ ! -f /var/lib/postgresql/15/data/upgrade_cleaned ]; then /usr/lib/postgresql/15/bin/vacuumdb --all --analyze-in-stages -h db -U postgres && rm -rf /var/lib/postgresql/11/data/* && touch /var/lib/postgresql/15/data/upgrade_cleaned && tail -f /dev/null; fi && tail -f /dev/null"]
     depends_on:
       db:
         condition: service_healthy
