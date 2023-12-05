@@ -186,6 +186,23 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  es-indexer:
+    image: audius/es-indexer:v1
+    container_name: es-indexer
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   trpc:
     image: audius/trpc:${TAG:-fbac489f372ae8c7ac0174b537d0f106fbba6bf2}
     container_name: trpc
