@@ -10,7 +10,7 @@ services:
         /bin/bash -c 
         "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
           if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
-              echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
+            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
           fi;
         fi;
         /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
@@ -59,11 +59,20 @@ services:
     restart: "no" # Stay unhealthy (don't restart) until the upgrade is complete
     # Healthcheck to verify completion of the upgrade
     healthcheck:
-      test: ["CMD-SHELL", "test -f /var/lib/postgresql/15/data/upgrade_complete"]
+      test: ["CMD-SHELL", "[ -f /var/lib/postgresql/15/data/upgrade_complete ] || [ ! -d /var/lib/postgresql/11/data ] || [ ! $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]"]
       interval: 30s
       timeout: 10s
       retries: 1000
-    entrypoint: ["/bin/sh", "-c", "if [ ! -f /var/lib/postgresql/15/data/upgrade_complete ]; then docker-upgrade 2>&1 | tee /tmp/mediorum/pg_upgrade.txt && touch /var/lib/postgresql/15/data/upgrade_complete && tail -f /dev/null; fi && tail -f /dev/null"]
+    entrypoint: >
+        /bin/sh -c
+        "if [ -d /var/lib/postgresql/11/data ] && [ $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]; then
+          if [ ! -f /var/lib/postgresql/15/data/upgrade_complete ]; then
+            docker-upgrade 2>&1 | tee /tmp/mediorum/pg_upgrade.txt && touch /var/lib/postgresql/15/data/upgrade_complete;
+          fi;
+        else
+          echo 'No data to migrate. Remaining idle...';
+        fi;
+        tail -f /dev/null"
 
   db-upgrade-cleanup:
     container_name: db-upgrade-cleanup
@@ -81,14 +90,22 @@ services:
       POSTGRES_DB: audius_creator_node
     networks:
       - creator-node-network
-    restart: "no" # Stay unhealthy (don't restart) until the upgrade is complete
-    # Healthcheck to verify completion of the upgrade
+    restart: "no"
     healthcheck:
-      test: ["CMD-SHELL", "test -f /var/lib/postgresql/15/data/upgrade_cleaned"]
+      test: ["CMD-SHELL", "[ -f /var/lib/postgresql/15/data/upgrade_cleaned ] || [ ! -d /var/lib/postgresql/11/data ] || [ ! $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]"]
       interval: 30s
       timeout: 10s
       retries: 1000
-    entrypoint: ["/bin/sh", "-c", "if [ ! -f /var/lib/postgresql/15/data/upgrade_cleaned ]; then /usr/lib/postgresql/15/bin/vacuumdb --all --analyze-in-stages -h db -U postgres && rm -rf /var/lib/postgresql/11/data/* && touch /var/lib/postgresql/15/data/upgrade_cleaned && tail -f /dev/null; fi && tail -f /dev/null"]
+    entrypoint: >
+        /bin/sh -c
+        "if [ -d /var/lib/postgresql/11/data ] && [ $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]; then
+          if [ ! -f /var/lib/postgresql/15/data/upgrade_cleaned ]; then
+            /usr/lib/postgresql/15/bin/vacuumdb --all --analyze-in-stages -h db -U postgres && rm -rf /var/lib/postgresql/11/data/* && touch /var/lib/postgresql/15/data/upgrade_cleaned;
+          fi;
+        else
+          echo 'No data to cleanup. Remaining idle...';
+        fi;
+        tail -f /dev/null"
     depends_on:
       db:
         condition: service_healthy
