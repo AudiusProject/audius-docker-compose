@@ -176,7 +176,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
-      start_period: 30m
+      start_period: 120m
     networks:
       - discovery-provider-network
 
