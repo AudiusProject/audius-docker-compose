@@ -84,6 +84,8 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
+      indexer:
+        condition: service_healthy
     labels:
       autoheal: "true"
     ports:
@@ -122,14 +124,22 @@ services:
       - audius_db_run_migrations=true
       - audius_elasticsearch_run_indexer=true
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pgrep -f pg_migrate.sh || pgrep -f celery || exit 1"
-        ]
+      test: >
+        /bin/sh -c
+        "if pgrep -af pg_migrate | grep -v 'pgrep -af pg_migrate' > /dev/null; then
+            # Unhealthy if pg_migrate is found, excluding the pgrep command itself
+            exit 1
+        elif pgrep -af celery | grep -v 'pgrep -af celery' > /dev/null; then
+            # Healthy if celery is found, excluding the pgrep command itself
+            exit 0
+        else
+            # Unhealthy in all other cases
+            exit 1
+        fi"
       interval: 5s
       timeout: 5s
       retries: 12
+      start_period: 30m
     networks:
       - discovery-provider-network
 
