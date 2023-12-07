@@ -145,7 +145,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-67554f1fb84858ae83c32e263a1870ee984fca58}
+    image: audius/mediorum:${TAG:-888789f6c2186a6b7428e460103630ff378a3b28}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -173,7 +173,7 @@ services:
         condition: service_healthy
 
   healthz:
-    image: audius/healthz:${TAG:-67554f1fb84858ae83c32e263a1870ee984fca58}
+    image: audius/healthz:${TAG:-888789f6c2186a6b7428e460103630ff378a3b28}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -197,7 +197,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-67554f1fb84858ae83c32e263a1870ee984fca58}
+    image: audius/dashboard:${TAG:-888789f6c2186a6b7428e460103630ff378a3b28}
     container_name: dashboard
     restart: unless-stopped
     command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
@@ -207,7 +207,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-67554f1fb84858ae83c32e263a1870ee984fca58}
+    image: audius/uptime:${TAG:-888789f6c2186a6b7428e460103630ff378a3b28}
     container_name: uptime
     restart: unless-stopped
     env_file:
