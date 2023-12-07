@@ -53,6 +53,7 @@ EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d2041667269000000000000
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 PG_UPGRADE_TO_VERSION = "audius_pg_upgrade_to_version"
+PG15_UPGRADE_STARTED = "audius_started_upgrade_to_pg15"
 PG15_UPGRADE_COMPLETE = "audius_completed_upgrade_to_pg15"
 
 service_type = click.Choice(SERVICES)
@@ -797,6 +798,12 @@ def upgrade(ctx, branch):
     ctx.forward(pull_reset)
     set_automatic_env(ctx)
 
+    # don't interrupt a postgres upgrade
+    override_env = get_override_path(ctx, "discovery-provider")
+    if dotenv.get_key(override_env, PG15_UPGRADE_STARTED) == "true":
+        click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
+        sys.exit(1)
+
     lock(ctx, "docker")
 
     for service in SERVICES:
@@ -877,6 +884,8 @@ def upgrade_disc_postgres(ctx, branch):
             click.secho("Deleted custom db url env var(s) in override.env", fg="yellow")
         elif db_url:
             click.secho("Aborting because the db is not containerized", fg="red")
+        
+        dotenv.set_key(override_env, PG15_UPGRADE_STARTED, "true")
 
         # stop containers that use the db
         click.secho("Stopping containers and deleting the existing database", fg="yellow")
@@ -934,14 +943,13 @@ def upgrade_disc_postgres(ctx, branch):
             ],
         )
         time.sleep(30)
-        # TODO: maybe create extensions here
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
-                "down",
+                "stop",
                 "db",
             ],
         )
