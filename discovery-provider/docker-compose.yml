@@ -3,15 +3,61 @@ version: "3.9"
 services:
   db:
     container_name: postgres
+    image: postgres:${audius_pg_upgrade_to_version:-11.22-bookworm}
+    shm_size: 2g
+    restart: always
+    entrypoint: >
+        /bin/bash -c 
+        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
+          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
+            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
+          fi;
+        fi;
+        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+    ports:
+      - '127.0.0.1:5432:5432'
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: audius_discovery
-    extends:
-      file: ../common-services.yml
-      service: base-postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     volumes:
-      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
+  
+  delete-db:
+    image: alpine:latest
+    command: >
+      sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
+    volumes:
+      - /var/k8s/discovery-provider-db:/data
+    profiles:
+      - delete-db
+  
+  optimize-db:
+    image: postgres:15.5-bookworm
+    environment:
+      - PGPASSWORD=postgres
+    command: >
+      sh -c "
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE' &&
+      echo 'Database optimization completed'
+      "
+    profiles:
+      - optimize-db
 
   cache:
     container_name: redis

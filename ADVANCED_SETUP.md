@@ -46,7 +46,7 @@ The full list of variables and explanations can be found on the wiki [here](http
 ##### External Discovery Provider Postgres Instance
 If you set an external Postgres url during setup you can skip this section.
 
-The below is only if using a externally managed Postgres (version 11.1+) database:
+The below is only if using a externally managed Postgres (version 15.5+) database:
 
 ```sh
 audius-cli set-config discovery-provider
