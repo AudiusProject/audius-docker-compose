@@ -992,6 +992,21 @@ def upgrade_disc_postgres(ctx, branch):
             # make sure we don't re-run this upgrade in the future
             dotenv.set_key(override_env, PG15_UPGRADE_COMPLETE, "true")
             click.secho("Upgrade complete!", fg="green")
+
+            plugins = get_registered_plugins(ctx, "discovery-provider")
+            run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / "discovery-provider",
+                    *plugins,
+                    "up",
+                    "--remove-orphans",
+                    "-d",
+                ],
+            )
+            ctx.invoke(launch_chain)
         except subprocess.CalledProcessError as e:
             click.secho(f"An error occurred: {e}", fg="red")
             print(e.stderr)
