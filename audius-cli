@@ -884,6 +884,7 @@ def upgrade_disc_postgres(ctx, branch):
             click.secho("Deleted custom db url env var(s) in override.env", fg="yellow")
         elif db_url:
             click.secho("Aborting because the db is not containerized", fg="red")
+            return
         
         dotenv.set_key(override_env, PG15_UPGRADE_STARTED, "true")
 
@@ -928,6 +929,7 @@ def upgrade_disc_postgres(ctx, branch):
         except subprocess.CalledProcessError as e:
             click.secho(f"An error occurred: {e}", fg="red")
             print(e.stderr)
+            return
 
         # bring up the db container once so it can init with the new version and default user+password
         click.secho("Initializing Postgres v15.5", fg="yellow")
@@ -991,25 +993,27 @@ def upgrade_disc_postgres(ctx, branch):
             
             # make sure we don't re-run this upgrade in the future
             dotenv.set_key(override_env, PG15_UPGRADE_COMPLETE, "true")
+            dotenv.unset_key(override_env, PG15_UPGRADE_STARTED)
             click.secho("Upgrade complete!", fg="green")
-
-            plugins = get_registered_plugins(ctx, "discovery-provider")
-            run(
-                [
-                    "docker",
-                    "compose",
-                    "--project-directory",
-                    ctx.obj["manifests_path"] / "discovery-provider",
-                    *plugins,
-                    "up",
-                    "--remove-orphans",
-                    "-d",
-                ],
-            )
-            ctx.invoke(launch_chain)
         except subprocess.CalledProcessError as e:
             click.secho(f"An error occurred: {e}", fg="red")
             print(e.stderr)
+            return
+    
+    plugins = get_registered_plugins(ctx, "discovery-provider")
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            *plugins,
+            "up",
+            "--remove-orphans",
+            "-d",
+        ],
+    )
+    ctx.invoke(launch_chain)
 
 
 @cli.command()
