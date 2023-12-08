@@ -37,26 +37,27 @@ services:
       - discovery-provider-network
   
   delete-db:
+    container_name: delete-db
     image: alpine:latest
     command: >
       sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
     volumes:
       - /var/k8s/discovery-provider-db:/data
+    networks:
+      - discovery-provider-network
     profiles:
       - delete-db
   
   optimize-db:
+    container_name: optimize-db
     image: postgres:15.5-bookworm
     environment:
       - PGPASSWORD=postgres
     command: >
       sh -c "
-      psql -h db -U postgres -d audius_discovery -c '
-        SET autovacuum = off;
-        VACUUM FULL;
-        REINDEX DATABASE audius_discovery;
-        ANALYZE;
-      ' &&
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
       echo 'Database optimization completed'
       "
     networks:
