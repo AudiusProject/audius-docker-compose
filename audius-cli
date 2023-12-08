@@ -946,6 +946,8 @@ def upgrade_disc_postgres(ctx, branch):
             ],
         )
         time.sleep(30)
+
+        # bring the db back offline for seeding and double-check other services are down
         run(
             [
                 "docker",
@@ -954,6 +956,22 @@ def upgrade_disc_postgres(ctx, branch):
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "stop",
                 "db",
+            ],
+        )
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "down",
+                "backend",
+                "indexer",
+                "trpc",
+                "comms",
+                "notifications",
+                "es-indexer",
+                "db"
             ],
         )
 
