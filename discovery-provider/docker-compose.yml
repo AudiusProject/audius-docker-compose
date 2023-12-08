@@ -55,11 +55,9 @@ services:
       - PGPASSWORD=postgres
     command: >
       sh -c "
-      psql -h db -U postgres -d audius_discovery -c '
-        VACUUM FULL;
-        REINDEX DATABASE audius_discovery;
-        ANALYZE;
-      ' &&
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
       echo 'Database optimization completed'
       "
     networks:
