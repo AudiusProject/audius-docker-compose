@@ -3,15 +3,67 @@ version: "3.9"
 services:
   db:
     container_name: postgres
+    image: postgres:${audius_pg_upgrade_to_version:-11.22-bookworm}
+    shm_size: 2g
+    restart: always
+    entrypoint: >
+        /bin/bash -c 
+        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
+          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
+            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
+          fi;
+        fi;
+        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+    ports:
+      - '127.0.0.1:5432:5432'
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: audius_discovery
-    extends:
-      file: ../common-services.yml
-      service: base-postgres
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     volumes:
-      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data # Use k8s location for backward compatibility
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
+  
+  delete-db:
+    container_name: delete-db
+    image: alpine:latest
+    command: >
+      sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
+    volumes:
+      - /var/k8s/discovery-provider-db:/data
+    networks:
+      - discovery-provider-network
+    profiles:
+      - delete-db
+  
+  optimize-db:
+    container_name: optimize-db
+    image: postgres:15.5-bookworm
+    environment:
+      - PGPASSWORD=postgres
+    command: >
+      sh -c "
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
+      echo 'Database optimization completed'
+      "
+    networks:
+      - discovery-provider-network
+    profiles:
+      - optimize-db
 
   exporter_postgres:
     extends:
@@ -89,7 +141,7 @@ services:
       - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/relay:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: relay
     restart: unless-stopped
     networks:
@@ -111,7 +163,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/discovery-provider:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -140,7 +192,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/discovery-provider:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     restart: always
     mem_limit: 2.8g
     depends_on:
@@ -181,7 +233,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/discovery-provider:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -229,7 +281,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/comms:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -264,7 +316,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/trpc:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -327,7 +379,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/healthz:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -351,7 +403,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/dashboard:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: dashboard
     restart: unless-stopped
     entrypoint: "./scripts/docker-entrypoint.sh"
@@ -363,7 +415,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/uptime:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: uptime
     restart: unless-stopped
     env_file:
@@ -376,7 +428,7 @@ services:
 
   # plugins
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/discovery-provider-notifications:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -397,7 +449,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-dc442e086a3b904be04cf3482d67e20a3ba7b3fb}
+    image: audius/sla-auditor:${TAG:-056be80a740b90f311fcb4065d39c91a80d5b86d}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
