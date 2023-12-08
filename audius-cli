@@ -904,7 +904,7 @@ def upgrade_disc_postgres(ctx, branch):
                 "comms",
                 "notifications",
                 "es-indexer",
-                "db-delete",
+                "delete-db",
                 "optimize-db",
             ],
         )
@@ -969,7 +969,7 @@ def upgrade_disc_postgres(ctx, branch):
                 "notifications",
                 "es-indexer",
                 "db",
-                "db-delete",
+                "delete-db",
                 "optimize-db",
             ],
         )
