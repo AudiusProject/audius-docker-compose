@@ -864,12 +864,13 @@ def upgrade(ctx, branch):
 def upgrade_disc_postgres(ctx, branch):
     """Upgrades postgres from 11 to 15 if env var is set"""
     # ensure "audius_pg_upgrade_to_version" from override.env is reflected in .env because docker compose only sees .env
+    env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
     override_env = get_override_path(ctx, "discovery-provider")
     pg_upgrade_to_version = dotenv.get_key(override_env, PG_UPGRADE_TO_VERSION)
     if pg_upgrade_to_version:
-      dotenv.set_key(".env", PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
+      dotenv.set_key(env_file, PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
     else:
-      dotenv.unset_key(".env", PG_UPGRADE_TO_VERSION)
+      dotenv.unset_key(env_file, PG_UPGRADE_TO_VERSION)
     pg_upgrade_complete = dotenv.get_key(override_env, PG15_UPGRADE_COMPLETE)
 
     # upgrade postgres from v11 to v15 (gated by env var)
