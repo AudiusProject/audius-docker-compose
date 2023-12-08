@@ -907,6 +907,11 @@ def upgrade_disc_postgres(ctx, branch):
             ],
         )
 
+        # clean up in case we previously tried and ran into issues. also, the extra space won't hurt
+        run(
+            ["docker", "system", "prune", "--all", "--force"],
+        )
+
         # delete the db volume
         try:
             result = run(

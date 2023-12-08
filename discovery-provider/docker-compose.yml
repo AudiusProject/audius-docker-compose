@@ -52,7 +52,6 @@ services:
     command: >
       sh -c "
       psql -h db -U postgres -d audius_discovery -c '
-        SET autovacuum = off;
         VACUUM FULL;
         REINDEX DATABASE audius_discovery;
         ANALYZE;
