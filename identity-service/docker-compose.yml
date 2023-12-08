@@ -23,7 +23,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/identity-service:${TAG:-503245a00e4c63fce74f6f04f8c25844edfd2778}
+    image: audius/identity-service:${TAG:-d8f24439cd0f5e543eec4e8f76fe5fcf822a8e3e}
     depends_on:
       db:
         condition: service_healthy
