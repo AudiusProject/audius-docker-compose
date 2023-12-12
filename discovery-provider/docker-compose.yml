@@ -49,7 +49,7 @@ services:
       - delete-db
   
   delete-chain:
-    container_name: delete-db
+    container_name: delete-chain
     image: alpine:latest
     command: >
       sh -c "rm -rf /data/discovery-provider-chain && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
