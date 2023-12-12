@@ -821,6 +821,7 @@ def upgrade(ctx, branch):
         )
 
         # update if service is running
+        started_disc = False
         if proc.stdout:
             run(
                 [
@@ -851,10 +852,53 @@ def upgrade(ctx, branch):
             )
 
             if service == "discovery-provider":
+                started_disc = True
                 ctx.invoke(launch_chain)
-        elif service == "discovery-provider":
+        elif dotenv.get_key(override_env, PG_UPGRADE_TO_VERSION) == "15.5-bookworm":
             ctx.forward(upgrade_disc_postgres)
 
+    # clean up non-DN nodes that were running DN containers
+    if not started_disc:
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "stop",
+                "chain",
+            ],
+        )
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "down",
+            ],
+        )
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "--profile",
+                "delete-chain",
+                "up",
+                "delete-chain"
+            ],
+        )
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / "discovery-provider",
+                "down",
+            ],
+        )
     prune()
 
 

@@ -48,6 +48,18 @@ services:
     profiles:
       - delete-db
   
+  delete-chain:
+    container_name: delete-db
+    image: alpine:latest
+    command: >
+      sh -c "rm -rf /data/discovery-provider-chain && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
+    volumes:
+      - /var/k8s:/data
+    networks:
+      - discovery-provider-network
+    profiles:
+      - delete-chain
+  
   optimize-db:
     container_name: optimize-db
     image: postgres:15.5-bookworm
