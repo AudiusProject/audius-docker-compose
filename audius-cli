@@ -1247,9 +1247,7 @@ def get_registered_plugins(ctx, service):
 
     registered_plugins = []
     if plugins_env is not None:
-        registered_plugins = list(
-            filter(lambda x: x not in ("", "acdc-blockscout"), plugins_env.split(","))
-        )
+        registered_plugins = plugins_env.split(",")
 
     if not registered_plugins:
         return []
