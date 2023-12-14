@@ -558,6 +558,20 @@ def down(ctx, service, containers):
         services = SERVICES
 
     for service in services:
+        if not containers and service == "discovery-provider":
+            # ensure removal of the chain container
+            run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / service,
+                    "--profile",
+                    "chain",
+                    "down",
+                ],
+            )
+
         run(
             [
                 "docker",
