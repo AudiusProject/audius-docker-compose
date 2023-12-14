@@ -57,7 +57,7 @@ PG15_UPGRADE_STARTED = "audius_started_upgrade_to_pg15"
 PG15_UPGRADE_COMPLETE = "audius_completed_upgrade_to_pg15"
 
 service_type = click.Choice(SERVICES)
-network_type = click.Choice(["prod", "stage"])
+network_type = click.Choice(["prod", "stage", "dev"])
 container_type = click.Choice(["backend", "cache", "db"])
 
 
@@ -279,7 +279,7 @@ def health_check(ctx, service):
 
 
 @cli.command()
-@click.argument("service", type=click.Choice(('creator-node', 'discovery-provider')))
+@click.argument("service", type=click.Choice(("creator-node", "discovery-provider")))
 @click.pass_context
 def min_version(ctx, service):
     """Check the minimum required version for a service"""
@@ -294,21 +294,33 @@ def min_version(ctx, service):
     elif service == "discovery-provider":
         service = "discovery-node"
 
-    rpc_env_var = "audius_web3_eth_provider_url" if service == "discovery-node" else "ethProviderUrl"
+    rpc_env_var = (
+        "audius_web3_eth_provider_url"
+        if service == "discovery-node"
+        else "ethProviderUrl"
+    )
     rpc_url = override_env_data.get(rpc_env_var, env_data.get(rpc_env_var))
     if not rpc_url:
         click.secho(f"{rpc_env_var} env var is not set", fg="red")
         sys.exit(1)
-    
-    eth_registry_address_env_var = "audius_eth_contracts_registry" if service == "discovery-node" else "ethRegistryAddress"
-    eth_registry_address_str = override_env_data.get(eth_registry_address_env_var, env_data.get(eth_registry_address_env_var))
+
+    eth_registry_address_env_var = (
+        "audius_eth_contracts_registry"
+        if service == "discovery-node"
+        else "ethRegistryAddress"
+    )
+    eth_registry_address_str = override_env_data.get(
+        eth_registry_address_env_var, env_data.get(eth_registry_address_env_var)
+    )
     if not eth_registry_address_str:
         click.secho(f"{eth_registry_address_env_var} env var is not set", fg="red")
         sys.exit(1)
 
     eth_registry_address = Web3.to_checksum_address(eth_registry_address_str)
     eth_web3 = get_eth_web3(rpc_url)
-    eth_abi_values = load_eth_abi_values(os.path.join(ctx.obj["manifests_path"], "eth-contracts", "ABIs"))
+    eth_abi_values = load_eth_abi_values(
+        os.path.join(ctx.obj["manifests_path"], "eth-contracts", "ABIs")
+    )
     eth_registry_instance = eth_web3.eth.contract(
         address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
     )
@@ -321,7 +333,10 @@ def min_version(ctx, service):
     min_version = contract_instance.functions.getCurrentVersion(
         service.encode("utf-8")
     ).call()
-    click.secho(f"Minimum required version for {service} is {min_version.decode('utf-8')}", fg="green")
+    click.secho(
+        f"Minimum required version for {service} is {min_version.decode('utf-8')}",
+        fg="green",
+    )
     sys.exit(0)
 
 
@@ -372,6 +387,7 @@ class MultiProvider(BaseProvider):
 
     def __str__(self):
         return f"MultiProvider({self.providers})"
+
 
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
@@ -802,24 +818,38 @@ def upgrade(ctx, branch):
     identity_override_env = get_override_path(ctx, "identity-service")
     creator_override_env = get_override_path(ctx, "creator-node")
     disc_override_env = get_override_path(ctx, "discovery-provider")
-    if disc_override_env.exists() and dotenv.get_key(disc_override_env, PG15_UPGRADE_STARTED) == "true":
-        click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
+    if (
+        disc_override_env.exists()
+        and dotenv.get_key(disc_override_env, PG15_UPGRADE_STARTED) == "true"
+    ):
+        click.secho(
+            "Postgres upgrade in progress. Please wait for it to complete", fg="yellow"
+        )
         sys.exit(1)
 
     lock(ctx, "docker")
-    
+
     # determine service type based on override.env location and env vars in it
     service = ""
-    if creator_override_env.exists() and dotenv.get_key(creator_override_env, "creatorNodeEndpoint"):
+    if creator_override_env.exists() and dotenv.get_key(
+        creator_override_env, "creatorNodeEndpoint"
+    ):
         service = "creator-node"
-    elif identity_override_env.exists() and dotenv.get_key(identity_override_env, "ethOwnerWallet"):
+    elif identity_override_env.exists() and dotenv.get_key(
+        identity_override_env, "ethOwnerWallet"
+    ):
         service = "identity-service"
-    elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
+    elif disc_override_env.exists() and dotenv.get_key(
+        disc_override_env, "audius_delegate_owner_wallet"
+    ):
         service = "discovery-provider"
     else:
-        click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
+        click.secho(
+            "Unable to determine service type. Ensure your override.env is configured",
+            fg="yellow",
+        )
         sys.exit(1)
-    
+
     run(
         [
             "docker",
@@ -880,7 +910,7 @@ def upgrade(ctx, branch):
                 "--profile",
                 "delete-chain",
                 "up",
-                "delete-chain"
+                "delete-chain",
             ],
         )
         run(
@@ -906,9 +936,9 @@ def upgrade_disc_postgres(ctx, branch):
     override_env = get_override_path(ctx, "discovery-provider")
     pg_upgrade_to_version = dotenv.get_key(override_env, PG_UPGRADE_TO_VERSION)
     if pg_upgrade_to_version:
-      dotenv.set_key(env_file, PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
+        dotenv.set_key(env_file, PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
     else:
-      dotenv.unset_key(env_file, PG_UPGRADE_TO_VERSION)
+        dotenv.unset_key(env_file, PG_UPGRADE_TO_VERSION)
     pg_upgrade_complete = dotenv.get_key(override_env, PG15_UPGRADE_COMPLETE)
 
     # upgrade postgres from v11 to v15 (gated by env var)
@@ -928,7 +958,9 @@ def upgrade_disc_postgres(ctx, branch):
         dotenv.set_key(override_env, PG15_UPGRADE_STARTED, "true")
 
         # stop containers that use the db
-        click.secho("Stopping containers and deleting the existing database", fg="yellow")
+        click.secho(
+            "Stopping containers and deleting the existing database", fg="yellow"
+        )
         run(
             [
                 "docker",
@@ -963,12 +995,12 @@ def upgrade_disc_postgres(ctx, branch):
                     "--profile",
                     "delete-db",
                     "up",
-                    "delete-db"
+                    "delete-db",
                 ],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
             print(result.stdout)
             print(result.stderr)
@@ -1025,7 +1057,9 @@ def upgrade_disc_postgres(ctx, branch):
             ],
         )
         time.sleep(20)
-        click.secho("Seeding the discovery provider (this will take up to an hour)", fg="yellow")
+        click.secho(
+            "Seeding the discovery provider (this will take up to an hour)", fg="yellow"
+        )
         run(
             [
                 "docker",
@@ -1038,7 +1072,9 @@ def upgrade_disc_postgres(ctx, branch):
         )
 
         # perform db cleanup which is necessary between major version upgrades
-        click.secho("Cleaning up the database (this will take a very long time)", fg="yellow")
+        click.secho(
+            "Cleaning up the database (this will take a very long time)", fg="yellow"
+        )
         try:
             result = run(
                 [
@@ -1049,16 +1085,16 @@ def upgrade_disc_postgres(ctx, branch):
                     "--profile",
                     "optimize-db",
                     "up",
-                    "optimize-db"
+                    "optimize-db",
                 ],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
             print(result.stdout)
             print(result.stderr)
-            
+
             # make sure we don't re-run this upgrade in the future
             dotenv.set_key(override_env, PG15_UPGRADE_COMPLETE, "true")
             dotenv.unset_key(override_env, PG15_UPGRADE_STARTED)
