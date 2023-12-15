@@ -89,22 +89,6 @@ if [[ "$1" != "" ]]; then
 
 	audius-cli set-config --required "$1"
 
-	read -p "Are you using an externally managed Postgres? [Y/n] " -n 1 -r
-	echo
-	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then
-		read -p "Please enter db url: "
-
-		case "$1" in
-		"creator-node")
-			audius-cli set-config creator-node dbUrl "$REPLY"
-			;;
-		"discovery-provider")
-			audius-cli set-config discovery-provider audius_db_url "$REPLY"
-			audius-cli set-config discovery-provider audius_db_url_read_replica "$REPLY"
-			;;
-		esac
-	fi
-
 	read -p "Launch the service? [Y/n] " -n 1 -r
 	echo
 	if [[ "$REPLY" =~ ^([Yy]|)$ ]]; then

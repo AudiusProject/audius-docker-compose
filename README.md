@@ -47,9 +47,6 @@ After setting the variables, they are exported to an `override.env` file in the 
 | audius_delegate_owner_wallet      | Public key for the service used to sign responses from the server. This wallet holds no tokens.     | `0x07bC80Cc29bb15a5CA3D9DB9D80AcA25eB967aFc` |
 | audius_delegate_private_key      | Private key associated with `audius_delegate_owner_wallet`    | `2ef5a28ab4c39199085eb4707d292c980fef3dcc9dc854ba8736a545c11e81c4` |
 
-
-> If you're using an externally managed Postgres DB please see [advanced setup](ADVANCED_SETUP.md#external-discovery-provider-postgres-instance)
-
 <br />
 
 ### Customizing override.env

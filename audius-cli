@@ -809,106 +809,111 @@ def pull_reset(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
-    ctx.forward(pull_reset)
-    set_automatic_env(ctx)
+    try:
+        ctx.forward(pull_reset)
+        set_automatic_env(ctx)
 
-    # don't interrupt a postgres upgrade
-    identity_override_env = get_override_path(ctx, "identity-service")
-    creator_override_env = get_override_path(ctx, "creator-node")
-    disc_override_env = get_override_path(ctx, "discovery-provider")
-    if disc_override_env.exists() and dotenv.get_key(disc_override_env, PG15_UPGRADE_STARTED) == "true":
-        click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
-        sys.exit(1)
+        # don't interrupt a postgres upgrade
+        identity_override_env = get_override_path(ctx, "identity-service")
+        creator_override_env = get_override_path(ctx, "creator-node")
+        disc_override_env = get_override_path(ctx, "discovery-provider")
+        if disc_override_env.exists() and dotenv.get_key(disc_override_env, PG15_UPGRADE_STARTED) == "true":
+            click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
+            sys.exit(1)
 
-    lock(ctx, "docker")
-    
-    # determine service type based on override.env location and env vars in it
-    service = ""
-    if creator_override_env.exists() and dotenv.get_key(creator_override_env, "creatorNodeEndpoint"):
-        service = "creator-node"
-    elif identity_override_env.exists() and dotenv.get_key(identity_override_env, "ethOwnerWallet"):
-        service = "identity-service"
-    elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
-        service = "discovery-provider"
-    else:
-        click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
-        sys.exit(1)
-    
-    run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            "pull",
-        ],
-    )
-
-    plugins = get_registered_plugins(ctx, service)
-
-    if service == "discovery-provider":
-        ctx.forward(upgrade_disc_postgres)
-
-    run(
-        [
-            "docker",
-            "compose",
-            "--project-directory",
-            ctx.obj["manifests_path"] / service,
-            *plugins,
-            "up",
-            "--remove-orphans",
-            "-d",
-        ],
-    )
-
-    if service == "discovery-provider":
-        ctx.invoke(launch_chain)
-    else:
-        # clean up discovery-provider containers running in identity-service and creator-node
+        lock(ctx, "docker")
+        
+        # determine service type based on override.env location and env vars in it
+        service = ""
+        if creator_override_env.exists() and dotenv.get_key(creator_override_env, "creatorNodeEndpoint"):
+            service = "creator-node"
+        elif identity_override_env.exists() and dotenv.get_key(identity_override_env, "ethOwnerWallet"):
+            service = "identity-service"
+        elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
+            service = "discovery-provider"
+        else:
+            click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
+            sys.exit(1)
+        
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "stop",
-                "chain",
+                ctx.obj["manifests_path"] / service,
+                "pull",
             ],
         )
+
+        plugins = get_registered_plugins(ctx, service)
+
+        if service == "discovery-provider":
+            ctx.forward(upgrade_disc_postgres)
+
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "down",
-            ],
-        )
-        run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "--profile",
-                "delete-chain",
+                ctx.obj["manifests_path"] / service,
+                *plugins,
                 "up",
-                "delete-chain"
-            ],
-        )
-        run(
-            [
-                "docker",
-                "compose",
-                "--project-directory",
-                ctx.obj["manifests_path"] / "discovery-provider",
-                "down",
+                "--remove-orphans",
+                "-d",
             ],
         )
 
-    prune()
+        if service == "discovery-provider":
+            ctx.invoke(launch_chain)
+        else:
+            cleanup_disc_containers(ctx)
+    finally:
+        lock(ctx, "docker")
+        prune()
 
+
+def cleanup_disc_containers(ctx):
+    """(DON'T RUN ON DISCOVERY-PROVIDER) Deletes discovery-provider containers+data from identity-service and creator-node"""
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "stop",
+            "chain",
+        ],
+    )
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "down",
+        ],
+    )
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "--profile",
+            "delete-chain",
+            "up",
+            "delete-chain"
+        ],
+    )
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "down",
+        ],
+    )
 
 @cli.command()
 @click.argument("branch", required=False)
