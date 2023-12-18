@@ -145,7 +145,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-cfb3c91ac58436b0be9e46f8420106adc1da218d}
+    image: audius/mediorum:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -173,7 +173,7 @@ services:
         condition: service_healthy
 
   healthz:
-    image: audius/healthz:${TAG:-cfb3c91ac58436b0be9e46f8420106adc1da218d}
+    image: audius/healthz:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -197,7 +197,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-cfb3c91ac58436b0be9e46f8420106adc1da218d}
+    image: audius/dashboard:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
     container_name: dashboard
     restart: unless-stopped
     entrypoint: "./scripts/docker-entrypoint.sh"
@@ -207,7 +207,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-cfb3c91ac58436b0be9e46f8420106adc1da218d}
+    image: audius/uptime:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
     container_name: uptime
     restart: unless-stopped
     env_file:
