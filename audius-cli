@@ -57,7 +57,7 @@ PG15_UPGRADE_STARTED = "audius_started_upgrade_to_pg15"
 PG15_UPGRADE_COMPLETE = "audius_completed_upgrade_to_pg15"
 
 service_type = click.Choice(SERVICES)
-network_type = click.Choice(["prod", "stage", "dev"])
+network_type = click.Choice(["prod", "stage"])
 container_type = click.Choice(["backend", "cache", "db"])
 
 
