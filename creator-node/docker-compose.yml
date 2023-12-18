@@ -200,7 +200,7 @@ services:
     image: audius/dashboard:${TAG:-9274a117dcc0f55fdecc1cb0e48588f528660cf0}
     container_name: dashboard
     restart: unless-stopped
-    command: ["sh", "-c", "npm run build:${NETWORK:-prod} && tail -f /dev/null"]
+    entrypoint: "./scripts/docker-entrypoint.sh"
     networks:
       - creator-node-network
     volumes:
