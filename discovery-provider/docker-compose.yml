@@ -116,7 +116,7 @@ services:
       timeout: 5s
 
   relay:
-    image: audius/relay:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/relay:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: relay
     restart: unless-stopped
     networks:
@@ -138,7 +138,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/discovery-provider:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -167,7 +167,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/discovery-provider:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     restart: always
     mem_limit: 2.8g
     depends_on:
@@ -208,7 +208,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/discovery-provider:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -243,7 +243,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/comms:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: comms
     command: discovery
     restart: unless-stopped
@@ -278,7 +278,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/trpc:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -341,7 +341,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/healthz:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -365,7 +365,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/dashboard:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: dashboard
     restart: unless-stopped
     entrypoint: "./scripts/docker-entrypoint.sh"
@@ -377,7 +377,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/uptime:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: uptime
     restart: unless-stopped
     env_file:
@@ -390,7 +390,7 @@ services:
 
   # plugins
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/discovery-provider-notifications:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -411,7 +411,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-7667fee513cd629388e6118abc73f8806dfa3867}
+    image: audius/sla-auditor:${TAG:-c9a3e7c3d193da51a9c0cabf6af0bce0bec506cf}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
