@@ -19,7 +19,7 @@ services:
     shm_size: 2g
     restart: always
     entrypoint: >
-        /bin/bash -c 
+        /bin/bash -c
         "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
           if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
             echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
@@ -47,7 +47,7 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
-  
+
   delete-db:
     container_name: delete-db
     image: alpine:latest
@@ -59,7 +59,7 @@ services:
       - discovery-provider-network
     profiles:
       - delete-db
-  
+
   optimize-db:
     container_name: optimize-db
     image: postgres:15.5-bookworm
@@ -261,7 +261,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:v1
+    image: audius/es-indexer:${TAG:-2d72cef331dcdf79691fb5effb511e49ed7adbe9}
     container_name: es-indexer
     restart: unless-stopped
     networks:
