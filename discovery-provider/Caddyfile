@@ -16,4 +16,4 @@ route /dashboard* {
 }
 
 # defaults to backend:5000
-reverse_proxy {$ROOT_HOST}
+reverse_proxy {$ROOT_HOST:"backend:5000"}
