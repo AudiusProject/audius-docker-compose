@@ -387,8 +387,6 @@ services:
       - discovery-provider-network
     volumes:
       - /var/k8s/bolt:/bolt
-    profiles:
-      - ddex
 
   # plugins
 
@@ -401,6 +399,8 @@ services:
       - discovery-provider-network
     volumes:
       - ddex-dist:/app/dist
+    profiles:
+      - ddex
 
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-d04efbc2f2c58792d1a6bf19ab0747518a27c7c6}
