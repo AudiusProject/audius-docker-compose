@@ -476,3 +476,4 @@ volumes:
   caddy_data:
   caddy_config:
   dashboard-dist:
+  ddex-dist:
