@@ -429,6 +429,32 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  metabase:
+    image: metabase/metabase:v0.48.0
+    container_name: metabase
+    hostname: metabase
+    volumes:
+      - /dev/urandom:/dev/random:ro
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: audius_discovery
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+      MB_DB_HOST: postgres
+    networks:
+      - discovery-provider-network
+    ports:
+      - "3000:3000"
+    profiles:
+      - metabase
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+
 networks:
   discovery-provider-network:
 
