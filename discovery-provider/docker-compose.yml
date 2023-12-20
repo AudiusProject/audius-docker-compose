@@ -363,6 +363,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - dashboard-dist:/dashboard-dist
+      - ddex-dist:/ddex-dist
 
   dashboard:
     image: audius/dashboard:${TAG:-d04efbc2f2c58792d1a6bf19ab0747518a27c7c6}
