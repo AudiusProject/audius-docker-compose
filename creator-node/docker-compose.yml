@@ -171,6 +171,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    resources:
+      limits:
+        cpus: '6' # 8 is required for all SPs, so we'll leave 2 for the OS, postgres, etc
+        memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
     image: audius/healthz:${TAG:-2109fdf8676d9925514f41d186f47ea36fa03643}
