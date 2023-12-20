@@ -1,6 +1,6 @@
 {$audius_discprov_url}
 
-{$CADDY_TLS}
+{$CADDY_TLS:localhost}
 
 encode zstd gzip
 
@@ -8,11 +8,12 @@ reverse_proxy /comms* comms:8925
 
 reverse_proxy /healthz* healthz
 
-reverse_proxy metabase:{$METABASE_PORT}
-
 route /dashboard* {
     redir /dashboard /dashboard/ 308
     uri strip_prefix /dashboard
     root * /dashboard-dist
     file_server
 }
+
+# defaults to backend:5000
+reverse_proxy {$ROOT_HOST}
