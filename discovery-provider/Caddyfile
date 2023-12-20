@@ -1,6 +1,6 @@
 {$audius_discprov_url}
 
-{$CADDY_TLS:localhost}
+{$CADDY_TLS}
 
 encode zstd gzip
 
