@@ -8,11 +8,11 @@ reverse_proxy /comms* comms:8925
 
 reverse_proxy /healthz* healthz
 
+reverse_proxy metabase:{$METABASE_PORT}
+
 route /dashboard* {
     redir /dashboard /dashboard/ 308
     uri strip_prefix /dashboard
     root * /dashboard-dist
     file_server
 }
-
-reverse_proxy metabase:3000

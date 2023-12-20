@@ -262,6 +262,8 @@ services:
     restart: unless-stopped
     env_file:
       - ${OVERRIDE_PATH:-override.env}
+    environment:
+      METABASE_PORT: ${METABASE_PORT:-3000}
     networks:
       - discovery-provider-network
     ports:
@@ -339,14 +341,13 @@ services:
       driver: json-file
 
   metabase:
-    image: metabase/metabase:v0.47.8
+    image: metabase/metabase:v0.48.0
     container_name: metabase
     hostname: metabase
     volumes:
       - /dev/urandom:/dev/random:ro
-    ports:
-      - 3000:3000
     environment:
+      MB_JETTY_PORT: ${METABASE_PORT:-3000}
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: audius_discovery
       MB_DB_PORT: 5432
@@ -355,6 +356,8 @@ services:
       MB_DB_HOST: postgres
     networks:
       - discovery-provider-network
+    ports:
+      - "${METABASE_PORT:-3000}:${METABASE_PORT:-3000}"
     profiles:
       - metabase
     healthcheck:
