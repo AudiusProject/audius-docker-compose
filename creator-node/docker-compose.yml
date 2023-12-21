@@ -145,7 +145,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-12cfb9dce7b8a2d40abf75850d0e8288c1275275}
+    image: audius/mediorum:${TAG:-759c52ddf30848089e7d28d1493891d79b811564}
     container_name: mediorum
     restart: unless-stopped
     networks:
@@ -178,7 +178,7 @@ services:
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
-    image: audius/healthz:${TAG:-12cfb9dce7b8a2d40abf75850d0e8288c1275275}
+    image: audius/healthz:${TAG:-759c52ddf30848089e7d28d1493891d79b811564}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -202,7 +202,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-12cfb9dce7b8a2d40abf75850d0e8288c1275275}
+    image: audius/dashboard:${TAG:-759c52ddf30848089e7d28d1493891d79b811564}
     container_name: dashboard
     restart: unless-stopped
     entrypoint: "./scripts/docker-entrypoint.sh"
@@ -212,7 +212,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-12cfb9dce7b8a2d40abf75850d0e8288c1275275}
+    image: audius/uptime:${TAG:-759c52ddf30848089e7d28d1493891d79b811564}
     container_name: uptime
     restart: unless-stopped
     env_file:
