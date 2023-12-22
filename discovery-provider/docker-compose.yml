@@ -363,6 +363,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - dashboard-dist:/dashboard-dist
+      - ddex-dist:/ddex-dist
 
   dashboard:
     image: audius/dashboard:${TAG:-5652852c216ffdd58b6d3d7e8db54d32a3870209}
@@ -389,6 +390,18 @@ services:
       - /var/k8s/bolt:/bolt
 
   # plugins
+
+  ddex:
+    image: audius/ddex:${TAG:-d04efbc2f2c58792d1a6bf19ab0747518a27c7c6}
+    container_name: ddex 
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    volumes:
+      - ddex-dist:/app/dist
+    profiles:
+      - ddex
+
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-5652852c216ffdd58b6d3d7e8db54d32a3870209}
     container_name: notifications
@@ -463,3 +476,4 @@ volumes:
   caddy_data:
   caddy_config:
   dashboard-dist:
+  ddex-dist:
