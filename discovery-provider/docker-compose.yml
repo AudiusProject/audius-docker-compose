@@ -395,7 +395,6 @@ services:
     image: audius/ddex:${TAG:-2109fdf8676d9925514f41d186f47ea36fa03643}
     container_name: ddex 
     restart: unless-stopped
-    entrypoint: "./scripts/docker-entrypoint.sh"
     networks:
       - discovery-provider-network
     volumes:
