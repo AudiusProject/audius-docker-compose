@@ -392,7 +392,7 @@ services:
   # plugins
 
   ddex:
-    image: audius/ddex:${TAG:-2109fdf8676d9925514f41d186f47ea36fa03643}
+    image: audius/ddex:${TAG:-d04efbc2f2c58792d1a6bf19ab0747518a27c7c6}
     container_name: ddex 
     restart: unless-stopped
     networks:
