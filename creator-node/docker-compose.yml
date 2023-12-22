@@ -202,10 +202,9 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-b48bb0d85670f171b8dc5b92638e106ef07e3741}
+    image: audius/dashboard:${TAG:-b48bb0d85670f171b8dc5b92638e106ef07e3741}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
-    entrypoint: "./scripts/docker-entrypoint.sh"
     networks:
       - creator-node-network
     volumes:
