@@ -365,10 +365,9 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-9e337d5e774409370823c9a2e233e955650eb34d}
+    image: audius/dashboard:${TAG:-9e337d5e774409370823c9a2e233e955650eb34d}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
-    entrypoint: "./scripts/docker-entrypoint.sh"
     environment:
       - NETWORK=${NETWORK:-prod}
     networks:
