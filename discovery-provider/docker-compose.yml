@@ -366,7 +366,7 @@ services:
       - ddex-dist:/ddex-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-02a7126c8b71de770c79b73de5a312a868610acd}
+    image: audius/dashboard:${TAG:-02a7126c8b71de770c79b73de5a312a868610acd}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
