@@ -1,5 +1,14 @@
 version: "3.9"
 
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+
 services:
   delete-chain:
     container_name: delete-chain
@@ -118,6 +127,7 @@ services:
   relay:
     image: audius/relay:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
     container_name: relay
+    <<: *extra-hosts
     restart: unless-stopped
     networks:
       - discovery-provider-network
@@ -139,6 +149,7 @@ services:
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
+    <<: *extra-hosts
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
     depends_on:
@@ -168,6 +179,7 @@ services:
   indexer:
     container_name: indexer
     image: audius/discovery-provider:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
+    <<: *extra-hosts
     restart: always
     mem_limit: 2.8g
     depends_on:
@@ -246,6 +258,7 @@ services:
     image: audius/comms:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
     container_name: comms
     command: comms discovery
+    <<: *extra-hosts
     restart: unless-stopped
     networks:
       - discovery-provider-network
@@ -298,6 +311,8 @@ services:
 
   chain:
     image: audius/nethermind:1.14.3
+    container_name: chain
+    <<: *extra-hosts
     restart: unless-stopped
     healthcheck:
       test:
@@ -306,7 +321,6 @@ services:
           "curl --fail localhost:8545/health || exit 1"
         ]
     command: --config config
-    container_name: chain
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -350,6 +364,7 @@ services:
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${OVERRIDE_PATH:-override.env}
@@ -379,6 +394,7 @@ services:
   uptime:
     image: audius/uptime:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
     container_name: uptime
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${NETWORK:-prod}.env
