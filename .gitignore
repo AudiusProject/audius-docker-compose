@@ -2,6 +2,7 @@ override.env
 blockscout.env
 audius-cli.log
 auto-upgrade.log
+.venv
 
 # .env files for system (tag, env management)
 discovery-provider/.env
