@@ -245,7 +245,7 @@ services:
   comms:
     image: audius/comms:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
     container_name: comms
-    command: discovery
+    command: comms discovery
     restart: unless-stopped
     networks:
       - discovery-provider-network
