@@ -1,5 +1,6 @@
 version: "3.9"
 
+# used by audius-d devnet
 x-extra-hosts: &extra-hosts
   extra_hosts:
     - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
