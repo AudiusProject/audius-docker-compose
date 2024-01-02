@@ -10,17 +10,17 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
-  delete-chain:
-    container_name: delete-chain
-    image: alpine:latest
-    command: >
-      sh -c "rm -rf /data/discovery-provider-chain && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
-    volumes:
-      - /var/k8s:/data
-    networks:
-      - discovery-provider-network
-    profiles:
-      - delete-chain
+  # delete-chain:
+  #   container_name: delete-chain
+  #   image: alpine:latest
+  #   command: >
+  #     sh -c "rm -rf /data/discovery-provider-chain && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
+  #   volumes:
+  #     - /var/k8s:/data
+  #   networks:
+  #     - discovery-provider-network
+  #   profiles:
+  #     - delete-chain
 
   db:
     container_name: postgres
@@ -57,34 +57,34 @@ services:
     networks:
       - discovery-provider-network
 
-  delete-db:
-    container_name: delete-db
-    image: alpine:latest
-    command: >
-      sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
-    volumes:
-      - /var/k8s/discovery-provider-db:/data
-    networks:
-      - discovery-provider-network
-    profiles:
-      - delete-db
+  # delete-db:
+  #   container_name: delete-db
+  #   image: alpine:latest
+  #   command: >
+  #     sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
+  #   volumes:
+  #     - /var/k8s/discovery-provider-db:/data
+  #   networks:
+  #     - discovery-provider-network
+  #   profiles:
+  #     - delete-db
 
-  optimize-db:
-    container_name: optimize-db
-    image: postgres:15.5-bookworm
-    environment:
-      - PGPASSWORD=postgres
-    command: >
-      sh -c "
-      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
-      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
-      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
-      echo 'Database optimization completed'
-      "
-    networks:
-      - discovery-provider-network
-    profiles:
-      - optimize-db
+  # optimize-db:
+  #   container_name: optimize-db
+  #   image: postgres:15.5-bookworm
+  #   environment:
+  #     - PGPASSWORD=postgres
+  #   command: >
+  #     sh -c "
+  #     psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+  #     psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+  #     psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
+  #     echo 'Database optimization completed'
+  #     "
+  #   networks:
+  #     - discovery-provider-network
+  #   profiles:
+  #     - optimize-db
 
   cache:
     container_name: redis
@@ -380,16 +380,16 @@ services:
       - dashboard-dist:/dashboard-dist
       - ddex-dist:/ddex-dist
 
-  dashboard:
-    image: audius/dashboard:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}-${NETWORK:-prod}
-    container_name: dashboard
-    restart: unless-stopped
-    environment:
-      - NETWORK=${NETWORK:-prod}
-    networks:
-      - discovery-provider-network
-    volumes:
-      - dashboard-dist:/app/dist
+  # dashboard:
+  #   image: audius/dashboard:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}-${NETWORK:-prod}
+  #   container_name: dashboard
+  #   restart: unless-stopped
+  #   environment:
+  #     - NETWORK=${NETWORK:-prod}
+  #   networks:
+  #     - discovery-provider-network
+  #   volumes:
+  #     - dashboard-dist:/app/dist
 
   uptime:
     image: audius/uptime:${TAG:-1380e772051b1d15707dc78c162808761853a0bf}
