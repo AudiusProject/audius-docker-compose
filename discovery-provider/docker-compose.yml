@@ -41,7 +41,7 @@ services:
       interval: 10s
       timeout: 5s
     ports:
-      - '127.0.0.1:5432:5432'
+      - '${EXPOSE_POSTGRES:-127.0.0.1:5432}:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -114,6 +114,8 @@ services:
         hard: -1
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    ports:
+      - ${EXPOSE_ELASTICSEARCH:-127.0.0.1:9200}:9200
     networks:
       - discovery-provider-network
     healthcheck:
@@ -409,7 +411,7 @@ services:
 
   ddex:
     image: audius/ddex:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}
-    container_name: ddex 
+    container_name: ddex
     restart: unless-stopped
     networks:
       - discovery-provider-network
