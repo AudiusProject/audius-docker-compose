@@ -1,5 +1,15 @@
 version: "3.9"
 
+# used by audius-d devnet
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+
 services:
   db:
     container_name: postgres
@@ -22,8 +32,9 @@ services:
       - identity-service-network
 
   backend:
+    image: audius/identity-service:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}
     container_name: server
-    image: audius/identity-service:${TAG:-c15dd6565686918f6be96e17e67983c72bb71379}
+    <<: *extra-hosts
     depends_on:
       db:
         condition: service_healthy

@@ -1,5 +1,15 @@
 version: "3.9"
 
+# used by audius-d devnet
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+
 services:
   db:
     container_name: postgres
@@ -35,80 +45,6 @@ services:
       - /var/k8s/creator-node-db-15:/var/lib/postgresql/data
     networks:
       - creator-node-network
-    depends_on:
-      db-upgrade:
-        condition: service_healthy
-
-  db-upgrade:
-    container_name: db-upgrade
-    image: tianon/postgres-upgrade:11-to-15
-    volumes:
-      - /var/k8s/creator-node-db:/var/lib/postgresql/11/data
-      - /var/k8s/creator-node-db-15:/var/lib/postgresql/15/data
-      - /var/k8s/mediorum:/tmp/mediorum
-    environment:
-      PGBINOLD: /usr/lib/postgresql/11/bin
-      PGBINNEW: /usr/lib/postgresql/15/bin
-      PGDATAOLD: /var/lib/postgresql/11/data
-      PGDATANEW: /var/lib/postgresql/15/data
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: audius_creator_node
-    networks:
-      - creator-node-network
-    restart: "no" # Stay unhealthy (don't restart) until the upgrade is complete
-    # Healthcheck to verify completion of the upgrade
-    healthcheck:
-      test: ["CMD-SHELL", "[ -f /var/lib/postgresql/15/data/upgrade_complete ] || [ ! -d /var/lib/postgresql/11/data ] || [ ! $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]"]
-      interval: 5s
-      timeout: 5s
-      retries: 1000
-    entrypoint: >
-        /bin/sh -c
-        "if [ -d /var/lib/postgresql/11/data ] && [ $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]; then
-          if [ ! -f /var/lib/postgresql/15/data/upgrade_complete ]; then
-            docker-upgrade 2>&1 | tee /tmp/mediorum/pg_upgrade.txt && touch /var/lib/postgresql/15/data/upgrade_complete;
-          fi;
-        else
-          echo 'No data to migrate. Remaining idle...';
-        fi;
-        tail -f /dev/null"
-
-  db-upgrade-cleanup:
-    container_name: db-upgrade-cleanup
-    image: tianon/postgres-upgrade:11-to-15
-    volumes:
-      - /var/k8s/creator-node-db:/var/lib/postgresql/11/data
-      - /var/k8s/creator-node-db-15:/var/lib/postgresql/15/data
-    environment:
-      PGBINOLD: /usr/lib/postgresql/11/bin
-      PGBINNEW: /usr/lib/postgresql/15/bin
-      PGDATAOLD: /var/lib/postgresql/11/data
-      PGDATANEW: /var/lib/postgresql/15/data
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: audius_creator_node
-    networks:
-      - creator-node-network
-    restart: "no"
-    healthcheck:
-      test: ["CMD-SHELL", "[ -f /var/lib/postgresql/15/data/upgrade_cleaned ] || [ ! -d /var/lib/postgresql/11/data ] || [ ! $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]"]
-      interval: 5s
-      timeout: 5s
-      retries: 1000
-    entrypoint: >
-        /bin/sh -c
-        "if [ -d /var/lib/postgresql/11/data ] && [ $$(ls -A /var/lib/postgresql/11/data | wc -l) -gt 0 ]; then
-          if [ ! -f /var/lib/postgresql/15/data/upgrade_cleaned ]; then
-            /usr/lib/postgresql/15/bin/vacuumdb --all --analyze-in-stages -h db -U postgres && rm -rf /var/lib/postgresql/11/data/* && touch /var/lib/postgresql/15/data/upgrade_cleaned;
-          fi;
-        else
-          echo 'No data to cleanup. Remaining idle...';
-        fi;
-        tail -f /dev/null"
-    depends_on:
-      db:
-        condition: service_healthy
 
   cache:
     container_name: redis
@@ -146,8 +82,9 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-c15dd6565686918f6be96e17e67983c72bb71379}
+    image: audius/mediorum:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}
     container_name: mediorum
+    <<: *extra-hosts
     restart: unless-stopped
     networks:
       - creator-node-network
@@ -179,7 +116,7 @@ services:
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
-    image: audius/healthz:${TAG:-c15dd6565686918f6be96e17e67983c72bb71379}
+    image: audius/healthz:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -188,6 +125,7 @@ services:
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${OVERRIDE_PATH:-override.env}
@@ -203,7 +141,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-c15dd6565686918f6be96e17e67983c72bb71379}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     networks:
@@ -212,8 +150,9 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-c15dd6565686918f6be96e17e67983c72bb71379}
+    image: audius/uptime:${TAG:-733f140c127051df9ce7ed99b9ed4ab9a221b0ac}
     container_name: uptime
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${NETWORK:-prod}.env
