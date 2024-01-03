@@ -1,5 +1,15 @@
 version: "3.9"
 
+# used by audius-d devnet
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+
 services:
   db:
     container_name: postgres
@@ -73,6 +83,7 @@ services:
   mediorum:
     image: audius/mediorum:${TAG:-b68a4e4350b358c5c8eea7c2f57a424064f7e6e9}
     container_name: mediorum
+    <<: *extra-hosts
     restart: unless-stopped
     networks:
       - creator-node-network
@@ -113,6 +124,7 @@ services:
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${OVERRIDE_PATH:-override.env}
@@ -139,6 +151,7 @@ services:
   uptime:
     image: audius/uptime:${TAG:-b68a4e4350b358c5c8eea7c2f57a424064f7e6e9}
     container_name: uptime
+    <<: *extra-hosts
     restart: unless-stopped
     env_file:
       - ${NETWORK:-prod}.env
