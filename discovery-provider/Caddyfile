@@ -18,8 +18,7 @@ route /dashboard* {
 route /ddex* {
     redir /ddex /ddex/ 308
     uri strip_prefix /ddex
-    root * /ddex-dist
-    file_server
+    reverse_proxy ddex:8926
 }
 
 # defaults to backend:5000
