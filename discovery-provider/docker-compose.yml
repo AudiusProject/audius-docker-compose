@@ -381,7 +381,6 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - dashboard-dist:/dashboard-dist
-      - ddex-dist:/ddex-dist
 
   dashboard:
     image: audius/dashboard:${TAG:-3d257935b0503efabcae29dcb878f0a2933977c1}-${NETWORK:-prod}
@@ -415,8 +414,6 @@ services:
     restart: unless-stopped
     networks:
       - discovery-provider-network
-    volumes:
-      - ddex-dist:/app/dist
     profiles:
       - ddex
 
@@ -494,4 +491,3 @@ volumes:
   caddy_data:
   caddy_config:
   dashboard-dist:
-  ddex-dist:
