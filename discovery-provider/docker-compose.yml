@@ -412,6 +412,10 @@ services:
     image: audius/ddex:${TAG:-d162abc89da080cabd12f8216590820ec7973446}
     container_name: ddex
     restart: unless-stopped
+    environment:
+      - NODE_ENV=${NETWORK:-prod}
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
     profiles:
