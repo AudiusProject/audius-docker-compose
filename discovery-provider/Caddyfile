@@ -4,18 +4,34 @@
 
 encode zstd gzip
 
-reverse_proxy /comms* comms:8925
+@comms {
+    path /comms*
+    expression "{$NO_COMMS}" == ""
+}
+reverse_proxy @comms comms:8925
 
-reverse_proxy /healthz* healthz
+@healthz {
+    path /healthz*
+    expression "{$NO_HEALTHZ}" == ""
+}
+reverse_proxy @healthz healthz
 
-route /dashboard* {
+@dashboard {
+    path /dashboard*
+    expression "{$NO_DASHBOARD}" == ""
+}
+route @dashboard {
     redir /dashboard /dashboard/ 308
     uri strip_prefix /dashboard
     root * /dashboard-dist
     file_server
 }
 
-route /ddex* {
+@ddex {
+    path /ddex*
+    expression "{$NO_DDEX}" == ""
+}
+route @ddex {
     redir /ddex /ddex/ 308
     uri strip_prefix /ddex
     reverse_proxy ddex:8926
