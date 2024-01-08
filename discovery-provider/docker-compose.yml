@@ -115,7 +115,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     ports:
-      - ${EXPOSE_ELASTICSEARCH:-127.0.0.1:9200}:9200
+      - ${EXPOSE_ELASTICSEARCH:-127.0.0.1:39200}:9200
     networks:
       - discovery-provider-network
     healthcheck:
