@@ -10,6 +10,11 @@ x-extra-hosts: &extra-hosts
     - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
+networks:
+  internal_network:
+    internal: true
+
+
 services:
   delete-chain:
     container_name: delete-chain
@@ -317,6 +322,8 @@ services:
     container_name: chain
     <<: *extra-hosts
     restart: unless-stopped
+    networks:
+      - internal_network
     healthcheck:
       test:
         [
@@ -339,8 +346,6 @@ services:
       - ./chain/NLog.config:/nethermind/NLog.config
       - /var/k8s/discovery-provider-chain/db/clique:/nethermind/nethermind_db/clique
       - /var/k8s/discovery-provider-chain/keystore:/nethermind/keystore
-    labels:
-      autoheal: "true"
     ports:
       - "30300:30300"
       - "30300:30300/udp"
