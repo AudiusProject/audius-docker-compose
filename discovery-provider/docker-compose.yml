@@ -10,11 +10,6 @@ x-extra-hosts: &extra-hosts
     - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
-networks:
-  internal_network:
-    internal: true
-
-
 services:
   delete-chain:
     container_name: delete-chain
@@ -350,6 +345,8 @@ services:
       - "30300:30300"
       - "30300:30300/udp"
       - "127.0.0.1:8545:8545"
+    networks:
+      - discovery-provider-network
     profiles:
       - chain
     logging:
@@ -492,6 +489,8 @@ services:
 
 networks:
   discovery-provider-network:
+  internal_network:
+    internal: true
 
 volumes:
   esdata:
