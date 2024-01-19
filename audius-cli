@@ -807,6 +807,13 @@ def pull_reset(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
+    log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
+    try:
+        # clear the previous auto-upgrade logs
+        open(log_file, "w").close()
+    except Exception as e:
+        print(f"Error while clearing the log file: {e}")
+
     try:
         ctx.forward(pull_reset)
         set_automatic_env(ctx)
