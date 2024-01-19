@@ -865,6 +865,32 @@ def upgrade(ctx, branch):
             ctx.invoke(launch_chain)
         else:
             cleanup_disc_containers(ctx)
+
+        run(
+            [
+                "docker",
+                "exec",
+                "server",
+                "curl",
+                "--max-time",
+                "10",
+                "http://ipv4.icanhazip.com"
+            ],
+        )
+
+        run(
+            [
+                "docker",
+                "exec",
+                "chain",
+                "curl",
+                "--max-time",
+                "10",
+                "http://ipv4.icanhazip.com"
+            ],
+        )
+
+
     finally:
         lock(ctx, "docker")
         prune()
