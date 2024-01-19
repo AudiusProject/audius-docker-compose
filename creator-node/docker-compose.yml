@@ -29,7 +29,7 @@ services:
       interval: 10s
       timeout: 5s
     ports:
-      - '127.0.0.1:5432:5432'
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -89,7 +89,7 @@ services:
       - creator-node-network
     ports:
       - "${MEDIORUM_PORT:-4000}:1991"
-      - 127.0.0.1:6060:6060
+      - "127.0.0.1:6060:6060"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -131,8 +131,8 @@ services:
     networks:
       - creator-node-network
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
