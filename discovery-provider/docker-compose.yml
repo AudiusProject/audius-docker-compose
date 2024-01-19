@@ -256,6 +256,9 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    volumes:
+      - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
+
 
   comms:
     image: audius/comms:${TAG:-d5c243182feea917bf02e12f7c90ffb96d8a53da}
