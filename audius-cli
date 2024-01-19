@@ -809,10 +809,9 @@ def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
     log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
     try:
-        # Open the file in 'w' mode which clears the file
+        # clear the previous auto-upgrade logs
         open(log_file, "w").close()
     except Exception as e:
-        # Handle exception if the file cannot be cleared or accessed
         print(f"Error while clearing the log file: {e}")
 
     try:
