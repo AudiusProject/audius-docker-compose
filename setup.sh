@@ -46,8 +46,7 @@ sudo mkdir -p /var/k8s
 sudo chown $(id -u):$(id -g) /var/k8s
 
 # audius-cli setup
-sudo apt install -y python3 python3-pip
-sudo python3 -m pip install -r requirements.txt
+sudo apt install -y python3 python3-pip python3-venv
 sudo ln -sf $PWD/audius-cli /usr/local/bin/audius-cli
 echo 'eval "$(_AUDIUS_CLI_COMPLETE=bash_source audius-cli)"' >>~/.bashrc
 touch creator-node/override.env
