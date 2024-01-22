@@ -5,7 +5,7 @@ x-extra-hosts: &extra-hosts
   extra_hosts:
     - "creator-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "discovery-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "identity-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "eth-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "acdc-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
