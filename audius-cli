@@ -807,6 +807,13 @@ def pull_reset(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
+    log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
+    try:
+        # clear the previous auto-upgrade logs
+        open(log_file, "w").close()
+    except Exception as e:
+        print(f"Error while clearing the log file: {e}")
+
     try:
         ctx.forward(pull_reset)
         set_automatic_env(ctx)
@@ -865,6 +872,34 @@ def upgrade(ctx, branch):
             ctx.invoke(launch_chain)
         else:
             cleanup_disc_containers(ctx)
+
+        run(
+            [
+                "docker",
+                "exec",
+                "server",
+                "curl",
+                "-s",
+                "--max-time",
+                "10",
+                "http://ipv4.icanhazip.com"
+            ],
+        )
+
+        run(
+            [
+                "docker",
+                "exec",
+                "chain",
+                "curl",
+                "-s",
+                "--max-time",
+                "10",
+                "http://ipv4.icanhazip.com"
+            ],
+        )
+
+
     finally:
         lock(ctx, "docker")
         prune()

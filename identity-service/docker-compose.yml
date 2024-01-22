@@ -3,12 +3,12 @@ version: "3.9"
 # used by audius-d devnet
 x-extra-hosts: &extra-hosts
   extra_hosts:
-    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "creator-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
   db:
@@ -32,7 +32,7 @@ services:
       - identity-service-network
 
   backend:
-    image: audius/identity-service:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/identity-service:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: server
     <<: *extra-hosts
     depends_on:

@@ -3,12 +3,12 @@ version: "3.9"
 # used by audius-d devnet
 x-extra-hosts: &extra-hosts
   extra_hosts:
-    - "creator-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "discovery-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "identity-1.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "eth-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "acdc-ganache.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
-    - "solana-test-validator.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "creator-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "discovery-1.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "identity.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "eth-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "acdc-ganache.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
+    - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
   delete-chain:
@@ -165,7 +165,7 @@ services:
       - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/relay:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -188,7 +188,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/discovery-provider:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     <<: *extra-hosts
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
@@ -218,7 +218,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/discovery-provider:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     <<: *extra-hosts
     restart: always
     mem_limit: 2.8g
@@ -260,7 +260,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/discovery-provider:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -293,6 +293,8 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    volumes:
+      - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
 
   exporter_linux:
     extends:
@@ -308,7 +310,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/comms:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -327,7 +329,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/es-indexer:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -344,7 +346,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/trpc:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -408,7 +410,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/healthz:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -433,7 +435,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -444,7 +446,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/uptime:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -459,7 +461,7 @@ services:
   # plugins
 
   ddex:
-    image: audius/ddex:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/ddex:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: ddex
     restart: unless-stopped
     environment:
@@ -472,7 +474,7 @@ services:
       - ddex
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/discovery-provider-notifications:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -493,7 +495,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-09b058c9a36f712d47881b669c82e49f984f3d45}
+    image: audius/sla-auditor:${TAG:-10a25da942b4c655b66071c209e1159d05338fb2}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
