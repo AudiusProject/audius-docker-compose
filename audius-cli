@@ -879,6 +879,7 @@ def upgrade(ctx, branch):
                 "exec",
                 "server",
                 "curl",
+                "-s",
                 "--max-time",
                 "10",
                 "http://ipv4.icanhazip.com"
@@ -891,6 +892,7 @@ def upgrade(ctx, branch):
                 "exec",
                 "chain",
                 "curl",
+                "-s",
                 "--max-time",
                 "10",
                 "http://ipv4.icanhazip.com"
