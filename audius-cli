@@ -919,7 +919,8 @@ def upgrade(ctx, branch):
             ).stdout.strip()
             print("IP from chain container: " + chain_curl_res)
             if server_curl_res and not chain_curl_res:
-                print("clear it")
+                clear_clique_db()
+                ctx.invoke(launch_chain)
 
         else:
             cleanup_disc_containers(ctx)
