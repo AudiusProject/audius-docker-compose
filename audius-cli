@@ -158,6 +158,19 @@ def prune():
         )
 
 
+def clear_clique_db():
+    print("Resetting chain")
+    run(
+        [
+            "docker",
+            "rm",
+            "--force",
+            "chain",
+        ],
+    )
+    clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
+    run(["sudo", "rm", "-rf", clique_db_path])
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -870,34 +883,45 @@ def upgrade(ctx, branch):
 
         if service == "discovery-provider":
             ctx.invoke(launch_chain)
+            server_curl_res = run(
+                [
+                    "docker",
+                    "exec",
+                    "server",
+                    "curl",
+                    "-s",
+                    "--max-time",
+                    "10",
+                    "http://ipv4.icanhazip.com"
+                ],
+                stdout=subprocess.PIPE,  # This tells subprocess to capture standard output
+                stderr=subprocess.PIPE,  # This tells subprocess to capture standard error
+            text=True  # This makes sure the output is in text (string) format, not bytes
+            ).stdout.strip()
+            print("IP from server container: " + server_curl_res)
+
+            chain_curl_res = run(
+                [
+                    "docker",
+                    "exec",
+                    "chain",
+                    "curl",
+                    "-s",
+                    "--max-time",
+                    "10",
+                    "http://ipv4.icanhazip.com"
+                ],
+                stdout=subprocess.PIPE,  # This tells subprocess to capture standard output
+                stderr=subprocess.PIPE,  # This tells subprocess to capture standard error
+                text=True  # This makes sure the output is in text (string) format, not bytes
+            ).stdout.strip()
+            print("IP from chain container: " + chain_curl_res)
+            if server_curl_res and not chain_curl_res:
+                print("clear it")
+
         else:
             cleanup_disc_containers(ctx)
 
-        run(
-            [
-                "docker",
-                "exec",
-                "server",
-                "curl",
-                "-s",
-                "--max-time",
-                "10",
-                "http://ipv4.icanhazip.com"
-            ],
-        )
-
-        run(
-            [
-                "docker",
-                "exec",
-                "chain",
-                "curl",
-                "-s",
-                "--max-time",
-                "10",
-                "http://ipv4.icanhazip.com"
-            ],
-        )
 
 
     finally:
@@ -1195,18 +1219,7 @@ def launch_chain(ctx):
         prev_spec_data = json.load(open(spec_output))
         prev_network_id = prev_spec_data["params"]["networkID"]
         if prev_network_id != network_id:
-            print("Resetting chain")
-            run(
-                [
-                    "docker",
-                    "rm",
-                    "--force",
-                    "chain",
-                ],
-            )
-            clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
-            run(["sudo", "rm", "-rf", clique_db_path])
-
+            clear_clique_db()
     spec_data["genesis"]["extraData"] = extra_data
     with open(spec_output, "w") as f:
         json.dump(spec_data, f, ensure_ascii=False, indent=2)

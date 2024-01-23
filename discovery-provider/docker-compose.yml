@@ -348,7 +348,7 @@ services:
       - "30300:30300/udp"
       - "127.0.0.1:8545:8545"
     networks:
-      - discovery-provider-network
+      - no-internet
     profiles:
       - chain
     logging:
@@ -503,7 +503,10 @@ services:
 
 networks:
   discovery-provider-network:
-
+  no-internet:
+    driver: bridge
+    internal: true  # This prevents the containers from accessing the internet
+    
 volumes:
   esdata:
   caddy_data:
