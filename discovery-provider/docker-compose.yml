@@ -410,18 +410,30 @@ services:
 
   # plugins
 
-  ddex:
+  # === ddex ===
+  
+  ddex-web:
     image: audius/ddex:${TAG:-d5e07754095c01765ca3eb564fca710163a5f19d}
-    container_name: ddex
+    container_name: ddex-web
     restart: unless-stopped
     environment:
       - NODE_ENV=${NETWORK:-prod}
+      - DDEX_PORT=3000
     env_file:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health_check || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
     profiles:
       - ddex
+
+  # === end ddex ===
 
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-d5e07754095c01765ca3eb564fca710163a5f19d}
