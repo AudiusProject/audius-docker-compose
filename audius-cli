@@ -159,17 +159,17 @@ def prune():
 
 
 def clear_clique_db():
-    print("Resetting chain")
-    run(
-        [
-            "docker",
-            "rm",
-            "--force",
-            "chain",
-        ],
-    )
-    clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
     try:
+        print("Resetting chain")
+        run(
+            [
+                "docker",
+                "rm",
+                "--force",
+                "chain",
+            ],
+        )
+        clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
         run(["sudo", "rm", "-rf", clique_db_path], timeout=60)
     except Exception as e:
         print(f"Error in removing clique db: {e}")
