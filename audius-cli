@@ -670,60 +670,6 @@ def get_config(ctx, service):
 
 @cli.command()
 @click.option("--unset", is_flag=True)
-@click.option("-y", "--yes", is_flag=True)
-@click.argument("tag", required=False)
-@click.pass_context
-def set_tag(ctx, unset, yes, tag):
-    """Set the commit tag"""
-    if not unset and tag is None:
-        tag = click.prompt(click.style("Tag", bold=True))
-
-    if not unset:
-        try:
-            for commit in json.load(
-                urllib.request.urlopen(
-                    f"https://api.github.com/repos/AudiusProject/audius-protocol/commits?sha={tag}&per_page=10"
-                )
-            ):
-                short_message = commit["commit"]["message"].split("\n")[0]
-                click.echo(
-                    f"{click.style(commit['sha'][:8], bold=True, fg='yellow')}: "
-                    f"[{click.style(commit['commit']['author']['name'], bold=True, fg='blue')}] "
-                    f"{short_message}"
-                )
-        except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
-            click.secho("Failed to get commit messages", fg="red")
-
-        if not yes:
-            click.confirm(
-                click.style(
-                    "Do you want to continue? This will disable auto-upgrade if it's enabled.",
-                    bold=True,
-                ),
-                abort=True,
-                default=True,
-            )
-
-    if not unset:
-        click.echo(
-            "Disabling auto-upgrade (if enabled) in order to use a different tag..."
-        )
-        ctx.invoke(auto_upgrade, remove=True)
-
-    logging.info(f"audius-cli set-tag tag={tag!r}")
-    for service in SERVICES:
-        key = "TAG"
-        env_file = ctx.obj["manifests_path"] / service / ".env"
-        if unset:
-            logging.info(f"> audius-cli set-tag unset service={service!r}")
-            dotenv.unset_key(env_file, key)
-        else:
-            logging.info(f"> audius-cli set-tag service={service!r} tag={tag!r}")
-            dotenv.set_key(env_file, key, tag)
-
-
-@cli.command()
-@click.option("--unset", is_flag=True)
 @click.argument("service", required=True)
 @click.argument("path", type=click.Path(), required=False)
 @click.pass_context
