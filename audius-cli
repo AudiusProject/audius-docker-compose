@@ -896,11 +896,11 @@ def upgrade(ctx, branch):
                     "10",
                     "http://ipv4.icanhazip.com"
                 ],
-                stdout=subprocess.PIPE,  # This tells subprocess to capture standard output
-                stderr=subprocess.PIPE,  # This tells subprocess to capture standard error
-            text=True  # This makes sure the output is in text (string) format, not bytes
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            text=True
             ).stdout.strip()
-            print("IP from server container: " + server_curl_res)
+            print("IP from server: " + server_curl_res)
 
             chain_curl_res = run(
                 [
@@ -913,12 +913,13 @@ def upgrade(ctx, branch):
                     "10",
                     "http://ipv4.icanhazip.com"
                 ],
-                stdout=subprocess.PIPE,  # This tells subprocess to capture standard output
-                stderr=subprocess.PIPE,  # This tells subprocess to capture standard error
-                text=True  # This makes sure the output is in text (string) format, not bytes
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, 
+                text=True
             ).stdout.strip()
-            print("IP from chain container: " + chain_curl_res)
+            print("IP from chain: " + chain_curl_res)
             if server_curl_res and not chain_curl_res:
+                # Clear and recreate chain if unable to access internet
                 clear_clique_db()
                 ctx.invoke(launch_chain)
 
