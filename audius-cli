@@ -876,6 +876,8 @@ def upgrade(ctx, branch):
                 ctx.obj["manifests_path"] / service,
                 *plugins,
                 "up",
+                "--force-recreate",
+                "vector",
                 "--remove-orphans",
                 "-d",
             ],
