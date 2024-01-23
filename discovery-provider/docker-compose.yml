@@ -128,7 +128,7 @@ services:
       timeout: 5s
 
   relay:
-    image: audius/relay:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/relay:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -151,7 +151,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/discovery-provider:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     <<: *extra-hosts
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
@@ -181,7 +181,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/discovery-provider:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     <<: *extra-hosts
     restart: always
     mem_limit: 2.8g
@@ -223,7 +223,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/discovery-provider:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -260,7 +260,7 @@ services:
       - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
 
   comms:
-    image: audius/comms:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/comms:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -279,7 +279,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/es-indexer:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -296,7 +296,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/trpc:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -360,7 +360,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/healthz:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -385,7 +385,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -396,7 +396,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/uptime:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -413,7 +413,7 @@ services:
   # === ddex ===
   
   ddex-web:
-    image: audius/ddex:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/ddex:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: ddex-web
     restart: unless-stopped
     environment:
@@ -436,7 +436,7 @@ services:
   # === end ddex ===
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/discovery-provider-notifications:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -457,7 +457,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-f300c707ebf886048816f18c0bb0738875e410eb}
+    image: audius/sla-auditor:${TAG:-2245cb9676bc25903c28fc630a487583ad885ecd}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
