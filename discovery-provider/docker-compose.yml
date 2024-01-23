@@ -412,9 +412,9 @@ services:
 
   # === ddex ===
   
-  ddex_web:
+  ddex-web:
     image: audius/ddex:${TAG:-d5e07754095c01765ca3eb564fca710163a5f19d}
-    container_name: ddex_web
+    container_name: ddex-web
     restart: unless-stopped
     environment:
       - NODE_ENV=${NETWORK:-prod}
