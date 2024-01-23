@@ -169,7 +169,10 @@ def clear_clique_db():
         ],
     )
     clique_db_path = "/var/k8s/discovery-provider-chain/db/clique/"
-    run(["sudo", "rm", "-rf", clique_db_path])
+    try:
+        run(["sudo", "rm", "-rf", clique_db_path], timeout=60)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 @click.group()
 @click.pass_context
@@ -820,6 +823,7 @@ def pull_reset(ctx, branch):
 @click.pass_context
 def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
+    user_input = input("Enter your data: ")
     log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
     try:
         # clear the previous auto-upgrade logs
