@@ -425,6 +425,11 @@ services:
       - discovery-provider-network
     ports:
       - "3000:3000"
+    healthcheck:
+      test: curl --fail -I http://localhost:3000/api/health_check || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
     profiles:
       - ddex
 
