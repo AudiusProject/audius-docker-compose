@@ -53,6 +53,8 @@ EXTRA_SEAL = "000000000000000000000000000000000000000000000000000000000000000000
 PG_UPGRADE_TO_VERSION = "audius_pg_upgrade_to_version"
 PG15_UPGRADE_STARTED = "audius_started_upgrade_to_pg15"
 PG15_UPGRADE_COMPLETE = "audius_completed_upgrade_to_pg15"
+PG15_UPGRADE_ROLLOUT_NUM = "audius_pg_upgrade_rollout_num"
+PG15_UPGRADE_ROLLOUT_MAX = 10
 
 service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage", "dev"])
@@ -879,6 +881,19 @@ def upgrade(ctx, branch):
                 ctx.obj["manifests_path"] / service,
                 *plugins,
                 "up",
+                "--remove-orphans",
+                "-d",
+            ],
+        )
+
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                *plugins,
+                "up",
                 "--force-recreate",
                 "vector",
                 "--remove-orphans",
@@ -984,15 +999,29 @@ def cleanup_disc_containers(ctx):
 @click.pass_context
 def upgrade_disc_postgres(ctx, branch):
     """Upgrades postgres from 11 to 15 if env var is set"""
-    # ensure "audius_pg_upgrade_to_version" from override.env is reflected in .env because docker compose only sees .env
     env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
     override_env = get_override_path(ctx, "discovery-provider")
+    pg_upgrade_complete = dotenv.get_key(override_env, PG15_UPGRADE_COMPLETE)
     pg_upgrade_to_version = dotenv.get_key(override_env, PG_UPGRADE_TO_VERSION)
+
+    # assign random num between 1 and 60 if not set (there are ~60 DNs in prod)
+    pg_upgrade_rollout_num_str = dotenv.get_key(override_env, PG15_UPGRADE_ROLLOUT_NUM)
+    if pg_upgrade_rollout_num_str:
+        pg_upgrade_rollout_num = int(pg_upgrade_rollout_num_str)
+    else:
+        pg_upgrade_rollout_num = random.randint(1, 60)
+        dotenv.set_key(override_env, PG15_UPGRADE_ROLLOUT_NUM, str(pg_upgrade_rollout_num))
+
+    # upgrade postgres if rollout_num < PG15_UPGRADE_ROLLOUT_MAX
+    if pg_upgrade_rollout_num < PG15_UPGRADE_ROLLOUT_MAX:
+        pg_upgrade_to_version = "15.5-bookworm"
+        dotenv.set_key(override_env, PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
+
+    # ensure "audius_pg_upgrade_to_version" from override.env is reflected in .env because docker compose only sees .env
     if pg_upgrade_to_version:
       dotenv.set_key(env_file, PG_UPGRADE_TO_VERSION, pg_upgrade_to_version)
     else:
       dotenv.unset_key(env_file, PG_UPGRADE_TO_VERSION)
-    pg_upgrade_complete = dotenv.get_key(override_env, PG15_UPGRADE_COMPLETE)
 
     # upgrade postgres from v11 to v15 (gated by env var)
     if pg_upgrade_to_version == "15.5-bookworm" and pg_upgrade_complete != "true":
