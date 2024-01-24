@@ -881,6 +881,19 @@ def upgrade(ctx, branch):
                 ctx.obj["manifests_path"] / service,
                 *plugins,
                 "up",
+                "--remove-orphans",
+                "-d",
+            ],
+        )
+
+        run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                ctx.obj["manifests_path"] / service,
+                *plugins,
+                "up",
                 "--force-recreate",
                 "vector",
                 "--remove-orphans",
