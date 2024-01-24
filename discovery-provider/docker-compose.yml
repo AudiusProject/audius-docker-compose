@@ -149,6 +149,18 @@ services:
     ports:
       - "6001:6001"
 
+  openresty:
+    image: audius/discovery-provider-openresty:${TAG:-c3c214844039604576033214631ae5840b0602d6}
+    container_name: openresty
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    ports:
+      - "5000:5000"
+
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-439f10bcdf08b4bdc9b1457044398317290a2ba0}
@@ -167,7 +179,7 @@ services:
     labels:
       autoheal: "true"
     ports:
-      - "5000:5000"
+      - "3000:3000"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
