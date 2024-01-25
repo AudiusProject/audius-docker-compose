@@ -461,7 +461,7 @@ services:
     ports:
       - "27017:27017"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/ddex --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet --username mongo --password mongo --authenticationDatabase admin localhost:27017/ddex
       interval: 30s
       timeout: 10s
       retries: 5
