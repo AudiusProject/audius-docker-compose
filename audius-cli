@@ -836,15 +836,11 @@ def upgrade(ctx, branch):
         ctx.forward(pull_reset)
         set_automatic_env(ctx)
 
-        # don't interrupt a postgres upgrade
+        lock(ctx, "docker")
+
         identity_override_env = get_override_path(ctx, "identity-service")
         creator_override_env = get_override_path(ctx, "creator-node")
         disc_override_env = get_override_path(ctx, "discovery-provider")
-        if disc_override_env.exists() and dotenv.get_key(disc_override_env, PG15_UPGRADE_STARTED) == "true":
-            click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
-            sys.exit(1)
-
-        lock(ctx, "docker")
         
         # determine service type based on override.env location and env vars in it
         service = ""
@@ -857,7 +853,7 @@ def upgrade(ctx, branch):
         else:
             click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
             sys.exit(1)
-        
+
         run(
             [
                 "docker",
@@ -871,6 +867,7 @@ def upgrade(ctx, branch):
         plugins = get_registered_plugins(ctx, service)
 
         if service == "discovery-provider":
+            lock(ctx, "pg_upgrade")
             ctx.forward(upgrade_disc_postgres)
 
         run(
@@ -1001,7 +998,7 @@ def upgrade_disc_postgres(ctx, branch):
     """Upgrades postgres from 11 to 15 if env var is set"""
     env_file = ctx.obj["manifests_path"] / "discovery-provider" / ".env"
     override_env = get_override_path(ctx, "discovery-provider")
-    pg_upgrade_complete = dotenv.get_key(override_env, PG15_UPGRADE_COMPLETE)
+    pg_upgrade_complete = dotenv.get_key(env_file, PG15_UPGRADE_COMPLETE)
     pg_upgrade_to_version = dotenv.get_key(override_env, PG_UPGRADE_TO_VERSION)
 
     # assign random num between 1 and 60 if not set (there are ~60 DNs in prod)
@@ -1023,6 +1020,10 @@ def upgrade_disc_postgres(ctx, branch):
     else:
       dotenv.unset_key(env_file, PG_UPGRADE_TO_VERSION)
 
+    if dotenv.get_key(env_file, PG15_UPGRADE_STARTED) == "true":
+        click.secho("Postgres upgrade in progress. Please wait for it to complete", fg="yellow")
+        sys.exit(1)
+
     # upgrade postgres from v11 to v15 (gated by env var)
     if pg_upgrade_to_version == "15.5-bookworm" and pg_upgrade_complete != "true":
         click.secho("Starting postgres upgrade from v11.22 to v15.5", fg="yellow")
@@ -1037,7 +1038,7 @@ def upgrade_disc_postgres(ctx, branch):
             click.secho("Aborting because the db is not containerized", fg="red")
             return
 
-        dotenv.set_key(override_env, PG15_UPGRADE_STARTED, "true")
+        dotenv.set_key(env_file, PG15_UPGRADE_STARTED, "true")
 
         # stop containers that use the db
         click.secho("Stopping containers and deleting the existing database", fg="yellow")
@@ -1172,9 +1173,21 @@ def upgrade_disc_postgres(ctx, branch):
             print(result.stderr)
             
             # make sure we don't re-run this upgrade in the future
-            dotenv.set_key(override_env, PG15_UPGRADE_COMPLETE, "true")
-            dotenv.unset_key(override_env, PG15_UPGRADE_STARTED)
-            click.secho("Upgrade complete!", fg="green")
+            dotenv.set_key(env_file, PG15_UPGRADE_COMPLETE, "true")
+            dotenv.unset_key(env_file, PG15_UPGRADE_STARTED)
+
+            # ensure data is written to disk with delay to ensure file system caches are updated
+            with open(env_file, 'r+') as file:
+                os.fsync(file.fileno())
+            time.sleep(1)
+
+            # read-after-write verification to be extra sure
+            if dotenv.get_key(env_file, PG15_UPGRADE_COMPLETE) != "true":
+                raise Exception("Postgres upgrade failed to write PG15_UPGRADE_COMPLETE to .env file.")
+            if dotenv.get_key(env_file, PG15_UPGRADE_STARTED) != None:
+                raise Exception("Postgres upgrade failed to unset PG15_UPGRADE_STARTED in .env file.")
+
+            click.secho("Postgres upgrade complete!", fg="green")
         except subprocess.CalledProcessError as e:
             click.secho(f"An error occurred: {e}", fg="red")
             print(e.stderr)
