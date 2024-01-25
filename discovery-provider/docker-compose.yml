@@ -428,20 +428,53 @@ services:
     image: audius/ddex:${TAG:-0bdf871be76f1fbb3960ad4d2ada68b25bb6e8f9}
     container_name: ddex-web
     restart: unless-stopped
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
     environment:
       - NODE_ENV=${NETWORK:-prod}
-      - DDEX_PORT=3000
+      - DDEX_PORT=9000
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin
     env_file:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
     ports:
-      - "3000:3000"
+      - "9000:9000"
     healthcheck:
-      test: curl --fail -I http://localhost:3000/api/health_check || exit 1
+      test: curl --fail -I http://localhost:9000/api/health_check || exit 1
       interval: 15s
       timeout: 5s
       retries: 5
+    profiles:
+      - ddex
+
+  ddex-mongo:
+    container_name: ddex-mongo
+    image: mongo:6.0.13
+    restart: always
+    volumes:
+      - /var/k8s/ddex-mongo-db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet --username $MONGO_INITDB_ROOT_USERNAME --password $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin localhost:27017/ddex
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    networks:
+      - discovery-provider-network
     profiles:
       - ddex
 
