@@ -165,7 +165,7 @@ services:
       - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/relay:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -187,7 +187,7 @@ services:
       - "6001:6001"
 
   openresty:
-    image: audius/discovery-provider-openresty:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/discovery-provider-openresty:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -200,7 +200,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/discovery-provider:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     <<: *extra-hosts
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
@@ -230,7 +230,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/discovery-provider:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     <<: *extra-hosts
     restart: always
     mem_limit: 2.8g
@@ -272,7 +272,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/discovery-provider:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -322,7 +322,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/comms:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -341,7 +341,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/es-indexer:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -358,7 +358,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/trpc:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -422,7 +422,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/healthz:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -447,7 +447,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -458,7 +458,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/uptime:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -475,7 +475,7 @@ services:
   # === ddex ===
   
   ddex-web:
-    image: audius/ddex:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/ddex:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: ddex-web
     restart: unless-stopped
     environment:
@@ -498,7 +498,7 @@ services:
   # === end ddex ===
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/discovery-provider-notifications:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -519,7 +519,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-e8d15311bb3978c988ef672ceb6b46fc8f6d990d}
+    image: audius/sla-auditor:${TAG:-f22c76b69f5d644eb46dda52a9a0aabd56d73178}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
