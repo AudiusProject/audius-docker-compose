@@ -433,16 +433,16 @@ services:
         condition: service_healthy
     environment:
       - NODE_ENV=${NETWORK:-prod}
-      - DDEX_PORT=3001
+      - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin
     env_file:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
     ports:
-      - "3001:3001"
+      - "9000:9000"
     healthcheck:
-      test: curl --fail -I http://localhost:3001/api/health_check || exit 1
+      test: curl --fail -I http://localhost:9000/api/health_check || exit 1
       interval: 15s
       timeout: 5s
       retries: 5
