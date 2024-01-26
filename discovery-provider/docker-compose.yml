@@ -235,7 +235,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-bd56e2bfcbc8ac26c83dfb2061a0f4493a3d82c7}
+    image: audius/discovery-provider:1bcc73798be077e57703a40acdcd488676354cff
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
