@@ -54,7 +54,7 @@ PG_UPGRADE_TO_VERSION = "audius_pg_upgrade_to_version"
 PG15_UPGRADE_STARTED = "audius_started_upgrade_to_pg15"
 PG15_UPGRADE_COMPLETE = "audius_completed_upgrade_to_pg15"
 PG15_UPGRADE_ROLLOUT_NUM = "audius_pg_upgrade_rollout_num"
-PG15_UPGRADE_ROLLOUT_MAX = 10
+PG15_UPGRADE_ROLLOUT_MAX = 30
 
 service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage", "dev"])
