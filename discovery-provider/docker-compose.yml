@@ -434,7 +434,7 @@ services:
     environment:
       - NODE_ENV=${NETWORK:-prod}
       - DDEX_PORT=9000
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
       - ${OVERRIDE_PATH:-override.env}
     networks:
@@ -446,22 +446,80 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-crawler:
+    image: audius/ddex-ingester:${TAG:-6808b342379c4e31f365effa187d9327e0b5c4e8}
+    container_name: ddex-crawler
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service crawler
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-indexer:
+    image: audius/ddex-ingester:${TAG:-6808b342379c4e31f365effa187d9327e0b5c4e8}
+    container_name: ddex-indexer
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service indexer
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-parser:
+    image: audius/ddex-ingester:${TAG:-6808b342379c4e31f365effa187d9327e0b5c4e8}
+    container_name: ddex-parser
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service parser
+    networks:
+      - discovery-provider-network
     profiles:
       - ddex
 
   ddex-mongo:
-    container_name: ddex-mongo
     image: mongo:6.0.13
+    container_name: ddex-mongo
     restart: always
     volumes:
       - /var/k8s/ddex-mongo-db:/data/db
+      - mongo-keyfile:/etc/mongo-keyfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     ports:
       - "27017:27017"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet --username $MONGO_INITDB_ROOT_USERNAME --password $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin localhost:27017/ddex
+      test: >
+        bash -c 'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "
+          var ping = db.runCommand({ping: 1});
+          if (!ping.ok) {
+            exit(1);  // Unhealthy: MongoDB server not responding
+          }
+          var result = rs.status();
+          if (result.ok && result.set) {
+            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
+          } else {
+            exit(1);  // Unhealthy: Replica set not initiated or not OK
+          }
+        "' localhost:27017/ddex
       interval: 30s
       timeout: 10s
       retries: 5
