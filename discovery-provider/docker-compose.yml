@@ -165,7 +165,7 @@ services:
       - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/relay:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -187,7 +187,7 @@ services:
       - "6001:6001"
 
   openresty:
-    image: audius/discovery-provider-openresty:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/discovery-provider-openresty:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -200,7 +200,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/discovery-provider:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     <<: *extra-hosts
     restart: always
     mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
@@ -230,7 +230,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/discovery-provider:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     <<: *extra-hosts
     restart: always
     mem_limit: 2.8g
@@ -272,7 +272,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/discovery-provider:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -322,7 +322,7 @@ services:
       - discovery-provider-network
 
   comms:
-    image: audius/comms:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/comms:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -341,7 +341,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/es-indexer:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -358,7 +358,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/trpc:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -422,7 +422,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/healthz:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -447,7 +447,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -458,7 +458,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/uptime:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -475,7 +475,7 @@ services:
   # === ddex ===
   
   ddex-web:
-    image: audius/ddex:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/ddex-web:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: ddex-web
     restart: unless-stopped
     depends_on:
@@ -484,7 +484,7 @@ services:
     environment:
       - NODE_ENV=${NETWORK:-prod}
       - DDEX_PORT=9000
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
       - ${OVERRIDE_PATH:-override.env}
     networks:
@@ -496,22 +496,80 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-crawler:
+    image: audius/ddex-ingester:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
+    container_name: ddex-crawler
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service crawler
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-indexer:
+    image: audius/ddex-ingester:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
+    container_name: ddex-indexer
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service indexer
+    networks:
+      - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-parser:
+    image: audius/ddex-ingester:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
+    container_name: ddex-parser
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service parser
+    networks:
+      - discovery-provider-network
     profiles:
       - ddex
 
   ddex-mongo:
-    container_name: ddex-mongo
     image: mongo:6.0.13
+    container_name: ddex-mongo
     restart: always
     volumes:
       - /var/k8s/ddex-mongo-db:/data/db
+      - ./ddex/mongo-keyfile:/etc/mongo-keyfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     ports:
       - "27017:27017"
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet --username $MONGO_INITDB_ROOT_USERNAME --password $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin localhost:27017/ddex
+      test: >
+        bash -c 'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "
+          var ping = db.runCommand({ping: 1});
+          if (!ping.ok) {
+            exit(1);  // Unhealthy: MongoDB server not responding
+          }
+          var result = rs.status();
+          if (result.ok && result.set) {
+            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
+          } else {
+            exit(1);  // Unhealthy: Replica set not initiated or not OK
+          }
+        "' localhost:27017/ddex
       interval: 30s
       timeout: 10s
       retries: 5
@@ -531,7 +589,7 @@ services:
   # === end ddex ===
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/discovery-provider-notifications:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -552,7 +610,7 @@ services:
       - "6000:6000"
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-501552bcdbdf172dc7857fa290ab6f6700a889cc}
+    image: audius/sla-auditor:${TAG:-b801e0b2f32e255b5977f765fa0e8d23a907d7a6}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
