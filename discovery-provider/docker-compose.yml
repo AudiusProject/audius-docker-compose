@@ -328,7 +328,7 @@ services:
 
   chain:
     image: audius/nethermind:1.14.3
-    container_name: chain 
+    container_name: chain
     <<: *extra-hosts
     restart: unless-stopped
     healthcheck:
