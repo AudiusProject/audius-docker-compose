@@ -499,7 +499,7 @@ services:
     restart: always
     volumes:
       - /var/k8s/ddex-mongo-db:/data/db
-      - ddex/mongo-keyfile:/etc/mongo-keyfile
+      - ./ddex/mongo-keyfile:/etc/mongo-keyfile
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
