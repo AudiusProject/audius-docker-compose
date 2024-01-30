@@ -425,7 +425,7 @@ services:
   # === ddex ===
   
   ddex-web:
-    image: audius/ddex:${TAG:-4de2102b75889ccbff0e841a04ebce29383b66db}
+    image: audius/ddex-web:${TAG:-4de2102b75889ccbff0e841a04ebce29383b66db}
     container_name: ddex-web
     restart: unless-stopped
     depends_on:
