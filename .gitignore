@@ -12,6 +12,9 @@ identity-service/.env
 discovery-provider/chain/spec.json
 discovery-provider/chain/static-nodes.json
 
-#old utilities
+# ddex
+discovery-provider/ddex/mongo-keyfile
+
+# old utilities
 sp-utilities/node_modules/*
 utilities/node_modules/*
