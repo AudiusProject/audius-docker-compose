@@ -11,21 +11,9 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
-  delete-chain:
-    container_name: delete-chain
-    image: alpine:latest
-    command: >
-      sh -c "rm -rf /data/discovery-provider-chain && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
-    volumes:
-      - /var/k8s:/data
-    networks:
-      - discovery-provider-network
-    profiles:
-      - delete-chain
-
   db:
     container_name: postgres
-    image: postgres:${audius_pg_upgrade_to_version:-11.22-bookworm}
+    image: postgres:15.5
     shm_size: 2g
     restart: always
     entrypoint: >
@@ -57,18 +45,6 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
-
-  delete-db:
-    container_name: delete-db
-    image: alpine:latest
-    command: >
-      sh -c "rm -rf /data/* && echo 'Deletion completed' || (echo 'Error during deletion' >&2; exit 1)"
-    volumes:
-      - /var/k8s/discovery-provider-db:/data
-    networks:
-      - discovery-provider-network
-    profiles:
-      - delete-db
 
   optimize-db:
     container_name: optimize-db
@@ -446,8 +422,6 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    networks:
-      - discovery-provider-network
     profiles:
       - ddex
 
