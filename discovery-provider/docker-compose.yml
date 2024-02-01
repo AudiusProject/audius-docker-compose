@@ -142,7 +142,7 @@ services:
     image: audius/discovery-provider:${TAG:-f3ebb3bdb5ac1dbdf3354274cb8b736ce337c818}
     <<: *extra-hosts
     restart: always
-    mem_limit: "${SERVER_MEM_LIMIT:-16000000000}"
+    mem_limit: 8g
     depends_on:
       db:
         condition: service_healthy
@@ -172,7 +172,7 @@ services:
     image: audius/discovery-provider:${TAG:-f3ebb3bdb5ac1dbdf3354274cb8b736ce337c818}
     <<: *extra-hosts
     restart: always
-    mem_limit: 2.8g
+    mem_limit: 8g
     depends_on:
       db:
         condition: service_healthy
@@ -399,7 +399,7 @@ services:
   # plugins
 
   # === ddex ===
-  
+
   ddex-web:
     image: audius/ddex-web:${TAG:-f3ebb3bdb5ac1dbdf3354274cb8b736ce337c818}
     container_name: ddex-web
