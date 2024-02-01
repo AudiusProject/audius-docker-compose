@@ -1031,6 +1031,8 @@ def launch_chain(ctx):
             "compose",
             "--env-file",
             get_override_path(ctx, "discovery-provider"),
+            "--env-file",
+            env,
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
