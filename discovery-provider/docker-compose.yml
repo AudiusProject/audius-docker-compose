@@ -414,8 +414,6 @@ services:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
       - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
     ports:
       - "9000:9000"
     healthcheck:
@@ -423,6 +421,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - discovery-provider-network
     profiles:
       - ddex
 
@@ -465,6 +465,28 @@ services:
     entrypoint: ./ingester --service parser
     networks:
       - discovery-provider-network
+    profiles:
+      - ddex
+
+  ddex-publisher:
+    image: audius/ddex-publisher:${TAG:-8b5eda3b4c5728c0ac79f900ec8c73c16e9d4033}
+    container_name: ddex-publisher
+    environment:
+      - NODE_ENV=${NETWORK:-prod}
+      - DDEX_PORT=9001
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    ports:
+      - "9001:9001"
+    healthcheck:
+      test: curl --fail -I http://localhost:9001/api/health_check || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ddex-network
     profiles:
       - ddex
 
