@@ -469,7 +469,7 @@ services:
       - ddex
 
   ddex-publisher:
-    image: audius/ddex-publisher:${TAG:-6808b342379c4e31f365effa187d9327e0b5c4e8}
+    image: audius/ddex-publisher:${TAG:-8b5eda3b4c5728c0ac79f900ec8c73c16e9d4033}
     container_name: ddex-publisher
     environment:
       - NODE_ENV=${NETWORK:-prod}
