@@ -322,6 +322,7 @@ services:
       # Because the env_file is generated dynamically, default to blank string if not set
       # otherwise we will always see a warning.
       - NETHERMIND_KEYSTORECONFIG_TESTNODEKEY=${audius_delegate_private_key:-}
+      - NETHERMIND_DISCOVERYCONFIG_BOOTNODES=${audius_static_nodes:-}
     volumes:
       - ./chain/spec.json:/config/spec.json
       - ./chain/static-nodes.json:/nethermind/Data/static-nodes.json
