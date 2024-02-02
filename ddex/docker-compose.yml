@@ -6,6 +6,7 @@ services:
     container_name: caddy
     restart: unless-stopped
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - ddex-network
@@ -29,6 +30,7 @@ services:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     healthcheck:
       test: curl --fail -I http://localhost:9000/api/health_check || exit 1
