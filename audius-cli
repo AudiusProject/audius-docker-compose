@@ -398,7 +398,7 @@ def launch(ctx, service, seed, chain, yes):
 
     disc_override_env = get_override_path(ctx, "discovery-provider")
     if disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
-        ctx.forward(launch_only_plugin)
+        launch_only_plugin(ctx)
         return
 
     try:
@@ -525,7 +525,7 @@ def restart(ctx, service, containers):
     if disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
         services = [service]
         ctx.forward(down)
-        ctx.forward(launch_only_plugin)
+        launch_only_plugin(ctx)
         return
 
     services = [service]
@@ -856,7 +856,7 @@ def upgrade(ctx, branch):
         elif identity_override_env.exists() and dotenv.get_key(identity_override_env, "ethOwnerWallet"):
             service = "identity-service"
         elif disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
-            ctx.forward(launch_only_plugin)
+            launch_only_plugin(ctx)
             return
         elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
             service = "discovery-provider"

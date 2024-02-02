@@ -486,7 +486,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ddex-network
+      - discovery-provider-network
     profiles:
       - ddex
 
