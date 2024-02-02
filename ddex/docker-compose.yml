@@ -1,0 +1,136 @@
+version: "3.9"
+
+services:
+  ddex-web:
+    image: audius/ddex-web:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
+    container_name: ddex-web
+    restart: unless-stopped
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=${NETWORK:-prod}
+      - DDEX_PORT=9000
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: curl --fail -I http://localhost:9000/api/health_check || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ddex-network
+
+  ddex-crawler:
+    image: audius/ddex-ingester:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
+    container_name: ddex-crawler
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service crawler
+    networks:
+      - ddex-network
+
+  ddex-indexer:
+    image: audius/ddex-ingester:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
+    container_name: ddex-indexer
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service indexer
+    networks:
+      - ddex-network
+
+  ddex-parser:
+    image: audius/ddex-ingester:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
+    container_name: ddex-parser
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    entrypoint: ./ingester --service parser
+    networks:
+      - ddex-network
+
+  ddex-publisher:
+    image: audius/ddex-publisher:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
+    container_name: ddex-publisher
+    environment:
+      - NODE_ENV=${NETWORK:-prod}
+      - DDEX_PORT=9001
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    ports:
+      - "9001:9001"
+    healthcheck:
+      test: curl --fail -I http://localhost:9001/api/health_check || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ddex-network
+
+  ddex-mongo:
+    image: mongo:6.0.13
+    container_name: ddex-mongo
+    restart: always
+    volumes:
+      - /var/k8s/ddex-mongo-db:/data/db
+      - ./mongo-keyfile:/etc/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: >
+        bash -c 'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "
+          var ping = db.runCommand({ping: 1});
+          if (!ping.ok) {
+            exit(1);  // Unhealthy: MongoDB server not responding
+          }
+          var result = rs.status();
+          if (result.ok && result.set) {
+            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
+          } else {
+            exit(1);  // Unhealthy: Replica set not initiated or not OK
+          }
+        "' localhost:27017/ddex
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    networks:
+      - ddex-network
+  
+  vector:
+    extends:
+      file: ../common-services.yml
+      service: vector
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - ddex-network
+
+
+networks:
+  ddex-network:

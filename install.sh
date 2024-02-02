@@ -9,7 +9,7 @@ then
 fi
 
 while read -p "Service to install (creator-node, discovery-provider): "; do
-    if [[ $REPLY =~ ^(creator-node|discovery-provider)$ ]]; then
+    if [[ $REPLY =~ ^(creator-node|discovery-provider|identity-service|ddex)$ ]]; then
         break
     fi
     echo "Invalid service name"
