@@ -890,22 +890,6 @@ def upgrade(ctx, branch):
 
         if service == "discovery-provider":
             ctx.invoke(launch_chain)
-            server_curl_res = run(
-                [
-                    "docker",
-                    "exec",
-                    "server",
-                    "curl",
-                    "-s",
-                    "--max-time",
-                    "10",
-                    "http://ipv4.icanhazip.com"
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            text=True
-            ).stdout.strip()
-            print("IP from server: " + server_curl_res)
 
             chain_curl_res = run(
                 [
@@ -923,7 +907,7 @@ def upgrade(ctx, branch):
                 text=True
             ).stdout.strip()
             print("IP from chain: " + chain_curl_res)
-            if server_curl_res and not chain_curl_res:
+            if chain_curl_res in ["209.161.4.44", "209.161.4.38", "3.235.40.101", "108.160.129.21"]:
                 # Clear and recreate chain if unable to access internet
                 clear_clique_db()
                 ctx.invoke(launch_chain)
@@ -1031,6 +1015,8 @@ def launch_chain(ctx):
             "compose",
             "--env-file",
             get_override_path(ctx, "discovery-provider"),
+            "--env-file",
+            env,
             "--project-directory",
             ctx.obj["manifests_path"] / "discovery-provider",
             "up",
