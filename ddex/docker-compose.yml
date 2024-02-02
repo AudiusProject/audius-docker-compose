@@ -1,6 +1,22 @@
 version: "3.9"
 
 services:
+  caddy:
+    image: audius/caddy:2.7.4
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - ddex-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
   ddex-web:
     image: audius/ddex-web:${TAG:-c71c04d5d9494ef07534d0fe06cb31a8f858a8a1}
     container_name: ddex-web
@@ -14,8 +30,6 @@ services:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
       - ${OVERRIDE_PATH:-override.env}
-    ports:
-      - "9000:9000"
     healthcheck:
       test: curl --fail -I http://localhost:9000/api/health_check || exit 1
       interval: 15s
@@ -131,6 +145,9 @@ services:
     networks:
       - ddex-network
 
-
 networks:
   ddex-network:
+
+volumes:
+  caddy_data:
+  caddy_config:
