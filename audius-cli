@@ -1046,8 +1046,8 @@ def launch_chain(ctx):
 
 @cli.command()
 @click.pass_context
-@click.argument("name")
-@click.argument("--unset", is_flag=True)
+@click.argument("name", required=False)
+@click.option("--unset", is_flag=True, default=False) 
 def use_only(ctx, name, unset):
     override_env = get_override_path(ctx, "discovery-provider")
     if not name:
