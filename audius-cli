@@ -29,6 +29,7 @@ RECOMMENDED_STORAGE = {
     "creator-node": 2048 * GB,
     "discovery-provider": 256 * GB,
     "identity-service": 256 * GB,
+    "ddex": 256 * GB,
 }
 
 SERVICE_PORTS = {
