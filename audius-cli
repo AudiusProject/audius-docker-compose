@@ -45,6 +45,7 @@ SERVICES = (
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
+USE_ONLY = "USE_ONLY"
 
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
@@ -395,6 +396,11 @@ def launch(ctx, service, seed, chain, yes):
 
     lock(ctx, "docker")
 
+    disc_override_env = get_override_path(ctx, "discovery-provider")
+    if disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
+        ctx.forward(launch_only_plugin)
+        return
+
     try:
         ctx.invoke(check_config, service=service)
     except SystemExit:
@@ -514,6 +520,13 @@ def restart(ctx, service, containers):
     set_automatic_env(ctx)
 
     lock(ctx, "docker")
+
+    disc_override_env = get_override_path(ctx, "discovery-provider")
+    if disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
+        services = [service]
+        ctx.forward(down)
+        ctx.forward(launch_only_plugin)
+        return
 
     services = [service]
     if service is None:
@@ -842,6 +855,9 @@ def upgrade(ctx, branch):
             service = "creator-node"
         elif identity_override_env.exists() and dotenv.get_key(identity_override_env, "ethOwnerWallet"):
             service = "identity-service"
+        elif disc_override_env.exists() and dotenv.get_key(disc_override_env, USE_ONLY):
+            ctx.forward(launch_only_plugin)
+            return
         elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
             service = "discovery-provider"
         else:
@@ -1030,6 +1046,25 @@ def launch_chain(ctx):
 
 @cli.command()
 @click.pass_context
+@click.argument("name")
+@click.argument("--unset", is_flag=True)
+def use_only(ctx, name, unset):
+    override_env = get_override_path(ctx, "discovery-provider")
+    if not name:
+        if unset:
+            dotenv.unset_key(override_env, USE_ONLY)
+            click.secho(f"Reset to use default containers. Run `audius-cli down` and `audius-cli launch <service>`", fg="green")
+        else:
+            click.secho(f"Choose which containers to run (ddex or metabase), and no other containers will run when restarting.", fg="yellow")
+            return
+        return
+    dotenv.set_key(override_env, USE_ONLY, name)
+    click.secho(f"Server will now only run {name}. No other services will be restarted after running `audius-cli down` and `audius-cli upgrade`.", fg="green")
+    return
+
+
+@cli.command()
+@click.pass_context
 @click.argument("service", type=service_type)
 @click.argument("name", required=True)
 def register_plugin(ctx, service, name):
@@ -1075,6 +1110,60 @@ def print_plugins(ctx, service):
     plugins = dotenv.get_key(override_env, REGISTERED_PLUGINS)
     print(f"registered plugins on {service}: {plugins}")
     return
+
+
+def launch_only_plugin(ctx):
+    override_env = get_override_path(ctx, "discovery-provider")
+    use_only = dotenv.get_key(override_env, USE_ONLY)
+    if use_only == "ddex":
+        services = ["ddex-web", "ddex-crawler", "ddex-indexer", "ddex-parser", "ddex-publisher", "ddex-mongo"]
+    elif use_only == "metabase":
+        services = ["metabase"]
+    else:
+        click.secho(f"Invalid value for USE_ONLY. Set a new value or run `audius-cli use-only --unset`", fg="yellow")
+        sys.exit(1)
+    
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "--profile", use_only,
+            "pull",
+            *services
+        ],
+    )
+
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "--profile", use_only,
+            "up",
+            *services,
+            "--remove-orphans",
+            "-d",
+        ],
+    )
+
+    run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            ctx.obj["manifests_path"] / "discovery-provider",
+            "--profile", use_only,
+            "up",
+            "--force-recreate",
+            "vector",
+            "--remove-orphans",
+            "-d",
+        ],
+    )
+    prune()
 
 
 def get_registered_plugins(ctx, service):
