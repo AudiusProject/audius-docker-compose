@@ -1,0 +1,5 @@
+{$DDEX_URL}
+
+{$CADDY_TLS}
+
+reverse_proxy "ddex-web:9000"

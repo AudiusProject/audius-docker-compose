@@ -7,13 +7,14 @@ auto-upgrade.log
 discovery-provider/.env
 creator-node/.env
 identity-service/.env
+ddex/.env
 
 # discovery blockchain
 discovery-provider/chain/spec.json
 discovery-provider/chain/static-nodes.json
 
 # ddex
-discovery-provider/ddex/mongo-keyfile
+ddex/mongo-keyfile
 
 # old utilities
 sp-utilities/node_modules/*
