@@ -48,6 +48,9 @@ services:
         condition: service_healthy
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     entrypoint: ./ingester --service crawler
     networks:
       - ddex-network
@@ -60,6 +63,9 @@ services:
         condition: service_healthy
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     entrypoint: ./ingester --service indexer
     networks:
       - ddex-network
@@ -72,6 +78,9 @@ services:
         condition: service_healthy
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     entrypoint: ./ingester --service parser
     networks:
       - ddex-network
@@ -83,6 +92,9 @@ services:
       - NODE_ENV=${NETWORK:-prod}
       - DDEX_PORT=9001
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     depends_on:
       ddex-mongo:
         condition: service_healthy
