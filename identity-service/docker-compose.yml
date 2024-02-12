@@ -32,7 +32,7 @@ services:
       - identity-service-network
 
   backend:
-    image: audius/identity-service:${TAG:-8b2e00e94e288731740c9da18a84740bb411995b}
+    image: audius/identity-service:${TAG:-589ed010203d01b61a165ed2c3f38eb7ec86034b}
     container_name: server
     <<: *extra-hosts
     depends_on:
