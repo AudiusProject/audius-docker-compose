@@ -11,6 +11,41 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
+  db:
+    container_name: postgres
+    image: postgres:15.5
+    shm_size: 2g
+    restart: always
+    entrypoint: >
+        /bin/bash -c
+        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
+          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
+            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
+          fi;
+        fi;
+        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 10s
+      timeout: 5s
+    ports:
+      - '${EXPOSE_POSTGRES:-127.0.0.1:5432}:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: audius_discovery
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    volumes:
+      - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
+    networks:
+      - discovery-provider-network
+
   optimize-db:
     container_name: optimize-db
     image: postgres:15.5-bookworm
