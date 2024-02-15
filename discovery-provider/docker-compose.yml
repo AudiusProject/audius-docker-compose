@@ -142,7 +142,7 @@ services:
     image: audius/discovery-provider:${TAG:-22d4a46d6912013f3c9631556d22f0758dc46aeb}
     <<: *extra-hosts
     restart: always
-    mem_limit: ${SERVER_MEM_LIMIT:-5g}
+    mem_limit: 5g
     healthcheck:
       test: [
           "CMD-SHELL",
@@ -177,7 +177,7 @@ services:
     image: audius/discovery-provider:${TAG:-22d4a46d6912013f3c9631556d22f0758dc46aeb}
     <<: *extra-hosts
     restart: always
-    mem_limit: ${INDEXER_MEM_LIMIT:-5g}
+    mem_limit: 5g
     depends_on:
       db:
         condition: service_healthy
