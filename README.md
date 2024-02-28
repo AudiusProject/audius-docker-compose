@@ -105,6 +105,12 @@ audius-cli set-config discovery-provider CADDY_TLS 'tls internal'
 audius-cli launch discovery-provider
 ```
 
+For DDEX:
+
+```
+audius-cli set-config ddex CADDY_TLS 'tls internal'
+audius-cli launch ddex
+```
 
 ## Utilities
 The [utilities folder](/utilities/) contains a set of scripts and utilities to manage services like:
@@ -114,3 +120,10 @@ The [utilities folder](/utilities/) contains a set of scripts and utilities to m
 ## Advanced options
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
 
+
+## DDEX Setup
+Setting up a DDEX server is the same as a regular service, but it requires different environment variables.
+1. Follow the regular instructions above to run install.sh, and choose "ddex" as the service to install.
+2. Edit ddex/override.env to have a value for each environment variable.
+3. `audius-cli launch ddex`
+4. Enable auto-upgrade: `audius-cli auto-upgrade "* * * * *"`

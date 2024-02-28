@@ -8,7 +8,7 @@ then
     git clone --single-branch --branch main https://github.com/AudiusProject/audius-docker-compose.git ~/audius-docker-compose
 fi
 
-while read -p "Service to install (creator-node, discovery-provider): "; do
+while read -p "Service to install (creator-node, discovery-provider, ddex): "; do
     if [[ $REPLY =~ ^(creator-node|discovery-provider|identity-service|ddex)$ ]]; then
         break
     fi
