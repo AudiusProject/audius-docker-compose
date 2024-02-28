@@ -473,6 +473,9 @@ def launch(ctx, service, seed, chain, yes):
 
     plugins = get_registered_plugins(ctx, service)
 
+    if service == "discovery-provider":
+        ctx.invoke(launch_chain)
+
     run(
         [
             "docker",
@@ -486,9 +489,6 @@ def launch(ctx, service, seed, chain, yes):
         ],
         check=True,
     )
-
-    if service == "discovery-provider":
-        ctx.invoke(launch_chain)
 
     prune()
 
