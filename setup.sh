@@ -59,6 +59,12 @@ touch identity-service/.env
 touch ddex/override.env
 touch ddex/.env
 
+keyfile_path="ddex/mongo-keyfile"
+if [ ! -f "$keyfile_path" ]; then
+    openssl rand -base64 756 > "$keyfile_path"
+    chmod 400 "$keyfile_path"
+fi
+
 # check if ubuntu version is 20.04 or 22.04
 UBUNTU_VERSION=$(cat /etc/os-release | grep VERSION_ID)
 if [[ ! $UBUNTU_VERSION =~ 20.04|22.04 ]]; then

@@ -23,8 +23,8 @@ services:
     container_name: ddex-web
     restart: unless-stopped
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     environment:
       - NODE_ENV=${NETWORK:-prod}
       - DDEX_PORT=9000
@@ -44,8 +44,8 @@ services:
     image: audius/ddex-ingester:${TAG:-f5ad4c33372d18725b84efd6e6cbbc3548ed1b8f}
     container_name: ddex-crawler
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
@@ -59,8 +59,8 @@ services:
     image: audius/ddex-ingester:${TAG:-f5ad4c33372d18725b84efd6e6cbbc3548ed1b8f}
     container_name: ddex-indexer
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
@@ -74,8 +74,8 @@ services:
     image: audius/ddex-ingester:${TAG:-f5ad4c33372d18725b84efd6e6cbbc3548ed1b8f}
     container_name: ddex-parser
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
@@ -96,8 +96,8 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     ports:
       - "9001:9001"
     healthcheck:
@@ -118,6 +118,12 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
+    entrypoint: >
+      bash -c '
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec docker-entrypoint.sh "$$@"
+      '
     command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     ports:
       - "27017:27017"
@@ -128,14 +134,9 @@ services:
           if (!ping.ok) {
             exit(1);  // Unhealthy: MongoDB server not responding
           }
-          var result = rs.status();
-          if (result.ok && result.set) {
-            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
-          } else {
-            exit(1);  // Unhealthy: Replica set not initiated or not OK
-          }
+          exit(0);  // Healthy: MongoDB server is up (replica set status will be checked by ddex-mongo-init)
         "' localhost:27017/ddex
-      interval: 30s
+      interval: 10s
       timeout: 10s
       retries: 5
       start_period: 40s
@@ -148,6 +149,43 @@ services:
       driver: json-file
     networks:
       - ddex-network
+  
+  ddex-mongo-init:
+    container_name: ddex-mongo-init
+    image: mongo:6.0.13
+    restart: "no"
+    command: >
+      bash -c "
+        until mongosh --host ddex-mongo:27017 --authenticationDatabase admin -u mongo -p mongo --eval 'db.runCommand({ping: 1})'; do
+          echo 'Waiting for ddex-mongo...'
+          sleep 2
+        done
+        mongosh --host ddex-mongo:27017 --authenticationDatabase admin -u mongo -p mongo --eval '
+          var rsConfig = {
+            _id: \"rs0\",
+            members: [{ _id: 0, host: \"ddex-mongo:27017\" }]
+          };
+          if (db.isMaster().ismaster) {
+            print(\"Replica set already initiated.\");
+            quit(0);
+          }
+          else {
+            var result = rs.initiate(rsConfig);
+            if (result.ok) {
+              print(\"Replica set initiated.\");
+              quit(0);
+            }
+            else {
+              print(\"Failed to initiate replica set.\");
+              quit(1);
+            }
+          }
+        '
+      "
+    networks:
+      - ddex-network
+    depends_on:
+      - ddex-mongo
   
   vector:
     extends:
