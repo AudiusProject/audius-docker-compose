@@ -121,9 +121,12 @@ The [utilities folder](/utilities/) contains a set of scripts and utilities to m
 For more advanced configuration options or migrating from Kubernetes check out the [Advanced Setup Guide](ADVANCED_SETUP.md)
 
 
-## DDEX Setup
-Setting up a DDEX server is the same as a regular service, but it requires different environment variables.
+## DDEX setup (advanced)
+Audius provides the option to self-host your own [Digital Data Exchange (DDEX)](https://kb.ddex.net) implementation. To run one of the existing implementations on your own infrastructure:
+
 1. Follow the regular instructions above to run install.sh, and choose "ddex" as the service to install.
-2. Edit ddex/override.env to have a value for each environment variable.
+2. Edit ddex/override.env to have a value for each environment variable
+    - See [here](https://github.com/AudiusProject/audius-protocol/tree/main/packages/ddex#readme) for instructions on how to setup your S3 buckets, as well as the environment variable options
 3. `audius-cli launch ddex`
 4. Enable auto-upgrade: `audius-cli auto-upgrade "* * * * *"`
+5. Make sure you've set the `DDEX_URL` environment variable to the URL that will host this server, and see "SSL Configuration" above for SSL setup
