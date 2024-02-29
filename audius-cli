@@ -153,7 +153,7 @@ def prune():
         )
     else:
         run(
-            ["docker", "system", "prune", "--all", "--force", "--filter", "until=336h"],
+            ["docker", "system", "prune", "--all", "--force", "--filter", "until=48h"],
         )
 
 
