@@ -1035,7 +1035,7 @@ def launch_chain(ctx):
         f.write("\n")
 
     # Get peers from env
-    peers_str = env_data.get("audius_static_nodes")
+    peers_str = env_data.get("audius_static_nodes") or ""
     peers = peers_str.split(",")
 
     static_peers_file = (
