@@ -28,8 +28,6 @@ services:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 10s
       timeout: 5s
-    ports:
-      - '127.0.0.1:5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -87,9 +85,6 @@ services:
     restart: unless-stopped
     networks:
       - creator-node-network
-    ports:
-      - "${MEDIORUM_PORT:-4000}:1991"
-      - 127.0.0.1:6060:6060
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
