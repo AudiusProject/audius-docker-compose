@@ -834,7 +834,7 @@ def pull_reset(ctx, branch):
 
 
 def get_db_size(database_name):
-    cmd = f"""docker exec postgres psql audius_discovery postgres -tAc "select pg_database_size('{database_name}')""""
+    cmd = f"docker exec postgres psql audius_discovery postgres -tAc \"select pg_database_size('{database_name}')\""
     try:
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
         db_size_bytes = int(output.strip())
