@@ -53,6 +53,8 @@ REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
 EXTRA_SEAL = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
+RESEEDED_EXPOSED_POSTGRES = "reseeded_exposed_postgres"
+
 service_type = click.Choice(SERVICES)
 network_type = click.Choice(["prod", "stage", "dev"])
 container_type = click.Choice(["backend", "cache", "db"])
@@ -877,6 +879,13 @@ def upgrade(ctx, branch):
                 "pull",
             ],
         )
+
+        if service == "discovery-provider":
+            reseeded = dotenv.get_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES)
+            if reseeded != "true":
+              ctx.invoke(launch, service=service, seed=True)
+              dotenv.set_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES, "true")
+              return
 
         plugins = get_registered_plugins(ctx, service)
 
