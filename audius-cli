@@ -901,6 +901,11 @@ def upgrade(ctx, branch):
                 dotenv.set_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES, "true")
                 return
 
+        if service == "creator-node":
+            # If create database fails, continue and swallow error
+            cmd = 'docker exec postgres psql -U postgres -c "CREATE DATABASE audius_creator_node;"'
+            run(cmd, shell=True)
+
         plugins = get_registered_plugins(ctx, service)
 
         run(
