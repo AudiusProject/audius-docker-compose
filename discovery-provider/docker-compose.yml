@@ -29,7 +29,7 @@ services:
       interval: 10s
       timeout: 5s
     ports:
-      - '${EXPOSE_POSTGRES:-5432}:5432'
+      - '${EXPOSE_POSTGRES:-127.0.0.1:5432}:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -91,7 +91,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     ports:
-      - ${EXPOSE_ELASTICSEARCH:-39200}:9200
+      - ${EXPOSE_ELASTICSEARCH:-127.0.0.1:39200}:9200
     networks:
       - discovery-provider-network
     healthcheck:
