@@ -894,6 +894,13 @@ def upgrade(ctx, branch):
         )
 
         if service == "discovery-provider":
+            try:
+                # If create database fails, continue and swallow error
+                cmd = 'docker exec postgres psql -U postgres -c "CREATE DATABASE audius_discovery;"'
+                run(cmd, shell=True)
+            except Exception as e:
+                print(f"Error creating discovery node db {e}")
+
             db_size = get_db_size("audius_discovery")
             reseeded = dotenv.get_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES)
             if reseeded != "true" and db_size < 1024:
