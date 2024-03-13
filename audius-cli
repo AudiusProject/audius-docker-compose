@@ -839,7 +839,7 @@ def get_db_size(database_name):
         output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, universal_newlines=True)
         db_size_bytes = int(output.strip())
         db_size_mb = db_size_bytes / (1024 * 1024)
-        print(f"Got database size {db_size_mb}mb for {database_name}")
+        print(f"Got database size {db_size_mb}MB for {database_name}")
         return db_size_mb
     except subprocess.CalledProcessError as e:
         print(f"Error getting database size: {e}")
@@ -897,7 +897,7 @@ def upgrade(ctx, branch):
             db_size = get_db_size("audius_discovery")
             reseeded = dotenv.get_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES)
             if reseeded != "true" and db_size < 1024:
-                ctx.invoke(launch, service=service, seed=True)
+                ctx.invoke(launch, service=service, seed=True, yes=True)
                 dotenv.set_key(disc_override_env, RESEEDED_EXPOSED_POSTGRES, "true")
                 return
 
