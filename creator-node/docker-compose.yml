@@ -29,7 +29,7 @@ services:
       interval: 10s
       timeout: 5s
     ports:
-      - 5432:5432
+      - '172.100.0.6:5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
