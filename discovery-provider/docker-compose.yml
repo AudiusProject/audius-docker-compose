@@ -125,6 +125,28 @@ services:
     ports:
       - "6001:6001"
 
+  solana-relay:
+    image: audius/solana-relay:${TAG:-739eefef6f9c84ca769ae6feecc9a7b71a8dc18f}
+    container_name: solana-relay
+    <<: *extra-hosts
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    environment:
+      - ENVIRONMENT=${NETWORK}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "6001:6001"
+
   openresty:
     image: audius/discovery-provider-openresty:${TAG:-739eefef6f9c84ca769ae6feecc9a7b71a8dc18f}
     container_name: openresty
