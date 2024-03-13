@@ -145,7 +145,7 @@ services:
         max-buffer-size: 100m
       driver: json-file
     ports:
-      - "6001:6001"
+      - "6002:6002"
 
   openresty:
     image: audius/discovery-provider-openresty:${TAG:-aab8aaa810e40e0c663af3d78cba594cd9771e6d}
