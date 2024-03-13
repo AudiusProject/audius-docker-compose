@@ -902,9 +902,12 @@ def upgrade(ctx, branch):
                 return
 
         if service == "creator-node":
-            # If create database fails, continue and swallow error
-            cmd = 'docker exec postgres psql -U postgres -c "CREATE DATABASE audius_creator_node;"'
-            run(cmd, shell=True)
+            try:
+                # If create database fails, continue and swallow error
+                cmd = 'docker exec postgres psql -U postgres -c "CREATE DATABASE audius_creator_node;"'
+                run(cmd, shell=True)
+            except Exception as e:
+                print(f"Error creating creator node db {e}")
 
         plugins = get_registered_plugins(ctx, service)
 
