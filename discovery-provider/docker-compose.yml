@@ -126,7 +126,7 @@ services:
       - "6001:6001"
 
   solana-relay:
-    image: audius/solana-relay:${TAG:-739eefef6f9c84ca769ae6feecc9a7b71a8dc18f}
+    image: audius/solana-relay:${TAG:-a6da7d700bb32f9c125314458e701fe44e361f75}
     container_name: solana-relay
     <<: *extra-hosts
     restart: unless-stopped
