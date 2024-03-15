@@ -161,7 +161,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-77078aedf82a660cdad6c5ef25230cef8af1e78e}
+    image: audius/discovery-provider:${TAG:-8e049a6d62d4e8e1481988f527fd9ce6685ab1b8}
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
@@ -196,7 +196,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-77078aedf82a660cdad6c5ef25230cef8af1e78e}
+    image: audius/discovery-provider:${TAG:-8e049a6d62d4e8e1481988f527fd9ce6685ab1b8}
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
