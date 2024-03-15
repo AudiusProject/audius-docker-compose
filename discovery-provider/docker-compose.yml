@@ -28,6 +28,8 @@ services:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 10s
       timeout: 5s
+    ports:
+      - '${EXPOSE_POSTGRES:-127.0.0.1:5432}:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -88,6 +90,8 @@ services:
         hard: -1
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    ports:
+      - ${EXPOSE_ELASTICSEARCH:-127.0.0.1:39200}:9200
     networks:
       - discovery-provider-network
     healthcheck:
@@ -118,6 +122,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    ports:
+      - "6001:6001"
 
   solana-relay:
     image: audius/solana-relay:${TAG:-181429ad6e4c003186f1f669b1c70e7d950e78df}
@@ -138,6 +144,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    ports:
+      - "6002:6002"
 
   openresty:
     image: audius/discovery-provider-openresty:${TAG:-181429ad6e4c003186f1f669b1c70e7d950e78df}
@@ -148,6 +156,8 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    ports:
+      - "5000:5000"
 
   backend:
     container_name: server
@@ -171,6 +181,8 @@ services:
         condition: service_healthy
     labels:
       autoheal: "true"
+    ports:
+      - "3000:3000"
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
@@ -314,6 +326,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    ports:
+      - "2022:2022"
 
   chain:
     image: audius/nethermind:1.14.3
@@ -348,6 +362,7 @@ services:
     ports:
       - "30300:30300"
       - "30300:30300/udp"
+      - "127.0.0.1:8545:8545"
     networks:
       - discovery-provider-network
     profiles:
@@ -429,6 +444,8 @@ services:
       driver: json-file
     profiles:
       - notifications
+    ports:
+      - "6000:6000"
 
   sla-auditor:
     image: audius/sla-auditor:${TAG:-181429ad6e4c003186f1f669b1c70e7d950e78df}
@@ -464,6 +481,8 @@ services:
       MB_DB_HOST: postgres
     networks:
       - discovery-provider-network
+    ports:
+      - "3000:3000"
     profiles:
       - metabase
     healthcheck:
