@@ -185,6 +185,8 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    ports:
+      - "5000:5000"
 
   backend:
     container_name: server
