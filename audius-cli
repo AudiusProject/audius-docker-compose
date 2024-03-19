@@ -991,6 +991,22 @@ def auto_upgrade(ctx, remove, cron_expression):
 
 @cli.command()
 @click.pass_context
+def prune_chain(ctx):
+    """
+    Prunes the ACDC chain node and removes old chain data
+    no longer needed.
+    """
+    command = """
+    docker exec -it relay curl chain:8545 -X POST 
+    -H "Content-Type: application/json" 
+    --data '{"jsonrpc": "2.0", "id": 0, "method": "admin_prune", "params": []}'
+    """
+    run(command.strip())
+
+
+
+@cli.command()
+@click.pass_context
 def launch_chain(ctx):
     """
     Prepares the discovery chainspec and static nodes, pulling from
