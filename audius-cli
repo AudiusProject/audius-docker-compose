@@ -1004,7 +1004,6 @@ def prune_chain(ctx):
     run(command.strip())
 
 
-
 @cli.command()
 @click.pass_context
 def launch_chain(ctx):
