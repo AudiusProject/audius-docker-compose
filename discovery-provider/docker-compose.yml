@@ -98,7 +98,6 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      start_period: 40s
 
   relay:
     image: audius/relay:${TAG:-28f1150f90acc528cd1cde3d02b819e4d4de6ddb}
