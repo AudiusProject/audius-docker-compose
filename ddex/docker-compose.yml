@@ -57,23 +57,6 @@ services:
     networks:
       - ddex-network
 
-  ddex-indexer:
-    image: audius/ddex-ingester:${TAG:-f1472a7c1fdfc9cc29d0e3f203ef134d2cab7185}
-    container_name: ddex-indexer
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    entrypoint: ./ingester --service indexer
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
-    networks:
-      - ddex-network
-
   ddex-parser:
     image: audius/ddex-ingester:${TAG:-f1472a7c1fdfc9cc29d0e3f203ef134d2cab7185}
     container_name: ddex-parser
