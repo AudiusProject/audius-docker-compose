@@ -97,6 +97,7 @@ services:
           "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
         ]
       interval: 10s
+      start_period: 40s
       timeout: 5s
 
   relay:
