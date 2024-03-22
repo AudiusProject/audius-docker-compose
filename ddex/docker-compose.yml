@@ -19,7 +19,7 @@ services:
       - caddy_config:/config
 
   ddex-web:
-    image: audius/ddex-web:${TAG:-6b9ae3120e64df89a533abda9a5c09432911852f}
+    image: audius/ddex-web:${TAG:-2deff0c188060bb34aeef34a363b1ffbf2a666ac}
     container_name: ddex-web
     restart: unless-stopped
     depends_on:
@@ -41,7 +41,7 @@ services:
       - ddex-network
 
   ddex-crawler:
-    image: audius/ddex-ingester:${TAG:-6b9ae3120e64df89a533abda9a5c09432911852f}
+    image: audius/ddex-ingester:${TAG:-2deff0c188060bb34aeef34a363b1ffbf2a666ac}
     container_name: ddex-crawler
     depends_on:
       ddex-mongo-init:
@@ -57,25 +57,8 @@ services:
     networks:
       - ddex-network
 
-  ddex-indexer:
-    image: audius/ddex-ingester:${TAG:-6b9ae3120e64df89a533abda9a5c09432911852f}
-    container_name: ddex-indexer
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    entrypoint: ./ingester --service indexer
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
-    networks:
-      - ddex-network
-
   ddex-parser:
-    image: audius/ddex-ingester:${TAG:-6b9ae3120e64df89a533abda9a5c09432911852f}
+    image: audius/ddex-ingester:${TAG:-2deff0c188060bb34aeef34a363b1ffbf2a666ac}
     container_name: ddex-parser
     depends_on:
       ddex-mongo-init:
@@ -92,7 +75,7 @@ services:
       - ddex-network
 
   ddex-publisher:
-    image: audius/ddex-publisher:${TAG:-6b9ae3120e64df89a533abda9a5c09432911852f}
+    image: audius/ddex-publisher:${TAG:-2deff0c188060bb34aeef34a363b1ffbf2a666ac}
     container_name: ddex-publisher
     environment:
       - NODE_ENV=${NETWORK:-prod}
