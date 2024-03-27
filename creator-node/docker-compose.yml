@@ -54,6 +54,7 @@ services:
     networks:
       - creator-node-network
 
+
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal

@@ -61,12 +61,33 @@ services:
     profiles:
       - optimize-db
 
+  exporter_postgres:
+    extends:
+      file: ../common-services.yml
+      service: exporter_postgres
+    container_name: exporter_postgres
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+
   cache:
     container_name: redis
     restart: always
     extends:
       file: ../common-services.yml
       service: base-redis
+    networks:
+      - discovery-provider-network
+  exporter_redis:
+    extends:
+      file: ../common-services.yml
+      service: exporter_redis
+    container_name: exporter_redis
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -99,6 +120,22 @@ services:
       interval: 10s
       start_period: 40s
       timeout: 5s
+  exporter_elasticsearch:
+    extends:
+      file: ../common-services.yml
+      service: exporter_elasticsearch
+    container_name: exporter_elasticsearch
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"'
+      ]
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
 
   relay:
     image: audius/relay:${TAG:-722f1224efe6cc5570933cc022212b3391feb425}
@@ -264,6 +301,19 @@ services:
       - discovery-provider-network
     volumes:
       - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
+
+  exporter_linux:
+    extends:
+      file: ../common-services.yml
+      service: exporter_linux
+    container_name: exporter_linux
+
+  exporter_docker:
+    extends:
+      file: ../common-services.yml
+      service: exporter_docker
+    networks:
+      - discovery-provider-network
 
   comms:
     image: audius/comms:${TAG:-722f1224efe6cc5570933cc022212b3391feb425}
