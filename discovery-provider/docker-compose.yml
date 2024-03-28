@@ -61,33 +61,12 @@ services:
     profiles:
       - optimize-db
 
-  exporter_postgres:
-    extends:
-      file: ../common-services.yml
-      service: exporter_postgres
-    container_name: exporter_postgres
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-
   cache:
     container_name: redis
     restart: always
     extends:
       file: ../common-services.yml
       service: base-redis
-    networks:
-      - discovery-provider-network
-  exporter_redis:
-    extends:
-      file: ../common-services.yml
-      service: exporter_redis
-    container_name: exporter_redis
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
 
@@ -120,25 +99,9 @@ services:
       interval: 10s
       start_period: 40s
       timeout: 5s
-  exporter_elasticsearch:
-    extends:
-      file: ../common-services.yml
-      service: exporter_elasticsearch
-    container_name: exporter_elasticsearch
-    entrypoint:
-      [
-        "/bin/sh",
-        "-c",
-        '/bin/elasticsearch_exporter --es.uri="$$audius_elasticsearch_url"'
-      ]
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
 
   relay:
-    image: audius/relay:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/relay:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -158,7 +121,7 @@ services:
       driver: json-file
 
   solana-relay:
-    image: audius/solana-relay:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/solana-relay:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: solana-relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -178,7 +141,7 @@ services:
       driver: json-file
 
   openresty:
-    image: audius/discovery-provider-openresty:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/discovery-provider-openresty:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -191,7 +154,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/discovery-provider:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
@@ -224,7 +187,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/discovery-provider:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
@@ -266,7 +229,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/discovery-provider:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -302,21 +265,8 @@ services:
     volumes:
       - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
 
-  exporter_linux:
-    extends:
-      file: ../common-services.yml
-      service: exporter_linux
-    container_name: exporter_linux
-
-  exporter_docker:
-    extends:
-      file: ../common-services.yml
-      service: exporter_docker
-    networks:
-      - discovery-provider-network
-
   comms:
-    image: audius/comms:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/comms:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -335,7 +285,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/es-indexer:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -352,7 +302,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/trpc:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -414,7 +364,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/healthz:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -439,7 +389,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -450,7 +400,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/uptime:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -465,7 +415,7 @@ services:
   # plugins
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/discovery-provider-notifications:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -484,7 +434,7 @@ services:
       - notifications
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-7dcd1ff1b478223d92bf8fd1ab2cc3e7902443ca}
+    image: audius/sla-auditor:${TAG:-55b0e8ec5e3ced9b96f8a6c929b901be5b1be31b}
     container_name: sla-auditor
     restart: unless-stopped
     networks:

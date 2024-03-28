@@ -52,37 +52,3 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-
-  exporter_postgres:
-    image: audius/exporter-postgres:v0.10.1
-    restart: always
-
-  exporter_elasticsearch:
-    image: quay.io/prometheuscommunity/elasticsearch-exporter:v1.3.0
-    restart: always
-
-  exporter_redis:
-    image: audius/exporter-redis:v1.44.0-alpine
-    restart: always
-
-  # Official Prometheus exporter for hardware and OS metrics
-  # https://github.com/prometheus/node_exporter/blob/98a40bd712eaeb1fd3ee60ca37e4091c503d8e1c/README.md#docker
-  exporter_linux:
-    image: quay.io/prometheus/node-exporter:v1.4.0
-    container_name: exporter_linux
-    network_mode: host
-    command: --path.rootfs=/host
-    pid: host
-    restart: unless-stopped
-    volumes:
-      - '/:/host:ro,rslave'
-    cap_add:
-      - SYS_TIME
-
-  exporter_docker:
-    image: prom/container-exporter
-    container_name: exporter_docker
-    restart: always
-    volumes:
-      - /sys/fs/cgroup:/cgroup
-      - /var/run/docker.sock:/var/run/docker.sock
