@@ -26,7 +26,7 @@ services:
       ddex-mongo-init:
         condition: service_completed_successfully
     environment:
-      - NODE_ENV=${NETWORK:-prod}
+      - NETWORK=${NETWORK:-prod}
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
@@ -78,7 +78,7 @@ services:
     image: audius/ddex-publisher:${TAG:-c0f7df88576af974cefff7bad84c654f54d74d37}
     container_name: ddex-publisher
     environment:
-      - NODE_ENV=${NETWORK:-prod}
+      - NETWORK=${NETWORK:-prod}
       - DDEX_PORT=9001
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file:
