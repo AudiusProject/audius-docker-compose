@@ -19,7 +19,7 @@ services:
       - caddy_config:/config
 
   ddex-web:
-    image: audius/ddex-web:${TAG:-bfe784b3d4a903539d77b664d4730016dd19966b}
+    image: audius/ddex-web:${TAG:-f3716b58dd877ab41fc6c564132794d00521ce3b}
     container_name: ddex-web
     restart: unless-stopped
     depends_on:
@@ -41,7 +41,7 @@ services:
       - ddex-network
 
   ddex-crawler:
-    image: audius/ddex-ingester:${TAG:-bfe784b3d4a903539d77b664d4730016dd19966b}
+    image: audius/ddex-ingester:${TAG:-f3716b58dd877ab41fc6c564132794d00521ce3b}
     container_name: ddex-crawler
     depends_on:
       ddex-mongo-init:
@@ -58,7 +58,7 @@ services:
       - ddex-network
 
   ddex-parser:
-    image: audius/ddex-ingester:${TAG:-bfe784b3d4a903539d77b664d4730016dd19966b}
+    image: audius/ddex-ingester:${TAG:-f3716b58dd877ab41fc6c564132794d00521ce3b}
     container_name: ddex-parser
     depends_on:
       ddex-mongo-init:
@@ -75,7 +75,7 @@ services:
       - ddex-network
 
   ddex-publisher:
-    image: audius/ddex-publisher:${TAG:-bfe784b3d4a903539d77b664d4730016dd19966b}
+    image: audius/ddex-publisher:${TAG:-f3716b58dd877ab41fc6c564132794d00521ce3b}
     container_name: ddex-publisher
     environment:
       - NETWORK=${NETWORK:-prod}
