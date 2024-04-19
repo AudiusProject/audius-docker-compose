@@ -723,22 +723,6 @@ def set_tag(ctx, unset, yes, tag):
         except (ConnectionError, urllib.error.HTTPError, json.JSONDecodeError):
             click.secho("Failed to get commit messages", fg="red")
 
-        if not yes:
-            click.confirm(
-                click.style(
-                    "Do you want to continue? This will disable auto-upgrade if it's enabled.",
-                    bold=True,
-                ),
-                abort=True,
-                default=True,
-            )
-
-    if not unset:
-        click.echo(
-            "Disabling auto-upgrade (if enabled) in order to use a different tag..."
-        )
-        ctx.invoke(auto_upgrade, remove=True)
-
     logging.info(f"audius-cli set-tag tag={tag!r}")
     for service in SERVICES:
         key = "TAG"
@@ -980,7 +964,6 @@ def auto_upgrade(ctx, remove, cron_expression):
             job = cron.new(
                 (
                     f"date >> {log_file};"
-                    f"/usr/local/bin/audius-cli set-tag --unset --yes >> {log_file} 2>&1;"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
                 "audius-cli auto-upgrade",
