@@ -48,6 +48,7 @@ SERVICES = (
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
+DB_URL = "audius_db_url"
 
 # Used for updating chainspec
 EXTRA_VANITY = "0x22466c6578692069732061207468696e6722202d204166726900000000000000"
@@ -392,11 +393,16 @@ class MultiProvider(BaseProvider):
 
 @cli.command()
 @click.option("-y", "--yes", is_flag=True)
-@click.option("--seed", is_flag=True)
+@click.option("--seed", is_flag=True, help="Seed the discovery-provider database")
+@click.option(
+    "--auto-seed", 
+    is_flag=True, 
+    help="Seed the discovery-provider database if it's empty (e.g. for new nodes)",
+)
 @click.option("--chain", is_flag=True)
 @click.argument("service", type=service_type)
 @click.pass_context
-def launch(ctx, service, seed, chain, yes):
+def launch(ctx, service, seed, auto_seed, chain, yes):
     """Launch the service"""
     set_automatic_env(ctx)
 
@@ -441,7 +447,7 @@ def launch(ctx, service, seed, chain, yes):
         check=True,
     )
 
-    if seed and service == "discovery-provider":
+    if service == "discovery-provider" and (seed or auto_seed):
         # make sure services that use postgres are not running
         run(
             [
@@ -468,6 +474,10 @@ def launch(ctx, service, seed, chain, yes):
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "run",
                 "seed",
+                "bash",
+                "/usr/share/seed.sh",
+                get_network(ctx, "discovery-provider"),
+                "true" if auto_seed else "false",
             ],
         )
 
