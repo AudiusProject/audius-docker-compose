@@ -440,6 +440,8 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
         [
             "docker",
             "compose",
+            "--progress",
+            "plain",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
             "pull",
@@ -453,6 +455,8 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "down",
@@ -470,6 +474,8 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
                 "run",
@@ -490,6 +496,8 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
         [
             "docker",
             "compose",
+            "--progress",
+            "plain",
             "--project-directory",
             ctx.obj["manifests_path"] / service,
             *plugins,
@@ -562,6 +570,8 @@ def restart(ctx, service, containers):
                 [
                     "docker",
                     "compose",
+                    "--progress",
+                    "plain",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
                     *plugins,
@@ -596,6 +606,8 @@ def down(ctx, service, containers):
                 [
                     "docker",
                     "compose",
+                    "--progress",
+                    "plain",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
                     "--profile",
@@ -608,6 +620,8 @@ def down(ctx, service, containers):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 "down",
@@ -866,6 +880,8 @@ def upgrade(ctx, branch):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 "pull",
@@ -878,6 +894,8 @@ def upgrade(ctx, branch):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 *plugins,
@@ -891,6 +909,8 @@ def upgrade(ctx, branch):
             [
                 "docker",
                 "compose",
+                "--progress",
+                "plain",
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
                 *plugins,
@@ -1042,6 +1062,8 @@ def launch_chain(ctx):
         [
             "docker",
             "compose",
+            "--progress",
+            "plain",
             "--env-file",
             get_override_path(ctx, "discovery-provider"),
             "--project-directory",
