@@ -2,6 +2,9 @@
     order cache before rewrite
     order request_header before cache
     debug
+    servers :443 {
+        protocols h1
+    }
 }
 
 {$creatorNodeEndpoint} {
