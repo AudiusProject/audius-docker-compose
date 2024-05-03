@@ -452,6 +452,25 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  crm:
+    image: audius/crm:${TAG:-22894e8cceb075532279363f9f2e87882ed3a211}
+    container_name: crm
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - crm
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   metabase:
     image: metabase/metabase:v0.48.0
     container_name: metabase
