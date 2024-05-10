@@ -472,7 +472,7 @@ services:
       driver: json-file
 
   trending-challenge-rewards:
-    image: audius/trending-challenge-rewards:${TAG:-ac47b7d7550bb28aeaacdfc93dbe2ec4a82df4e2}
+    image: audius/trending-challenge-rewards:${TAG:-51733b86b799656aef0923525106c7501b3213e5}
     container_name: trending-challenge-rewards
     restart: unless-stopped
     networks:
