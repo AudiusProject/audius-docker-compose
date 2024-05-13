@@ -471,6 +471,46 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  trending-challenge-rewards:
+    image: audius/trending-challenge-rewards:${TAG:-51733b86b799656aef0923525106c7501b3213e5}
+    container_name: trending-challenge-rewards
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - trending-challenge-rewards
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+
+  verified-notifications:
+    # specific tag because this plugin isn't a part of pedalboard
+    image: audius/verified-notifications:b801e0b2f32e255b5977f765fa0e8d23a907d7a6
+    container_name: verified-notifications
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - verified-notifications
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   metabase:
     image: metabase/metabase:v0.48.0
     container_name: metabase
