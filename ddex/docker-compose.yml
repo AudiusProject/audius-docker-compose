@@ -18,9 +18,9 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
-  ddex-processor:
-    image: audius/ddex-processor:ddproc1
-    container_name: ddex-processor
+  ddex:
+    image: audius/ddex:ddproc1
+    container_name: ddex
     restart: unless-stopped
     environment:
       - NETWORK=${NETWORK:-prod}
@@ -38,15 +38,15 @@ services:
       - ddex-network
 
 
-  vector:
-    extends:
-      file: ../common-services.yml
-      service: vector
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - ddex-network
+  # vector:
+  #   extends:
+  #     file: ../common-services.yml
+  #     service: vector
+  #   env_file:
+  #     - ${NETWORK:-prod}.env
+  #     - ${OVERRIDE_PATH:-override.env}
+  #   networks:
+  #     - ddex-network
 
 networks:
   ddex-network:
