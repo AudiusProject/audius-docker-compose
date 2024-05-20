@@ -511,9 +511,9 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  mri-reporter:
+  mri:
     image: audius/mri:${TAG:-a51ebb4c8d384bc9ec343b05570a95a6f1dec9ac}
-    container_name: mri-reporter
+    container_name: mri
     restart: unless-stopped
     networks:
       - discovery-provider-network
@@ -521,7 +521,7 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     profiles:
-      - mri-reporter
+      - mri
     logging:
       options:
         max-size: 10m
