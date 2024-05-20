@@ -2,4 +2,4 @@
 
 {$CADDY_TLS}
 
-reverse_proxy "ddex-web:9000"
+reverse_proxy "ddex-processor:8989"
