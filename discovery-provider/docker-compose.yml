@@ -511,6 +511,26 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  mri-reporter:
+    # specific tag because this plugin isn't a part of pedalboard
+    image: audius/mri:${TAG:-a51ebb4c8d384bc9ec343b05570a95a6f1dec9ac}
+    container_name: mri-reporter
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - mri-reporter
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   metabase:
     image: metabase/metabase:v0.48.0
     container_name: metabase
