@@ -19,7 +19,7 @@ services:
       - caddy_config:/config
 
   ddex:
-    image: audius/ddex:ddproc1
+    image: audius/ddex-processor:ddproc1
     container_name: ddex
     restart: unless-stopped
     environment:
