@@ -18,6 +18,25 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
+  ddex-processor:
+    image: audius/ddex-processor:prerelease
+    container_name: ddex-processor
+    restart: unless-stopped
+    environment:
+      - NETWORK=${NETWORK:-prod}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - ./sources.json:/app/packages/ddex/processor/sources.json
+    # healthcheck:
+    #   test: curl --fail -I http://localhost:9000/api/health_check || exit 1
+    #   interval: 15s
+    #   timeout: 5s
+    #   retries: 5
+    networks:
+      - ddex-network
+
   ddex-web:
     image: audius/ddex-web:${TAG:-496f0f59c6a6020404f84e3cf9145840b2364523}
     container_name: ddex-web
@@ -135,7 +154,7 @@ services:
       driver: json-file
     networks:
       - ddex-network
-  
+
   ddex-mongo-init:
     container_name: ddex-mongo-init
     image: mongo:6.0.13
@@ -172,7 +191,7 @@ services:
       - ddex-network
     depends_on:
       - ddex-mongo
-  
+
   vector:
     extends:
       file: ../common-services.yml
