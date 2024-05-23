@@ -20,5 +20,4 @@ ddex/mongo-keyfile
 sp-utilities/node_modules/*
 utilities/node_modules/*
 
-ddex/data/*
-!ddex/data/sources.example.json
+ddex/data
