@@ -353,6 +353,7 @@ services:
       - "30300:30300/udp"
     networks:
       - discovery-provider-network
+    mem_limit: ${CHAIN_MEM_LIMIT:-2500000000}
     profiles:
       - chain
     logging:
