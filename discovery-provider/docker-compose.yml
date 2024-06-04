@@ -101,7 +101,7 @@ services:
       timeout: 5s
 
   relay:
-    image: audius/relay:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/relay:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -121,7 +121,7 @@ services:
       driver: json-file
 
   solana-relay:
-    image: audius/solana-relay:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/solana-relay:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: solana-relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -141,7 +141,7 @@ services:
       driver: json-file
 
   openresty:
-    image: audius/discovery-provider-openresty:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/discovery-provider-openresty:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -154,7 +154,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/discovery-provider:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
@@ -187,7 +187,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/discovery-provider:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
@@ -229,7 +229,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/discovery-provider:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -266,7 +266,7 @@ services:
       - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
 
   comms:
-    image: audius/comms:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/comms:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -285,7 +285,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/es-indexer:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -302,7 +302,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/trpc:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -353,6 +353,7 @@ services:
       - "30300:30300/udp"
     networks:
       - discovery-provider-network
+    mem_limit: ${CHAIN_MEM_LIMIT:-2500000000}
     profiles:
       - chain
     logging:
@@ -364,7 +365,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/healthz:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -389,7 +390,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -400,7 +401,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/uptime:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -415,7 +416,7 @@ services:
   # plugins
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/discovery-provider-notifications:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -434,7 +435,7 @@ services:
       - notifications
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/sla-auditor:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
@@ -453,7 +454,7 @@ services:
       driver: json-file
 
   crm:
-    image: audius/crm:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/crm:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: crm
     restart: unless-stopped
     networks:
@@ -472,7 +473,7 @@ services:
       driver: json-file
 
   trending-challenge-rewards:
-    image: audius/trending-challenge-rewards:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/trending-challenge-rewards:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: trending-challenge-rewards
     restart: unless-stopped
     networks:
@@ -512,7 +513,7 @@ services:
       driver: json-file
 
   mri:
-    image: audius/mri:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/mri:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: mri
     restart: unless-stopped
     networks:

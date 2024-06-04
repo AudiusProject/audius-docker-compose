@@ -82,7 +82,7 @@ services:
       - creator-node-network
 
   mediorum:
-    image: audius/mediorum:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/mediorum:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
@@ -116,7 +116,7 @@ services:
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
-    image: audius/healthz:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/healthz:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -141,7 +141,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     networks:
@@ -150,7 +150,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-24ef88982cc7415aab01d4615e257cc93d707e2b}
+    image: audius/uptime:${TAG:-558235141e67c8dade49f8ebbbf41c6182a25462}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
