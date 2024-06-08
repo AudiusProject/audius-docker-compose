@@ -187,7 +187,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:25f7a72b4e78a07ff551af35c83dae15b131cf25
+    image: audius/discovery-provider:78bcadd62120112af1fb5574e998282d5516f3c1
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
