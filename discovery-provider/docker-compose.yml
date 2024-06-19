@@ -478,8 +478,6 @@ services:
     restart: on-failure
     networks:
       - discovery-provider-network
-    environment:
-      test_run: 'true'
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
