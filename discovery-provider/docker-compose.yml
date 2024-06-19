@@ -472,6 +472,25 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  backfill-audio-analyses:
+    image: audius/backfill-audio-analyses:${TAG:-b748f58b9b559783ab8f6788f1e023e5e32e64b3}
+    container_name: backfill-audio-analyses
+    restart: on-failure
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - backfill-audio-analyses
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   trending-challenge-rewards:
     image: audius/trending-challenge-rewards:${TAG:-b748f58b9b559783ab8f6788f1e023e5e32e64b3}
     container_name: trending-challenge-rewards
