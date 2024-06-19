@@ -473,7 +473,7 @@ services:
       driver: json-file
 
   backfill-audio-analyses:
-    image: audius/backfill-audio-analyses:${TAG:-51376b373a198872c2823beac17e54e565e24ad9}
+    image: audius/backfill-audio-analyses:${TAG:-b748f58b9b559783ab8f6788f1e023e5e32e64b3}
     container_name: backfill-audio-analyses
     restart: on-failure
     networks:
