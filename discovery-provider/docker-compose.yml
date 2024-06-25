@@ -481,8 +481,6 @@ services:
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
-    profiles:
-      - backfill-audio-analyses
     logging:
       options:
         max-size: 10m
