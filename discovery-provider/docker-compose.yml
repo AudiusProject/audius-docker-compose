@@ -473,11 +473,13 @@ services:
       driver: json-file
 
   backfill-audio-analyses:
-    image: audius/backfill-audio-analyses:${TAG:-13c9f644600edc74627685570a56e6e57ed05a0f}
+    image: audius/backfill-audio-analyses:18830be0911949e7cdbffdde5ff062511cc6b078
     container_name: backfill-audio-analyses
     restart: on-failure
     networks:
       - discovery-provider-network
+    environment:
+      test_run: 'true'
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
