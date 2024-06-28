@@ -263,7 +263,7 @@ services:
     networks:
       - discovery-provider-network
     volumes:
-      - /home/ubuntu/audius-docker-compose/auto-upgrade.log:/auto-upgrade.log
+      - ../auto-upgrade.log:/auto-upgrade.log
 
   comms:
     image: audius/comms:${TAG:-2969125129e90230cd7e89b0d2f0bce3aa1b6e0d}
