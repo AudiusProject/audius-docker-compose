@@ -80,6 +80,8 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - creator-node-network
+    volumes:
+      - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
     image: audius/mediorum:${TAG:-2969125129e90230cd7e89b0d2f0bce3aa1b6e0d}
