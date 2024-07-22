@@ -154,7 +154,7 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:f35cdc5d5331c2ce7948b10a18bfdfe93eaf692a
+    image: audius/discovery-provider:4c70058fc6f52614f746b0c505ccc99e93b064ce
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
