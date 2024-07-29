@@ -19,7 +19,7 @@ services:
       - caddy_config:/config
 
   ddex:
-    image: audius/ddex-processor:${TAG:-4d204de1d66a49460f73ed023c76ed5d4626c28e}
+    image: audius/ddex-processor:${TAG:-96a9c0c15bf35285a673ddc330adff2f1e57ff8f}
     container_name: ddex
     restart: unless-stopped
     environment:
