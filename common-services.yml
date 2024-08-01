@@ -1,4 +1,18 @@
 services:
+  core:
+    image: audius/core:${TAG:-current}
+    restart: unless-stopped
+    ports:
+      - "26656:26656" # CometBFT P2P Server
+      - "26657:26657" # CometBFT RPC Server
+    profiles:
+      - core
+    mem_limit: 500m
+    cpus: 0.1
+    depends_on:
+      db:
+        condition: service_healthy
+
   base-postgres:
     image: postgres:11.22-bookworm
     shm_size: 2g
