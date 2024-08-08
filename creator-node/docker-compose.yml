@@ -11,6 +11,17 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
+  core:
+    container_name: core
+    extends:
+      file: ../common-services.yml
+      service: core
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - creator-node-network
+
   db:
     container_name: postgres
     image: postgres:15.5-bookworm
