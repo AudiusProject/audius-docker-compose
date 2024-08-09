@@ -3,3 +3,4 @@ psutil==5.9.0
 python-dotenv==0.20.0
 python-crontab==2.6.0
 web3==6.6.1
+setuptools==72.1.0
