@@ -11,6 +11,28 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
+  core:
+    container_name: core
+    image: audius/core:${TAG:-9c81c0acc43d191b0d56b79249f745f54a7b0cb1}
+    restart: unless-stopped
+    ports:
+      - "26656:26656" # CometBFT P2P Server
+      - "26657:26657" # CometBFT RPC Server
+    profiles:
+      - core
+    mem_limit: 500m
+    cpus: 0.1
+    volumes:
+      - /var/k8s/audius-core:/audius-core
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - creator-node-network
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     container_name: postgres
     image: postgres:15.5-bookworm
@@ -84,7 +106,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
-    image: audius/mediorum:${TAG:-665361bba3d74112c3cecb89da647547aca93411}
+    image: audius/mediorum:${TAG:-9c81c0acc43d191b0d56b79249f745f54a7b0cb1}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
@@ -118,7 +140,7 @@ services:
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
-    image: audius/healthz:${TAG:-665361bba3d74112c3cecb89da647547aca93411}
+    image: audius/healthz:${TAG:-9c81c0acc43d191b0d56b79249f745f54a7b0cb1}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -143,7 +165,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-665361bba3d74112c3cecb89da647547aca93411}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-9c81c0acc43d191b0d56b79249f745f54a7b0cb1}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     networks:
@@ -152,7 +174,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-665361bba3d74112c3cecb89da647547aca93411}
+    image: audius/uptime:${TAG:-9c81c0acc43d191b0d56b79249f745f54a7b0cb1}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
