@@ -29,6 +29,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
+    pull_policy: always
     depends_on:
       db:
         condition: service_healthy
