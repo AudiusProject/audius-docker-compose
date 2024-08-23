@@ -13,11 +13,13 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/core:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
       - "26657:26657" # CometBFT RPC Server
+      - "26659:26659" # Console UI
+      - "50051:50051" # Core GRPC Server
     profiles:
       - core
     mem_limit: 500m
@@ -40,15 +42,13 @@ services:
     shm_size: 2g
     restart: always
     entrypoint: >
-        /bin/bash -c
-        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
-          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
-            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
-          fi;
+      /bin/bash -c "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
+        if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
+          echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
         fi;
-        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
+      fi; /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
       interval: 10s
       timeout: 5s
     environment:
@@ -73,12 +73,7 @@ services:
     environment:
       - PGPASSWORD=postgres
     command: >
-      sh -c "
-      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
-      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
-      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
-      echo 'Database optimization completed'
-      "
+      sh -c " psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' && psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' && psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' && echo 'Database optimization completed' "
     networks:
       - discovery-provider-network
     profiles:
@@ -114,17 +109,13 @@ services:
     networks:
       - discovery-provider-network
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
-        ]
+      test: [ "CMD-SHELL", "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1" ]
       interval: 10s
       start_period: 40s
       timeout: 5s
 
   relay:
-    image: audius/relay:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/relay:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -144,7 +135,7 @@ services:
       driver: json-file
 
   solana-relay:
-    image: audius/solana-relay:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/solana-relay:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: solana-relay
     <<: *extra-hosts
     restart: unless-stopped
@@ -164,7 +155,7 @@ services:
       driver: json-file
 
   openresty:
-    image: audius/discovery-provider-openresty:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/discovery-provider-openresty:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -177,15 +168,12 @@ services:
 
   backend:
     container_name: server
-    image: audius/discovery-provider:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/discovery-provider:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
     healthcheck:
-      test: [
-          "CMD-SHELL",
-          "pgrep pg_migrate || curl -f http://localhost:5000/health_check?bypass_errors=true || exit 1"
-        ]
+      test: [ "CMD-SHELL", "pgrep pg_migrate || curl -f http://localhost:5000/health_check?bypass_errors=true || exit 1" ]
     depends_on:
       db:
         condition: service_healthy
@@ -210,7 +198,7 @@ services:
 
   indexer:
     container_name: indexer
-    image: audius/discovery-provider:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/discovery-provider:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
@@ -233,8 +221,7 @@ services:
       - audius_elasticsearch_run_indexer=true
     healthcheck:
       test: >
-        /bin/sh -c
-        "if pgrep -af pg_migrate | grep -v 'pgrep -af pg_migrate' > /dev/null; then
+        /bin/sh -c "if pgrep -af pg_migrate | grep -v 'pgrep -af pg_migrate' > /dev/null; then
             # Unhealthy if pg_migrate is found, excluding the pgrep command itself
             exit 1
         elif pgrep -af celery | grep -v 'pgrep -af celery' > /dev/null; then
@@ -252,7 +239,7 @@ services:
       - discovery-provider-network
 
   seed:
-    image: audius/discovery-provider:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/discovery-provider:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
     env_file:
       - ${NETWORK:-prod}.env
@@ -289,7 +276,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   comms:
-    image: audius/comms:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/comms:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -308,7 +295,7 @@ services:
       driver: json-file
 
   es-indexer:
-    image: audius/es-indexer:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/es-indexer:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: es-indexer
     restart: unless-stopped
     networks:
@@ -325,7 +312,7 @@ services:
       driver: json-file
 
   trpc:
-    image: audius/trpc:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/trpc:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: trpc
     restart: unless-stopped
     networks:
@@ -347,11 +334,7 @@ services:
     <<: *extra-hosts
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --fail localhost:8545/health || exit 1"
-        ]
+      test: [ "CMD-SHELL", "curl --fail localhost:8545/health || exit 1" ]
     command: --config config
     env_file:
       - ${NETWORK:-prod}.env
@@ -388,7 +371,7 @@ services:
       driver: json-file
 
   healthz:
-    image: audius/healthz:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/healthz:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -413,7 +396,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     environment:
@@ -424,7 +407,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/uptime:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -439,7 +422,7 @@ services:
   # plugins
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/discovery-provider-notifications:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: notifications
     restart: unless-stopped
     networks:
@@ -458,7 +441,7 @@ services:
       - notifications
 
   sla-auditor:
-    image: audius/sla-auditor:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/sla-auditor:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: sla-auditor
     restart: unless-stopped
     networks:
@@ -477,7 +460,7 @@ services:
       driver: json-file
 
   crm:
-    image: audius/crm:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/crm:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: crm
     restart: unless-stopped
     networks:
@@ -496,7 +479,7 @@ services:
       driver: json-file
 
   backfill-audio-analyses:
-    image: audius/backfill-audio-analyses:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/backfill-audio-analyses:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: backfill-audio-analyses
     restart: on-failure
     networks:
@@ -513,7 +496,7 @@ services:
       driver: json-file
 
   trending-challenge-rewards:
-    image: audius/trending-challenge-rewards:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/trending-challenge-rewards:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: trending-challenge-rewards
     restart: unless-stopped
     networks:
@@ -530,7 +513,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-
 
   verified-notifications:
     # specific tag because this plugin isn't a part of pedalboard
@@ -553,7 +535,7 @@ services:
       driver: json-file
 
   mri:
-    image: audius/mri:${TAG:-231571cab03a92d57e9e93711174d97e0ea96bc4}
+    image: audius/mri:${TAG:-a0e8fae5da3ed70f4b27b28d9e3aaec54fda6605}
     container_name: mri
     restart: unless-stopped
     networks:
@@ -594,9 +576,9 @@ services:
       timeout: 5s
       retries: 5
 
-
 networks:
   discovery-provider-network:
+
 
 volumes:
   esdata:

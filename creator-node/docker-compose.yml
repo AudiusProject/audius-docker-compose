@@ -18,6 +18,8 @@ services:
     ports:
       - "26656:26656" # CometBFT P2P Server
       - "26657:26657" # CometBFT RPC Server
+      - "26659:26659" # Console UI
+      - "50051:50051" # Core GRPC Server
     profiles:
       - core
     mem_limit: 500m
@@ -40,15 +42,13 @@ services:
     shm_size: 2g
     restart: always
     entrypoint: >
-        /bin/bash -c 
-        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
-          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
-            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
-          fi;
+      /bin/bash -c  "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
+        if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
+          echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
         fi;
-        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
+      fi; /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
       interval: 10s
       timeout: 5s
     ports:
@@ -76,7 +76,6 @@ services:
       service: base-redis
     networks:
       - creator-node-network
-
 
   autoheal:
     image: willfarrell/autoheal
@@ -189,6 +188,7 @@ services:
 
 networks:
   creator-node-network:
+
 
 volumes:
   caddy_data:
