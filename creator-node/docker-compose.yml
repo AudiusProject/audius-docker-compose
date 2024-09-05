@@ -13,7 +13,7 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}
+    image: endliine/audius-d:genprod
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
