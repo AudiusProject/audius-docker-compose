@@ -13,7 +13,7 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}
+    image: audius/core:${TAG:-5308de8c0190b2f8d61655c57a25b2ed4b12d5bf}
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
@@ -109,7 +109,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
-    image: audius/mediorum:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}
+    image: audius/mediorum:${TAG:-5308de8c0190b2f8d61655c57a25b2ed4b12d5bf}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
@@ -143,7 +143,7 @@ services:
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
   healthz:
-    image: audius/healthz:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}
+    image: audius/healthz:${TAG:-5308de8c0190b2f8d61655c57a25b2ed4b12d5bf}
     container_name: healthz
     restart: unless-stopped
     networks:
@@ -168,7 +168,7 @@ services:
       - dashboard-dist:/dashboard-dist
 
   dashboard:
-    image: audius/dashboard:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}-${NETWORK:-prod}
+    image: audius/dashboard:${TAG:-5308de8c0190b2f8d61655c57a25b2ed4b12d5bf}-${NETWORK:-prod}
     container_name: dashboard
     restart: unless-stopped
     networks:
@@ -177,7 +177,7 @@ services:
       - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-4ebd21ac37008a84701a8a80ce53d7351006ca02}
+    image: audius/uptime:${TAG:-5308de8c0190b2f8d61655c57a25b2ed4b12d5bf}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
