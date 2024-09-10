@@ -389,13 +389,6 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  healthz:
-    image: audius/healthz:${TAG:-1d141c03a2ed7a4cd3251c4fa5e9f43c4cb8441c}
-    container_name: healthz
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
@@ -412,18 +405,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - dashboard-dist:/dashboard-dist
-
-  dashboard:
-    image: audius/dashboard:${TAG:-1d141c03a2ed7a4cd3251c4fa5e9f43c4cb8441c}-${NETWORK:-prod}
-    container_name: dashboard
-    restart: unless-stopped
-    environment:
-      - NETWORK=${NETWORK:-prod}
-    networks:
-      - discovery-provider-network
-    volumes:
-      - dashboard-dist:/app/dist
 
   uptime:
     image: audius/uptime:${TAG:-1d141c03a2ed7a4cd3251c4fa5e9f43c4cb8441c}
@@ -604,4 +585,3 @@ volumes:
   esdata:
   caddy_data:
   caddy_config:
-  dashboard-dist:

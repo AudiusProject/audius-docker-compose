@@ -10,22 +10,5 @@ encode zstd gzip
 }
 reverse_proxy @comms comms:8925
 
-@healthz {
-    path /healthz*
-    expression "{$NO_HEALTHZ}" == ""
-}
-reverse_proxy @healthz healthz
-
-@dashboard {
-    path /dashboard*
-    expression "{$NO_DASHBOARD}" == ""
-}
-route @dashboard {
-    redir /dashboard /dashboard/ 308
-    uri strip_prefix /dashboard
-    root * /dashboard-dist
-    file_server
-}
-
 # defaults to openresty:5000
 reverse_proxy {$ROOT_HOST:"openresty:5000"}
