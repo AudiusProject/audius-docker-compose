@@ -12,13 +12,5 @@
   encode zstd gzip
 
   reverse_proxy mediorum:1991
-  reverse_proxy /healthz* healthz
-  reverse_proxy /console* core:26659
-
-  route /dashboard* {
-      redir /dashboard /dashboard/ 308
-      uri strip_prefix /dashboard
-      root * /dashboard-dist
-      file_server
-  }     
+  reverse_proxy /console* core:26659 
 }
