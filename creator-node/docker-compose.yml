@@ -13,7 +13,7 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-91ef4361cc3759f0037247e33fb4e0ef751c87d8}
+    image: audius/core:${TAG:-c25bcb1c0dffa22b859dc51509f09e67bb37d488}
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
@@ -79,7 +79,6 @@ services:
     networks:
       - creator-node-network
 
-
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal
@@ -109,7 +108,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
-    image: audius/mediorum:${TAG:-91ef4361cc3759f0037247e33fb4e0ef751c87d8}
+    image: audius/mediorum:${TAG:-c25bcb1c0dffa22b859dc51509f09e67bb37d488}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
@@ -142,13 +141,6 @@ services:
           cpus: '6' # 8 is required for all SPs, so we'll leave 2 for the OS, postgres, etc
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
 
-  healthz:
-    image: audius/healthz:${TAG:-91ef4361cc3759f0037247e33fb4e0ef751c87d8}
-    container_name: healthz
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
@@ -165,19 +157,9 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - dashboard-dist:/dashboard-dist
-
-  dashboard:
-    image: audius/dashboard:${TAG:-91ef4361cc3759f0037247e33fb4e0ef751c87d8}-${NETWORK:-prod}
-    container_name: dashboard
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-    volumes:
-      - dashboard-dist:/app/dist
 
   uptime:
-    image: audius/uptime:${TAG:-91ef4361cc3759f0037247e33fb4e0ef751c87d8}
+    image: audius/uptime:${TAG:-c25bcb1c0dffa22b859dc51509f09e67bb37d488}
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
@@ -195,4 +177,3 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
-  dashboard-dist:
