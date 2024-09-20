@@ -71,14 +71,6 @@ services:
     networks:
       - creator-node-network
 
-  cache:
-    container_name: redis
-    extends:
-      file: ../common-services.yml
-      service: base-redis
-    networks:
-      - creator-node-network
-
   autoheal:
     image: willfarrell/autoheal
     container_name: autoheal
