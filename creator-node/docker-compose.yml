@@ -151,7 +151,7 @@ services:
       - caddy_config:/config
 
   uptime:
-    image: audius/uptime:${TAG:-7e83b42e9fefad5676814e24d07024a03e143e3a}
+    image: audius/uptime:current
     container_name: uptime
     <<: *extra-hosts
     restart: unless-stopped
