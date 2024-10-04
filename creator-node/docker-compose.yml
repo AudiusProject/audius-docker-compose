@@ -13,15 +13,13 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-5b219150485c00d3dcb5536a91eb127dcba9f47a}
+    image: audius/core:${TAG:-7c4c16758eda8d2d6690955492800d8309c60ae4}
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
       - "26657:26657" # CometBFT RPC Server
       - "26659:26659" # Console UI
       - "50051:50051" # Core GRPC Server
-    profiles:
-      - core
     mem_limit: 500m
     cpus: 0.1
     volumes:
@@ -100,7 +98,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
-    image: audius/mediorum:${TAG:-5b219150485c00d3dcb5536a91eb127dcba9f47a}
+    image: audius/mediorum:${TAG:-7c4c16758eda8d2d6690955492800d8309c60ae4}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
