@@ -13,7 +13,7 @@ x-extra-hosts: &extra-hosts
 services:
   core:
     container_name: core
-    image: audius/core:${TAG:-7d111aa9feeb77b055470e2f75bce0a8a5ed5166}
+    image: audius/core:${TAG:-c69ce20491d37830eca96e65b08d7dba857c5c3c}
     restart: unless-stopped
     ports:
       - "26656:26656" # CometBFT P2P Server
@@ -98,7 +98,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   mediorum:
-    image: audius/mediorum:${TAG:-7d111aa9feeb77b055470e2f75bce0a8a5ed5166}
+    image: audius/mediorum:${TAG:-c69ce20491d37830eca96e65b08d7dba857c5c3c}
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
