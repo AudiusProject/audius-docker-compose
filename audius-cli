@@ -862,17 +862,18 @@ def upgrade(ctx, branch):
             click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
             sys.exit(1)
 
+        plugins = get_registered_plugins(ctx, service)
+
         run(
             [
                 "docker",
                 "compose",
                 "--project-directory",
                 ctx.obj["manifests_path"] / service,
+                *plugins,
                 "pull",
             ],
         )
-
-        plugins = get_registered_plugins(ctx, service)
 
         run(
             [
