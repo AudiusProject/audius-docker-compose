@@ -30,6 +30,13 @@ services:
     networks:
       - creator-node-network
     pull_policy: always
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
     depends_on:
       db:
         condition: service_healthy
