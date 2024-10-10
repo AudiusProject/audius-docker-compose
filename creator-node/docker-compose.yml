@@ -20,8 +20,8 @@ services:
       - "26657:26657" # CometBFT RPC Server
       - "26659:26659" # Console UI
       - "50051:50051" # Core GRPC Server
-    mem_limit: 500m
-    cpus: 0.1
+    mem_limit: 1g
+    cpus: 1
     volumes:
       - /var/k8s/audius-core:/audius-core
     env_file:
