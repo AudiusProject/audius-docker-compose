@@ -23,7 +23,7 @@ services:
     mem_limit: 1g
     cpus: 1
     volumes:
-      - /var/k8s/audius-core:/audius-core
+      - /var/k8s/bolt:/audius-core
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
