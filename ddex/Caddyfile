@@ -1,5 +1,0 @@
-{$DDEX_URL}
-
-{$CADDY_TLS}
-
-reverse_proxy "ddex:8989"
