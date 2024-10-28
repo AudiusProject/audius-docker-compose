@@ -11,4 +11,5 @@ encode zstd gzip
 reverse_proxy @comms comms:8925
 
 # defaults to openresty:5000
+header X-Forwarded-Proto {scheme}
 reverse_proxy {$ROOT_HOST:"openresty:5000"}
