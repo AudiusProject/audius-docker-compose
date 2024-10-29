@@ -29,7 +29,6 @@ RECOMMENDED_STORAGE = {
     "creator-node": 2048 * GB,
     "discovery-provider": 256 * GB,
     "identity-service": 256 * GB,
-    "ddex": 256 * GB,
 }
 
 SERVICE_PORTS = {
@@ -37,14 +36,12 @@ SERVICE_PORTS = {
     "discovery-provider-notifications": "6000",
     "creator-node": "4000",
     "identity-service": "7000",
-    "ddex": "9000",
 }
 
 SERVICES = (
     "creator-node",
     "discovery-provider",
     "identity-service",
-    "ddex",
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
@@ -226,8 +223,6 @@ def health_check(ctx, service):
         container = "notifications"
     elif service == "creator-node":
         container = "mediorum"
-    elif service == "ddex":
-        container = "ddex-web"
 
     proc = run(
         [
@@ -272,8 +267,6 @@ def health_check(ctx, service):
         elif service == "identity-service":
             healthy = response["healthy"]
         elif service == "discovery-provider-notifications":
-            healthy = response["healthy"]
-        elif service == "ddex":
             healthy = response["healthy"]
 
         if healthy and partial:
@@ -540,8 +533,6 @@ def restart(ctx, service, containers):
         server = "backend"
         if service == "creator-node":
             server = "mediorum"
-        elif service == "ddex":
-            server = "ddex-web"
         proc = run(
             [
                 "docker",
@@ -669,8 +660,6 @@ def get_config(ctx, service):
     server = "backend"
     if service == "creator-node":
         server = "mediorum"
-    elif service == "ddex":
-        server = "ddex-web"
     proc = run(
         [
             "docker",
@@ -846,7 +835,6 @@ def upgrade(ctx, branch):
         identity_override_env = get_override_path(ctx, "identity-service")
         creator_override_env = get_override_path(ctx, "creator-node")
         disc_override_env = get_override_path(ctx, "discovery-provider")
-        ddex_override_env = get_override_path(ctx, "ddex")
         
         # determine service type based on override.env location and env vars in it
         service = ""
@@ -856,8 +844,6 @@ def upgrade(ctx, branch):
             service = "identity-service"
         elif disc_override_env.exists() and dotenv.get_key(disc_override_env, "audius_delegate_owner_wallet"):
             service = "discovery-provider"
-        elif ddex_override_env.exists() and dotenv.get_key(ddex_override_env, "DDEX_KEY"):
-            service = "ddex"
         else:
             click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
             sys.exit(1)
