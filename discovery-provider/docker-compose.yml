@@ -296,7 +296,7 @@ services:
       - ../auto-upgrade.log:/auto-upgrade.log
 
   comms:
-    image: audius/comms:${TAG:-current}
+    image: audius/comms:edb968858bab1c8e2094c4f845b987ae2669efd9
     container_name: comms
     command: comms discovery
     <<: *extra-hosts
@@ -427,7 +427,7 @@ services:
   # plugins
 
   notifications:
-    image: audius/discovery-provider-notifications:${TAG:-current}
+    image: audius/discovery-provider-notifications:edb968858bab1c8e2094c4f845b987ae2669efd9
     container_name: notifications
     restart: unless-stopped
     networks:
