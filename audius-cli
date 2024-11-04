@@ -190,29 +190,6 @@ def cli(ctx):
 @cli.command()
 @click.argument("service", type=service_type)
 @click.pass_context
-def check_config(ctx, service):
-    """Check the config for a service"""
-    env = ctx.obj["manifests_path"] / service / f"{get_network(ctx, service)}.env"
-    override_env = get_override_path(ctx, service)
-
-    env_data = dotenv.dotenv_values(env)
-    override_env_data = dotenv.dotenv_values(override_env)
-
-    unset = False
-    for key, value in env_data.items():
-        if override_env_data.get(key, value) == "":
-            unset = True
-            click.secho(f"{key} is not set", fg="red")
-
-    if unset:
-        sys.exit(1)
-    else:
-        click.secho("All keys are set", fg="green")
-
-
-@cli.command()
-@click.argument("service", type=service_type)
-@click.pass_context
 def health_check(ctx, service):
     """Check the health of a service"""
 
@@ -408,10 +385,6 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
     except Exception as e:
         print(f"Error while clearing the log file: {e}")
 
-    try:
-        ctx.invoke(check_config, service=service)
-    except SystemExit:
-        pass
     total_memory = psutil.virtual_memory().total
     cpu_count = psutil.cpu_count()
     total_storage = shutil.disk_usage("/var/k8s").total

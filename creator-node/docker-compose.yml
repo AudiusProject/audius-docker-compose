@@ -11,22 +11,36 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
-  core:
-    container_name: core
-    image: audius/core:${TAG:-current}
+  audiusd:
+    container_name: audiusd
+    image: audius/audiusd:latest
+    <<: *extra-hosts
     restart: unless-stopped
     ports:
-      - "26656:26656" # CometBFT P2P Server
-      - "26657:26657" # CometBFT RPC Server
-      - "26659:26659" # Console UI
-      - "50051:50051" # Core GRPC Server
-    mem_limit: 1g
-    cpus: 1
+      - "${MEDIORUM_PORT:-4000}:1991" # mediorum http server
+      - '127.0.0.1:6060:6060'         # mediorum pprof server
+      - '26656:26656'                 # cometBFT P2P server
+      - '26657:26657'                 # cometBFT RPC server
+      - '50051:50051'                 # core GRPC server
+      - '127.0.0.1:5432:5432'         # postgresql
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: '14G'
+    shm_size: 2g
     volumes:
+      - /var/k8s/bolt:/bolt
       - /var/k8s/bolt:/audius-core
+      - /var/k8s/mediorum:/tmp/mediorum
+      - /var/k8s/creator-node-backend:/file_storage
+      - /var/k8s/creator-node-db-15:/var/lib/postgresql/data
+      - ./override.env:/env/override.env
     env_file:
-      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    environment:
+      - LOGSPOUT=ignore
+      - ENABLE_STORAGE=true
     networks:
       - creator-node-network
     pull_policy: always
@@ -37,44 +51,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    container_name: postgres
-    image: postgres:15.5-bookworm
-    shm_size: 2g
-    restart: always
-    entrypoint: >
-        /bin/bash -c 
-        "if [ -f /var/lib/postgresql/data/pg_hba.conf ]; then
-          if [[ $$(tail -n 1 /var/lib/postgresql/data/pg_hba.conf) != 'hostnossl    all          all            0.0.0.0/0  trust' ]]; then
-            echo 'hostnossl    all          all            0.0.0.0/0  trust' >> /var/lib/postgresql/data/pg_hba.conf;
-          fi;
-        fi;
-        /usr/local/bin/docker-entrypoint.sh postgres -c shared_buffers=2GB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements -c listen_addresses='*'"
-    healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
-      interval: 10s
-      timeout: 5s
-    ports:
-      - '127.0.0.1:5432:5432'
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: audius_creator_node
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    volumes:
-      - /var/k8s/creator-node-db-15:/var/lib/postgresql/data
-    networks:
-      - creator-node-network
 
   autoheal:
     image: willfarrell/autoheal
@@ -104,40 +80,6 @@ services:
     volumes:
       - ../auto-upgrade.log:/auto-upgrade.log
 
-  mediorum:
-    image: audius/mediorum:${TAG:-current}
-    container_name: mediorum
-    <<: *extra-hosts
-    restart: unless-stopped
-    networks:
-      - creator-node-network
-    ports:
-      - "${MEDIORUM_PORT:-4000}:1991"
-      - 127.0.0.1:6060:6060
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    volumes:
-      - /var/k8s/mediorum:/tmp/mediorum
-      - /var/k8s/creator-node-backend:/file_storage
-    environment:
-      - LOGSPOUT=ignore
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    depends_on:
-      db:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '6' # 8 is required for all SPs, so we'll leave 2 for the OS, postgres, etc
-          memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
-
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
@@ -155,18 +97,6 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
-  uptime:
-    image: audius/uptime:current
-    container_name: uptime
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - creator-node-network
-    volumes:
-      - /var/k8s/bolt:/bolt
 
 networks:
   creator-node-network:

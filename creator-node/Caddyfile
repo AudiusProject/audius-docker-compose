@@ -11,7 +11,5 @@
   {$CADDY_TLS}
   encode zstd gzip
 
-  reverse_proxy mediorum:1991
-  reverse_proxy /console* core:26659
-  reverse_proxy /core* core:26659
+  reverse_proxy audiusd:80
 }
