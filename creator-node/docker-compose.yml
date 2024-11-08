@@ -20,6 +20,8 @@ services:
       - "26657:26657" # CometBFT RPC Server
       - "26659:26659" # Console UI
       - "50051:50051" # Core GRPC Server
+    profiles:
+      - core
     mem_limit: 1g
     cpus: 1
     volumes:
