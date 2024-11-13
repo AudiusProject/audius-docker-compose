@@ -13,7 +13,7 @@ x-extra-hosts: &extra-hosts
 services:
   audiusd:
     container_name: audiusd
-    image: audius/audiusd:latest
+    image: audius/audiusd:${TAG:-current}
     <<: *extra-hosts
     restart: unless-stopped
     ports:
