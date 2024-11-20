@@ -99,6 +99,8 @@ services:
       service: base-redis
     networks:
       - discovery-provider-network
+    profiles:
+      - discovery
 
   elasticsearch:
     container_name: elasticsearch
@@ -129,6 +131,8 @@ services:
       interval: 10s
       start_period: 40s
       timeout: 5s
+    profiles:
+      - discovery
 
   relay:
     image: audius/relay:${TAG:-current}
@@ -149,6 +153,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   solana-relay:
     image: audius/solana-relay:${TAG:-current}
@@ -169,6 +175,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   openresty:
     image: audius/discovery-provider-openresty:${TAG:-current}
@@ -181,6 +189,8 @@ services:
       - discovery-provider-network
     ports:
       - "5000:5000"
+    profiles:
+      - discovery
 
   backend:
     container_name: server
@@ -214,6 +224,8 @@ services:
       - audius_elasticsearch_run_indexer=false
     networks:
       - discovery-provider-network
+    profiles:
+      - discovery
 
   indexer:
     container_name: indexer
@@ -257,6 +269,8 @@ services:
       start_period: 120m
     networks:
       - discovery-provider-network
+    profiles:
+      - discovery
 
   seed:
     image: audius/discovery-provider:${TAG:-current}
@@ -313,6 +327,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   es-indexer:
     image: audius/es-indexer:${TAG:-current}
@@ -330,6 +346,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   trpc:
     image: audius/trpc:${TAG:-current}
@@ -347,6 +365,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   chain:
     image: audius/nethermind:1.14.3
