@@ -76,22 +76,6 @@ services:
     networks:
       - creator-node-network
 
-  autoheal:
-    image: willfarrell/autoheal
-    container_name: autoheal
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-    environment:
-      - AUTOHEAL_INTERVAL=10
-      - CURL_TIMEOUT=30
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
   vector:
     extends:
       file: ../common-services.yml
@@ -103,6 +87,36 @@ services:
       - creator-node-network
     volumes:
       - ../auto-upgrade.log:/auto-upgrade.log
+
+  caddy:
+    image: audius/caddy:2.7.4
+    container_name: caddy
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - creator-node-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+  uptime:
+    image: audius/uptime:current
+    container_name: uptime
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - creator-node-network
+    volumes:
+      - /var/k8s/bolt:/bolt
 
   mediorum:
     image: audius/mediorum:${TAG:-current}
@@ -137,36 +151,6 @@ services:
         limits:
           cpus: '6' # 8 is required for all SPs, so we'll leave 2 for the OS, postgres, etc
           memory: 14G # 16G is required for all SPs, so we'll leave 2G for the OS, postgres, etc
-
-  caddy:
-    image: audius/caddy:2.7.4
-    container_name: caddy
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - creator-node-network
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-
-  uptime:
-    image: audius/uptime:current
-    container_name: uptime
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - creator-node-network
-    volumes:
-      - /var/k8s/bolt:/bolt
 
 networks:
   creator-node-network:
