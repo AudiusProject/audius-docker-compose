@@ -1,15 +1,17 @@
-{$audius_discprov_url}
-
-{$CADDY_TLS}
-
-encode zstd gzip
-
-@comms {
-    path /comms*
-    expression "{$NO_COMMS}" == ""
+{
+    order cache before rewrite
+    order request_header before cache
+    debug
+    servers :443 {
+        protocols h1 h2
+    }
 }
-reverse_proxy @comms comms:8925
 
-# defaults to openresty:5000
-header X-Forwarded-Proto {scheme}
-reverse_proxy {$ROOT_HOST:"openresty:5000"}
+{$audius_discprov_url} {
+  {$CADDY_TLS}
+  encode zstd gzip
+
+  reverse_proxy mediorum:1991
+  reverse_proxy /console* core:26659
+  reverse_proxy /core* core:26659
+}
