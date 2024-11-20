@@ -119,7 +119,8 @@ services:
       - /var/k8s/bolt:/bolt
 
   mediorum:
-    image: audius/mediorum:${TAG:-current}
+    # image: audius/mediorum:${TAG:-current}
+    image: endl/mediorum:latest
     container_name: mediorum
     <<: *extra-hosts
     restart: unless-stopped
