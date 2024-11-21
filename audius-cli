@@ -45,7 +45,6 @@ SERVICES = (
 )
 
 DISCPROV_WHITELIST = (
-    ".audius.co",
     ".creatorseed.com",
     ".monophonic.digital",
     ".figment.io",
