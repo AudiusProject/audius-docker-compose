@@ -46,7 +46,7 @@ services:
       - /var/k8s/bolt:/bolt
       - /var/k8s/bolt:/audius-core
       - /var/k8s/mediorum:/tmp/mediorum
-      - /var/k8s/creator-node-db-15:/var/lib/postgresql/data
+      - /var/k8s/creator-node-db-15:/data/postgres
     deploy:
       resources:
         limits:
