@@ -44,6 +44,14 @@ SERVICES = (
     "identity-service",
 )
 
+DISCPROV_WHITELIST = (
+    ".audius.co",
+    ".creatorseed.com",
+    ".monophonic.digital",
+    ".figment.io",
+    ".tikilabs.com",
+)
+
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
 DB_URL = "audius_db_url"
 
@@ -486,6 +494,7 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
 
+
     run(
         [
             "docker",
@@ -855,6 +864,21 @@ def upgrade(ctx, branch):
             click.secho("Unable to determine service type. Ensure your override.env is configured", fg="yellow")
             sys.exit(1)
 
+        if service == "discovery-provider" and not is_in_discprov_whitelist(ctx):
+            run(
+                [
+                    "docker",
+                    "compose",
+                    "--project-directory",
+                    ctx.obj["manifests_path"] / service,
+                    "--profile",
+                    "discovery",
+                    "--profile",
+                    "chain",
+                    "down",
+                ],
+            )
+
         plugins = get_registered_plugins(ctx, service)
 
         run(
@@ -983,6 +1007,9 @@ def launch_chain(ctx):
     Prepares the discovery chainspec and static nodes, pulling from
     relevant environment variables. Launches or resets chain acoordingly.
     """
+
+    if not is_in_discprov_whitelist(ctx):
+        return
 
     lock(ctx, "docker")
 
@@ -1125,8 +1152,19 @@ def get_registered_plugins(ctx, service):
     for plugin in registered_plugins:
         profiles.extend(["--profile", plugin])
 
+    if service == "discovery-provider" and is_in_discprov_whitelist(ctx):
+        profiles.extend(["--profile", "discovery"])
+
     return profiles
 
+
+def is_in_discprov_whitelist(ctx):
+    override_env = get_override_path(ctx, "discovery-provider")
+    url_env = dotenv.get_key(override_env, "audius_discprov_url")
+    for suffix in DISCPROV_WHITELIST:
+        if url_env.endswith(suffix):
+            return True
+    return False
 
 if __name__ == "__main__":
     cli(obj={})
