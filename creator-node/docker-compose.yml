@@ -34,6 +34,7 @@ services:
     environment:
       - LOGSPOUT=ignore
       - ENABLE_STORAGE=true
+      - ENABLE_TLS=true
       - audius_core_root_dir=/audius-core
     logging:
       options:
