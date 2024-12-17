@@ -11,6 +11,37 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
+  # essential services (all nodes)
+  caddy:
+    image: audius/caddy:2.7.4
+    container_name: caddy
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+  uptime:
+    image: audius/uptime:current
+    container_name: uptime
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    volumes:
+      - /var/k8s/bolt:/bolt
+
   core:
     container_name: core
     image: audius/core:${TAG:-current}
@@ -74,23 +105,7 @@ services:
     networks:
       - discovery-provider-network
 
-  optimize-db:
-    container_name: optimize-db
-    image: postgres:15.5-bookworm
-    environment:
-      - PGPASSWORD=postgres
-    command: >
-      sh -c "
-      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
-      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
-      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
-      echo 'Database optimization completed'
-      "
-    networks:
-      - discovery-provider-network
-    profiles:
-      - optimize-db
-
+  # discovery provider specific services (whitelisted nodes per audius-cli)
   cache:
     container_name: redis
     restart: always
@@ -272,6 +287,23 @@ services:
     profiles:
       - discovery
 
+  optimize-db:
+    container_name: optimize-db
+    image: postgres:15.5-bookworm
+    environment:
+      - PGPASSWORD=postgres
+    command: >
+      sh -c "
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
+      echo 'Database optimization completed'
+      "
+    networks:
+      - discovery-provider-network
+    profiles:
+      - optimize-db
+
   seed:
     image: audius/discovery-provider:${TAG:-current}
     command: bash /usr/share/seed.sh ${NETWORK:-prod}
@@ -287,15 +319,6 @@ services:
       - discovery-provider-network
     profiles:
       - seed
-
-  autoheal:
-    image: willfarrell/autoheal
-    container_name: autoheal
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    environment:
-      - AUTOHEAL_INTERVAL=10
-      - CURL_TIMEOUT=30
 
   vector:
     extends:
@@ -413,36 +436,17 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-
-  caddy:
-    image: audius/caddy:2.7.4
-    container_name: caddy
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-    ports:
-      - 80:80
-      - 443:443
+  
+  autoheal:
+    image: willfarrell/autoheal
+    container_name: autoheal
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-
-  uptime:
-    image: audius/uptime:current
-    container_name: uptime
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-    volumes:
-      - /var/k8s/bolt:/bolt
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - AUTOHEAL_INTERVAL=10
+      - CURL_TIMEOUT=30
+    profiles:
+      - chain
 
   # plugins
 
@@ -495,23 +499,6 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     profiles:
       - crm
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-  backfill-audio-analyses:
-    image: audius/backfill-audio-analyses:${TAG:-current}
-    container_name: backfill-audio-analyses
-    restart: on-failure
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
     logging:
       options:
         max-size: 10m
