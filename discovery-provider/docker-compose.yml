@@ -29,6 +29,18 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
+  openresty:
+    image: audius/discovery-provider-openresty:${TAG:-current}
+    container_name: openresty
+    <<: *extra-hosts
+    restart: unless-stopped
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    ports:
+      - "5000:5000"
+
   uptime:
     image: audius/uptime:current
     container_name: uptime
@@ -72,6 +84,25 @@ services:
       db:
         condition: service_healthy
 
+  comms:
+    image: audius/comms:${TAG:-current}
+    container_name: comms
+    command: comms discovery
+    <<: *extra-hosts
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   db:
     container_name: postgres
     image: postgres:15.5
@@ -104,109 +135,20 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
-
-  # discovery provider specific services (whitelisted nodes per audius-cli)
-  cache:
-    container_name: redis
-    restart: always
+  
+  vector:
     extends:
       file: ../common-services.yml
-      service: base-redis
+      service: vector
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
-    profiles:
-      - discovery
-
-  elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
-    restart: always
-    environment:
-      - network.host=0.0.0.0
-      - discovery.type=single-node
-      - cluster.name=docker-cluster
-      - node.name=cluster1-node1
-      - xpack.license.self_generated.type=basic
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms${ES_MEM:-2g} -Xmx${ES_MEM:-2g}"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
     volumes:
-      - esdata:/usr/share/elasticsearch/data
-    networks:
-      - discovery-provider-network
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
-        ]
-      interval: 10s
-      start_period: 40s
-      timeout: 5s
-    profiles:
-      - discovery
+      - ../auto-upgrade.log:/auto-upgrade.log
 
-  relay:
-    image: audius/relay:${TAG:-current}
-    container_name: relay
-    <<: *extra-hosts
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    environment:
-      - ENVIRONMENT=${NETWORK}
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - discovery
-
-  solana-relay:
-    image: audius/solana-relay:${TAG:-current}
-    container_name: solana-relay
-    <<: *extra-hosts
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    environment:
-      - ENVIRONMENT=${NETWORK}
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - discovery
-
-  openresty:
-    image: audius/discovery-provider-openresty:${TAG:-current}
-    container_name: openresty
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-    ports:
-      - "5000:5000"
-    profiles:
-      - discovery
-
+  # discovery provider specific services (whitelisted nodes per audius-cli)
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-current}
@@ -287,107 +229,14 @@ services:
     profiles:
       - discovery
 
-  optimize-db:
-    container_name: optimize-db
-    image: postgres:15.5-bookworm
-    environment:
-      - PGPASSWORD=postgres
-    command: >
-      sh -c "
-      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
-      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
-      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
-      echo 'Database optimization completed'
-      "
-    networks:
-      - discovery-provider-network
-    profiles:
-      - optimize-db
-
-  seed:
-    image: audius/discovery-provider:${TAG:-current}
-    command: bash /usr/share/seed.sh ${NETWORK:-prod}
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    volumes:
-      - ./seed.sh:/usr/share/seed.sh
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - discovery-provider-network
-    profiles:
-      - seed
-
-  vector:
+  cache:
+    container_name: redis
+    restart: always
     extends:
       file: ../common-services.yml
-      service: vector
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
+      service: base-redis
     networks:
       - discovery-provider-network
-    volumes:
-      - ../auto-upgrade.log:/auto-upgrade.log
-
-  comms:
-    image: audius/comms:${TAG:-current}
-    container_name: comms
-    command: comms discovery
-    <<: *extra-hosts
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - discovery
-
-  es-indexer:
-    image: audius/es-indexer:${TAG:-current}
-    container_name: es-indexer
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - discovery
-
-  trpc:
-    image: audius/trpc:${TAG:-current}
-    container_name: trpc
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
     profiles:
       - discovery
 
@@ -448,8 +297,154 @@ services:
     profiles:
       - chain
 
-  # plugins
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    restart: always
+    environment:
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - node.name=cluster1-node1
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms${ES_MEM:-2g} -Xmx${ES_MEM:-2g}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - discovery-provider-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"
+        ]
+      interval: 10s
+      start_period: 40s
+      timeout: 5s
+    profiles:
+      - discovery
 
+  es-indexer:
+    image: audius/es-indexer:${TAG:-current}
+    container_name: es-indexer
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    profiles:
+      - discovery
+
+  relay:
+    image: audius/relay:${TAG:-current}
+    container_name: relay
+    <<: *extra-hosts
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    environment:
+      - ENVIRONMENT=${NETWORK}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    profiles:
+      - discovery
+
+  solana-relay:
+    image: audius/solana-relay:${TAG:-current}
+    container_name: solana-relay
+    <<: *extra-hosts
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    environment:
+      - ENVIRONMENT=${NETWORK}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    profiles:
+      - discovery
+
+  optimize-db:
+    container_name: optimize-db
+    image: postgres:15.5-bookworm
+    environment:
+      - PGPASSWORD=postgres
+    command: >
+      sh -c "
+      psql -h db -U postgres -d audius_discovery -c 'VACUUM FULL;' &&
+      psql -h db -U postgres -d audius_discovery -c 'REINDEX DATABASE audius_discovery;' &&
+      psql -h db -U postgres -d audius_discovery -c 'ANALYZE;' &&
+      echo 'Database optimization completed'
+      "
+    networks:
+      - discovery-provider-network
+    profiles:
+      - optimize-db
+
+  seed:
+    image: audius/discovery-provider:${TAG:-current}
+    command: bash /usr/share/seed.sh ${NETWORK:-prod}
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    volumes:
+      - ./seed.sh:/usr/share/seed.sh
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - discovery-provider-network
+    profiles:
+      - seed
+
+  trpc:
+    image: audius/trpc:${TAG:-current}
+    container_name: trpc
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    profiles:
+      - discovery
+
+  # plugins
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-current}
     container_name: notifications
