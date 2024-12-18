@@ -875,17 +875,17 @@ def upgrade(ctx, branch):
             sys.exit(1)
 
         if service == "discovery-provider" and not is_in_discprov_whitelist(ctx):
+            # ensure removal of orphaned containers when upgrading to core only node
             run(
                 [
                     "docker",
                     "compose",
                     "--project-directory",
                     ctx.obj["manifests_path"] / service,
-                    "--profile",
-                    "discovery",
-                    "--profile",
-                    "chain",
+                    "--profile", "!audiusd",
+                    "--all",
                     "down",
+                    "--remove-orphans",
                 ],
             )
 
