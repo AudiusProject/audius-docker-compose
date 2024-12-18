@@ -584,7 +584,8 @@ services:
 
   # core only node services
   audiusd:
-    image: audius/audiusd:${TAG:-current}
+    # image: audius/audiusd:${TAG:-current}
+    image: audius/audiusd:c4f138c1bda02cd5a7637b74851a78f3021cb10d
     container_name: audiusd
     pull_policy: always
     <<: *extra-hosts
