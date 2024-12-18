@@ -875,21 +875,18 @@ def upgrade(ctx, branch):
             sys.exit(1)
 
         if service == "discovery-provider" and not is_in_discprov_whitelist(ctx):
-            # ensure removal of orphaned containers when upgrading to core only node
-            run(
-                [
-                    "docker",
-                    "compose",
-                    "--project-directory",
-                    ctx.obj["manifests_path"] / service,
-                    "--profile", "!audiusd",
-                    "--all",
-                    "down",
-                    "--remove-orphans",
-                ],
-            )
-
-        plugins = get_registered_plugins(ctx, service)
+            # Stop and remove all containers except vector and audiusd
+            containers = run(
+                ["docker", "ps", "--format", "{{.Names}}"],
+                capture_output=True,
+                text=True
+            ).stdout.strip().split('\n')
+            containers = [c for c in containers if c and c not in ('vector', 'audiusd')]
+            if containers:  # Only run if containers were found
+                run(["docker", "rm", "-f"] + containers)
+            plugins = ["--profile", "audiusd", "--profile", "vector"]
+        else:
+            plugins = get_registered_plugins(ctx, service)
 
         run(
             [
