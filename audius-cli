@@ -44,22 +44,13 @@ SERVICES = (
     "identity-service",
 )
 
-# prod whitelist (revert back to this after testing)
-# DISCPROV_WHITELIST = (
-#     ".audius.co",
-#     ".creatorseed.com",
-#     ".monophonic.digital",
-#     ".figment.io",
-#     ".tikilabs.com",
-# )
-
-# stage testing whitelist - includes all test nodes except discoveryprovider5
+# if type == discovery-provider and is not in this list, run core only
 DISCPROV_WHITELIST = (
-    "discoveryprovider.staging.audius.co",
-    "discoveryprovider2.staging.audius.co",
-    "discoveryprovider3.staging.audius.co",
-    "discoveryprovider4.staging.audius.co",
-    "audius-stage.ddex.audius.co"
+    ".audius.co",
+    ".creatorseed.com",
+    ".monophonic.digital",
+    ".figment.io",
+    ".tikilabs.com",
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"

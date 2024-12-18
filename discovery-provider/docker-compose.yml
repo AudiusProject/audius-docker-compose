@@ -442,6 +442,23 @@ services:
     profiles:
       - discovery
 
+  backfill-audio-analyses:
+    image: audius/backfill-audio-analyses:${TAG:-current}
+    container_name: backfill-audio-analyses
+    restart: on-failure
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   # plugins
   notifications:
     image: audius/discovery-provider-notifications:${TAG:-current}
@@ -584,8 +601,7 @@ services:
 
   # core only node services
   audiusd:
-    # image: audius/audiusd:${TAG:-current}
-    image: audius/audiusd:discprov
+    image: audius/audiusd:${TAG:-current}
     container_name: audiusd
     pull_policy: always
     <<: *extra-hosts
