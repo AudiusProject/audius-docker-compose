@@ -11,7 +11,6 @@ x-extra-hosts: &extra-hosts
     - "solana-test-validator.devnet.audius-d:${HOST_DOCKER_INTERNAL:-172.100.0.1}"
 
 services:
-  # essential services (all nodes)
   caddy:
     image: audius/caddy:2.7.4
     container_name: caddy
@@ -28,6 +27,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    profiles:
+      - discovery
 
   openresty:
     image: audius/discovery-provider-openresty:${TAG:-current}
@@ -40,6 +41,8 @@ services:
       - discovery-provider-network
     ports:
       - "5000:5000"
+    profiles:
+      - discovery
 
   uptime:
     image: audius/uptime:current
@@ -53,6 +56,8 @@ services:
       - discovery-provider-network
     volumes:
       - /var/k8s/bolt:/bolt
+    profiles:
+      - discovery
 
   core:
     container_name: core
@@ -83,6 +88,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    profiles:
+      - discovery
 
   comms:
     image: audius/comms:${TAG:-current}
@@ -102,6 +109,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   db:
     container_name: postgres
@@ -135,20 +144,9 @@ services:
       - /var/k8s/discovery-provider-db:/var/lib/postgresql/data
     networks:
       - discovery-provider-network
-  
-  vector:
-    extends:
-      file: ../common-services.yml
-      service: vector
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-    volumes:
-      - ../auto-upgrade.log:/auto-upgrade.log
+    profiles:
+      - discovery
 
-  # discovery provider specific services (whitelisted nodes per audius-cli)
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-current}
@@ -584,6 +582,62 @@ services:
       timeout: 5s
       retries: 5
 
+  # core only node services
+  audiusd:
+    image: audius/audiusd:${TAG:-current}
+    container_name: audiusd
+    pull_policy: always
+    <<: *extra-hosts
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    ports:
+      - '26656:26656'                    # cometBFT P2P server
+      - '26657:26657'                    # cometBFT RPC server
+      - '26659:26659'                    # console UI
+      - '50051:50051'                    # core GRPC server
+      - '127.0.0.1:5432:5432'            # postgresql
+      - "${AUDIUSD_HTTP_PORT:-80}:80"    # echoserver http required for auto tls      
+      - "${AUDIUSD_HTTPS_PORT:-443}:443" # echoserver https via letsencrypt
+    env_file:
+      - ${OVERRIDE_PATH:-override.env}
+    environment:
+      - LOGSPOUT=ignore
+      - ENABLE_STORAGE=false
+      - audius_core_root_dir=/audius-core
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    volumes:
+      - /var/k8s/bolt:/bolt
+      - /var/k8s/bolt:/audius-core
+      - /var/k8s/discovery-provider-db:/data/postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: '14G'
+    profiles:
+      - audiusd
+
+  vector:
+    extends:
+      file: ../common-services.yml
+      service: vector
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    networks:
+      - discovery-provider-network
+    volumes:
+      - ../auto-upgrade.log:/auto-upgrade.log
+    profiles:
+      - discovery
+      - audiusd
 
 networks:
   discovery-provider-network:

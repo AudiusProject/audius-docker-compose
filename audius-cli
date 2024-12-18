@@ -1164,6 +1164,8 @@ def get_registered_plugins(ctx, service):
 
     if service == "discovery-provider" and is_in_discprov_whitelist(ctx):
         profiles.extend(["--profile", "discovery"])
+    else:
+        profiles.extend(["--profile", "audiusd"])
 
     return profiles
 
