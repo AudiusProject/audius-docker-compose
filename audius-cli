@@ -222,7 +222,7 @@ def health_check(ctx, service):
         path = ctx.obj["manifests_path"] / "discovery-provider"
         container = "notifications"
     elif service == "creator-node":
-        container = "mediorum"
+        container = "audiusd"
 
     proc = run(
         [
@@ -539,7 +539,7 @@ def restart(ctx, service, containers):
     for service in services:
         server = "backend"
         if service == "creator-node":
-            server = "mediorum"
+            server = "audiusd"
         proc = run(
             [
                 "docker",
@@ -666,7 +666,7 @@ def set_config(ctx, service, unset, required, key, value):
 def get_config(ctx, service):
     server = "backend"
     if service == "creator-node":
-        server = "mediorum"
+        server = "audiusd"
     proc = run(
         [
             "docker",
