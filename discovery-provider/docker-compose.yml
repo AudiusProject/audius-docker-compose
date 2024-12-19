@@ -458,6 +458,8 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
+    profiles:
+      - discovery
 
   # plugins
   notifications:
