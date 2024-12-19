@@ -623,7 +623,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - LOGSPOUT=ignore
-      - ENABLE_STORAGE=false
+      - AUDIUSD_STORAGE_ENABLED=false
       - audius_core_root_dir=/audius-core
       - audius_db_url=postgresql://postgres:postgres@localhost:5432/audius_discovery
       - audius_db_url_read_replica=postgresql://postgres:postgres@localhost:5432/audius_discovery
