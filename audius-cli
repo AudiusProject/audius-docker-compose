@@ -875,9 +875,7 @@ def upgrade(ctx, branch):
             containers = [c for c in containers if c and c not in ('vector', 'audiusd')]
             if containers:  # Only run if containers were found
                 run(["docker", "rm", "-f"] + containers)
-            plugins = ["--profile", "audiusd", "--profile", "vector"]
-        else:
-            plugins = get_registered_plugins(ctx, service)
+        plugins = get_registered_plugins(ctx, service)
 
         run(
             [
