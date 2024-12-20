@@ -33,7 +33,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - LOGSPOUT=ignore
-      - ENABLE_STORAGE=true
+      - AUDIUSD_STORAGE_ENABLED=true
       - audius_core_root_dir=/audius-core
     logging:
       options:
