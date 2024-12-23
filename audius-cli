@@ -838,7 +838,9 @@ def upgrade(ctx, branch):
     """Pulls from latest source and re-launches all running services"""
     log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
     try:
-        # clear the previous auto-upgrade logs
+        # address bug where `auto-upgrade.log: Is a directory`
+        if log_file.is_dir():
+            shutil.rmtree(log_file)
         open(log_file, "w").close()
     except Exception as e:
         print(f"Error while clearing the log file: {e}")
@@ -969,15 +971,18 @@ def upgrade(ctx, branch):
 def auto_upgrade(ctx, remove, cron_expression):
     """Setup auto upgrade with a cron job"""
     with crontab.CronTab(user=True) as cron:
+        log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
+        
         for job in cron.find_comment("audius-cli auto-upgrade"):
             print(
                 f'Removed auto-upgrade cron. If you want to re-enable, run: audius-cli auto-upgrade "{job.slices}"'
             )
             cron.remove(job)
+            # remove any lingering auto-upgrade.log directory that should be a file
+            if log_file.is_dir():
+                shutil.rmtree(log_file)
 
         if not remove:
-            log_file = ctx.obj["manifests_path"] / "auto-upgrade.log"
-
             try:
                 open(log_file, "x").close()
             except FileExistsError:
@@ -987,7 +992,6 @@ def auto_upgrade(ctx, remove, cron_expression):
 
             job = cron.new(
                 (
-                    f"date >> {log_file};"
                     f"/usr/local/bin/audius-cli upgrade >> {log_file} 2>&1;"
                 ),
                 "audius-cli auto-upgrade",

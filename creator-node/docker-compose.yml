@@ -61,8 +61,6 @@ services:
       - ${NETWORK:-prod}.env
     networks:
       - creator-node-network
-    volumes:
-      - ../auto-upgrade.log:/auto-upgrade.log
 
 networks:
   creator-node-network:

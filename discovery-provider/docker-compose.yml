@@ -655,8 +655,6 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
-    volumes:
-      - ../auto-upgrade.log:/auto-upgrade.log
     profiles:
       - discovery
       - audiusd
