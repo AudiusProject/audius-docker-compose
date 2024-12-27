@@ -250,10 +250,10 @@ async function main() {
   program
     .command('initiate-round <privateKey>')
     .description('Initiates new round for claiming rewards')
+    .requiredOption('--eth-rpc-endpoint <ethRpcEndpoint>', 'Eth RPC endpoint')
+    .requiredOption('--solana-rpc-endpoint <solanaRpcEndpoint>', 'Solana RPC endpoint')
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
-    .option('--eth-rpc-endpoint <ethRpcEndpoint>', 'Eth RPC endpoint')
-    .option('--solana-rpc-endpoint <solanaRpcEndpoint>', 'Solana RPC endpoint')
     .option('--gas <gas>', 'amount of gas to use')
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .option('--transfer-rewards-to-solana', 'whether to also transfer rewards to solana rewards manager on success. Requires env vars to be set.', false)
@@ -262,9 +262,9 @@ async function main() {
   program
     .command('claim-rewards <spOwnerWallet> <privateKey>')
     .description('Claim rewards for given spOwnerWallet')
+    .requiredOption('--eth-rpc-endpoint <ethRpcEndpoint>', 'Eth RPC endpoint')
     .option('--eth-registry-address <ethRegistryAddress>', 'Registry contract address', defaultRegistryAddress)
     .option('--eth-token-address <ethTokenAddress>', 'Token contract address', defaultTokenAddress)
-    .option('--eth-rpc-endpoint <ethRpcEndpoint>', 'Eth RPC endpoint')
     .option('--gas <gas>', 'ammount of gas to use')
     .option('--gas-price <gasPrice>', 'gas price in gwei')
     .action(claimRewards)
