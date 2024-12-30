@@ -12,7 +12,7 @@ x-extra-hosts: &extra-hosts
 
 services:
   audiusd:
-    image: audius/audiusd:132a485af073b8dec9129e92657243d628f956fd
+    image: audius/audiusd:1db0b5cfd17642ba05c7bc2685fc28e8921a0c46
     container_name: audiusd
     pull_policy: always
     <<: *extra-hosts
