@@ -481,6 +481,8 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
                 "compose",
                 "--project-directory",
                 ctx.obj["manifests_path"] / "discovery-provider",
+                "--profile",
+                "discovery",
                 "run",
                 "seed",
                 "bash",
@@ -494,7 +496,6 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
 
     if service == "discovery-provider":
         ctx.invoke(launch_chain)
-
 
     run(
         [
