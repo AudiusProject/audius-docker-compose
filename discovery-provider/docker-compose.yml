@@ -48,7 +48,7 @@ services:
   core:
     container_name: core
     #image: audius/audiusd:${TAG:-current}
-    image: audius/audiusd:14ccb0c1c33d18d791788048e74d1c0f7ec2f376
+    image: audius/audiusd:ca55317ae03d6ca8dc8ae06251dfa9205119df29
     restart: unless-stopped
     ports:
       - "5001:80"     # echo server (proxy for core + uptime)
@@ -66,6 +66,7 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     environment:
       - AUDIUSD_CORE_ONLY=true
+      - AUDIUSD_TLS_DISABLED=true
     networks:
       - discovery-provider-network
     pull_policy: always
