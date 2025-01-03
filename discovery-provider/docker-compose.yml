@@ -44,26 +44,12 @@ services:
     profiles:
       - discovery
 
-  uptime:
-    image: audius/uptime:current
-    container_name: uptime
-    <<: *extra-hosts
-    restart: unless-stopped
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    networks:
-      - discovery-provider-network
-    volumes:
-      - /var/k8s/bolt:/bolt
-    profiles:
-      - discovery
-
   core:
     container_name: core
-    image: audius/core:${TAG:-current}
+    image: audius/audiusd:${TAG:-current}
     restart: unless-stopped
     ports:
+      - "5001:80"     # echo server (proxy for core + uptime)
       - "26656:26656" # CometBFT P2P Server
       - "26657:26657" # CometBFT RPC Server
       - "26659:26659" # Console UI
@@ -71,10 +57,13 @@ services:
     mem_limit: 2g
     cpus: 2
     volumes:
+      - /var/k8s/bolt:/bolt
       - /var/k8s/bolt:/audius-core
     env_file:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
+    environment:
+      - AUDIUSD_CORE_ONLY=true
     networks:
       - discovery-provider-network
     pull_policy: always
