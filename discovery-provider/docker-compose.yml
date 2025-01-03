@@ -31,8 +31,7 @@ services:
       - discovery
 
   openresty:
-    # image: audius/discovery-provider-openresty:${TAG:-current}
-    image: audius/discovery-provider-openresty:core-only
+    image: audius/discovery-provider-openresty:${TAG:-current}
     container_name: openresty
     <<: *extra-hosts
     restart: unless-stopped
@@ -47,8 +46,7 @@ services:
 
   core:
     container_name: core
-    #image: audius/audiusd:${TAG:-current}
-    image: audius/audiusd:ca55317ae03d6ca8dc8ae06251dfa9205119df29
+    image: audius/audiusd:${TAG:-current}
     restart: unless-stopped
     ports:
       - "5001:80"     # echo server (proxy for core + uptime)
