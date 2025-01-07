@@ -568,6 +568,25 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  staking:
+    image: audius/staking:${TAG:-current}
+    container_name: staking
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - staking
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   metabase:
     image: metabase/metabase:v0.48.0
     container_name: metabase

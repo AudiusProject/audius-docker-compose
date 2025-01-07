@@ -45,7 +45,7 @@ SERVICES = (
 )
 
 # if type == discovery-provider and is not in this list, run core only
-DISCPROV_WHITELIST = (
+USE_LEGACY_DISCOVERY_PROVIDER_PROFILE = (
     ".audius.co",
     ".creatorseed.com",
     ".monophonic.digital",
@@ -1164,7 +1164,7 @@ def get_registered_plugins(ctx, service):
 def is_in_discprov_whitelist(ctx):
     override_env = get_override_path(ctx, "discovery-provider")
     url_env = dotenv.get_key(override_env, "audius_discprov_url")
-    for suffix in DISCPROV_WHITELIST:
+    for suffix in USE_LEGACY_DISCOVERY_PROVIDER_PROFILE:
         if url_env.endswith(suffix):
             return True
     return False
