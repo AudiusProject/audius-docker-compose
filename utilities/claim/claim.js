@@ -152,7 +152,8 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
     const value = await balanceOf(ethRegistryAddress, ethTokenAddress, web3, ethRewardsManagerAddress)
     console.log(`EthRewardsManager holding ${value.div(new BN('1000000000000000000')).toString()} $AUDIO`)
     console.log(value.toString())
-    if (value.gt(new BN(0))) {
+    // Check for minimum amount of $AUDIO to transfer. Sub 1 $AUDIO is possible because of wormhole dust / transfer minimums
+    if (value.gt(new BN('1000000000000000000'))) {
       console.log('Transferring from EthRewardsManager to wormhole')
       const arbiterFee = 0
       const nonce = 2
@@ -187,6 +188,8 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
       }
       const isComplete = await tokenBridge.isTransferCompleted(vaa)
       console.log(`Wormhole redemption completion status: ${isComplete}`)
+      // Wait for 30 seconds to ensure the VAA is processed
+      await new Promise((resolve) => setTimeout(resolve, 30_000))
       if (!isComplete) {
         const redeemTxs = tokenBridge.redeem(signer.address.address, vaa)
         const resRedeem = await signSendWait(
