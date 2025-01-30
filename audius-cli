@@ -48,7 +48,7 @@ SERVICES = (
 USE_LEGACY_DISCOVERY_PROVIDER_PROFILE = (
     ".audius.co",
     ".creatorseed.com",
-    ".monophonic.digital",
+    "dn1.monophonic.digital",
     ".figment.io",
     ".tikilabs.com",
 )
