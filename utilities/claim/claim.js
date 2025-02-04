@@ -176,10 +176,17 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
       console.log('Successfully transferred to wormhole, transaction:', txHash)
       // Append transaction hash to file
       fs.appendFileSync(wormholeFile, txHash + '\n')
+      // Wait for 30 seconds to ensure the VAA is processed
+      await new Promise((resolve) => setTimeout(resolve, 30_000))
     }
 
     // Read and process all pending transactions
-    const transactions = fs.readFileSync(wormholeFile, 'utf8').split('\n').filter(Boolean)
+    let transactions = []
+    try {
+      const transactions = fs.readFileSync(wormholeFile, 'utf8').split('\n').filter(Boolean)
+    } catch (e) {
+      console.error(`No ${wormholeFile} file found`)
+    }
     let remainingTxs = transactions
     if (transactions.length === 0) {
       console.log('No transactions to redeem')
@@ -207,8 +214,6 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
         }
         const isComplete = await tokenBridge.isTransferCompleted(vaa)
         console.log(`Wormhole redemption completion status: ${isComplete}`)
-        // Wait for 30 seconds to ensure the VAA is processed
-        await new Promise((resolve) => setTimeout(resolve, 30_000))
         if (!isComplete) {
           const redeemTxs = tokenBridge.redeem(signer.address.address, vaa)
           const resRedeem = await signSendWait(
