@@ -3,6 +3,8 @@ const Web3 = require('web3')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const { program } = require('commander')
 const BN = require('bn.js')
+const fs = require('fs')
+const path = require('path')
 const audius = require('@audius/libs')
 
 const defaultRegistryAddress = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
@@ -109,6 +111,10 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
 
   const currentBlock = await web3.eth.getBlockNumber()
   const blockDiff = currentBlock - lastFundedBlock - 12
+  if (gasPrice === undefined) {
+    gasPrice = await web3.eth.getGasPrice()
+    console.log('Calculated Gas Price:', gasPrice)
+  }
 
   console.log('\nInitiating Round\n================================\n')
   if (blockDiff > requiredBlockDiff) {
@@ -121,7 +127,8 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
     console.log('Initializing Round')
     await claimsManagerContract.methods.initiateRound().send({
       from: accountAddress,
-      gas
+      gas,
+      gasPrice
     })
     console.log('Successfully initiated Round')
   } else {
@@ -143,7 +150,8 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
   } else {
     console.log('No value to transfer from splitter')
   }
-
+  
+  const wormholeFile = path.join(__dirname, 'wormholeTransactions.txt')  
   if (transferRewardsToSolana) {
     const feePayerSecretKey = process.env.FEE_PAYER_SECRET_KEY
 
@@ -160,49 +168,64 @@ async function initiateRound(privateKey, { ethRegistryAddress, ethTokenAddress, 
       gas = await ethRewardsManagerContract.methods.transferToSolana(arbiterFee, nonce).estimateGas()
       const tx = await ethRewardsManagerContract.methods.transferToSolana(arbiterFee, nonce).send({
         from: accountAddress,
-        gas
+        gas,
+        gasPrice
       })
 
       const txHash = tx.transactionHash
       console.log('Successfully transferred to wormhole, transaction:', txHash)
-
-      console.log('Redeeming wormhole funds on Solana')
-      const wh = await wormhole("Mainnet", [evm, solana])
-      const sendChain = wh.getChain("Ethereum")
-      const receiveChain = wh.getChain("Solana")
-      const tokenBridge = await receiveChain.getTokenBridge()
-      const signer = await getWormholeSolanaSigner(receiveChain, feePayerSecretKey, solanaRpcEndpoint)
-      const [whm] = await sendChain.parseTransaction(txHash)
-
-      const oneHourInMs = 3600000
-
-      let vaa = await wh.getVaa(whm, "TokenBridge:Transfer", oneHourInMs)
-      let retryCount = 0
-      while (!vaa) {
-        logger.warn(
-          { tx: txHash, retryCount: retryCount++ },
-          "No TokenBridgeTransfer VAA found, waiting and trying again..."
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        vaa = await wh.getVaa(whm, "TokenBridge:Transfer", oneHourInMs)
-      }
-      const isComplete = await tokenBridge.isTransferCompleted(vaa)
-      console.log(`Wormhole redemption completion status: ${isComplete}`)
-      // Wait for 30 seconds to ensure the VAA is processed
-      await new Promise((resolve) => setTimeout(resolve, 30_000))
-      if (!isComplete) {
-        const redeemTxs = tokenBridge.redeem(signer.address.address, vaa)
-        const resRedeem = await signSendWait(
-          receiveChain,
-          redeemTxs,
-          signer.signer
-        )
-      }
-      console.log('Wormhole redemption completed')
-
-    } else {
-      console.log('No value to transfer from EthRewardsManager')
+      // Append transaction hash to file
+      fs.appendFileSync(wormholeFile, txHash + '\n')
     }
+
+    // Read and process all pending transactions
+    const transactions = fs.readFileSync(wormholeFile, 'utf8').split('\n').filter(Boolean)
+    let remainingTxs = transactions
+    if (transactions.length === 0) {
+      console.log('No transactions to redeem')
+    } else {
+      for (const pendingTxHash of transactions) {
+        console.log('Redeeming wormhole funds on Solana for transaction:', pendingTxHash)
+        const wh = await wormhole("Mainnet", [evm, solana])
+        const sendChain = wh.getChain("Ethereum")
+        const receiveChain = wh.getChain("Solana") 
+        const tokenBridge = await receiveChain.getTokenBridge()
+        const signer = await getWormholeSolanaSigner(receiveChain, feePayerSecretKey, solanaRpcEndpoint)
+        const [whm] = await sendChain.parseTransaction(pendingTxHash)
+    
+        const oneHourInMs = 3600000
+    
+        let vaa = await wh.getVaa(whm, "TokenBridge:Transfer", oneHourInMs)
+        let retryCount = 0
+        while (!vaa) {
+          logger.warn(
+            { tx: pendingTxHash, retryCount: retryCount++ },
+            "No TokenBridgeTransfer VAA found, waiting and trying again..."
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          vaa = await wh.getVaa(whm, "TokenBridge:Transfer", oneHourInMs)
+        }
+        const isComplete = await tokenBridge.isTransferCompleted(vaa)
+        console.log(`Wormhole redemption completion status: ${isComplete}`)
+        // Wait for 30 seconds to ensure the VAA is processed
+        await new Promise((resolve) => setTimeout(resolve, 30_000))
+        if (!isComplete) {
+          const redeemTxs = tokenBridge.redeem(signer.address.address, vaa)
+          const resRedeem = await signSendWait(
+            receiveChain,
+            redeemTxs,
+            signer.signer
+          )
+        }
+        console.log('Wormhole redemption completed')
+  
+        // Remove completed transaction from file
+        remainingTxs = remainingTxs.filter(tx => tx !== pendingTxHash)
+      }
+      fs.writeFileSync(wormholeFile, remainingTxs.join('\n') + (remainingTxs.length ? '\n' : ''))
+    }
+  } else {
+    console.log('No value to transfer from EthRewardsManager')
   }
 }
 
