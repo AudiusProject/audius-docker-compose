@@ -467,7 +467,6 @@ def launch(ctx, service, seed, auto_seed, chain, yes):
                 "down",
                 "backend",
                 "indexer",
-                "trpc",
                 "comms",
                 "notifications",
                 "es-indexer",
