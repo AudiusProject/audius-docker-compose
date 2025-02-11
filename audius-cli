@@ -52,6 +52,7 @@ USE_LEGACY_DISCOVERY_PROVIDER_PROFILE = (
     ".figment.io",
     ".tikilabs.com",
     ".stuffisup.com",
+    ".mainnet.audiusindex.org",
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
