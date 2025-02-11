@@ -51,7 +51,7 @@ USE_LEGACY_DISCOVERY_PROVIDER_PROFILE = (
     "dn1.monophonic.digital",
     ".figment.io",
     ".tikilabs.com",
-    "dn1.stuffisup.com",
+    ".stuffisup.com",
 )
 
 REGISTERED_PLUGINS = "REGISTERED_PLUGINS"
