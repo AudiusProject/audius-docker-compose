@@ -549,6 +549,25 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  anti-abuse-oracle:
+    image: audius/anti-abuse-oracle:${TAG:-current}
+    container_name: anti-abuse-oracle
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - anti-abuse-oracle
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   staking:
     image: audius/staking:${TAG:-current}
     container_name: staking
