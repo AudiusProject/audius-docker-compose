@@ -549,9 +549,9 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
-  anti-abuse-oracle:
-    image: audius/anti-abuse-oracle:${TAG:-current}
-    container_name: anti-abuse-oracle
+  anti-abuse:
+    image: audius/anti-abuse:${TAG:-current}
+    container_name: anti-abuse
     restart: unless-stopped
     networks:
       - discovery-provider-network
@@ -559,7 +559,7 @@ services:
       - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     profiles:
-      - anti-abuse-oracle
+      - anti-abuse
     logging:
       options:
         max-size: 10m
