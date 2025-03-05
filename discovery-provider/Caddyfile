@@ -1,15 +1,31 @@
-{$audius_discprov_url}
-
-{$CADDY_TLS}
-
-encode zstd gzip
-
-@comms {
-    path /comms*
-    expression "{$NO_COMMS}" == ""
+# Handle domain name with HTTPS
+{$audius_discprov_url} {
+    {$CADDY_TLS}
+    
+    encode zstd gzip
+    
+    @comms {
+        path /comms*
+        expression "{$NO_COMMS}" == ""
+    }
+    reverse_proxy @comms comms:8925
+    
+    # defaults to openresty:5000
+    header X-Forwarded-Proto {scheme}
+    reverse_proxy {$ROOT_HOST:"openresty:5000"}
 }
-reverse_proxy @comms comms:8925
 
-# defaults to openresty:5000
-header X-Forwarded-Proto {scheme}
-reverse_proxy {$ROOT_HOST:"openresty:5000"}
+# Handle IP address with HTTP - explicitly bind to all interfaces
+:80 {
+    encode zstd gzip
+    
+    @comms {
+        path /comms*
+        expression "{$NO_COMMS}" == ""
+    }
+    reverse_proxy @comms comms:8925
+    
+    # defaults to openresty:5000
+    header X-Forwarded-Proto {scheme}
+    reverse_proxy {$ROOT_HOST:"openresty:5000"}
+}
