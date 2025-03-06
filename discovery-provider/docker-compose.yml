@@ -549,6 +549,27 @@ services:
         max-buffer-size: 100m
       driver: json-file
 
+  anti-abuse:
+    image: audius/anti-abuse:${TAG:-current}
+    container_name: anti-abuse
+    restart: unless-stopped
+    networks:
+      - discovery-provider-network
+    env_file:
+      - ${NETWORK:-prod}.env
+      - ${OVERRIDE_PATH:-override.env}
+    profiles:
+      - anti-abuse
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - '6003:6003'  
+
   staking:
     image: audius/staking:${TAG:-current}
     container_name: staking
