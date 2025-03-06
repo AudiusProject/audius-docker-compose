@@ -142,7 +142,7 @@ services:
     image: audius/discovery-provider:${TAG:-current}
     <<: *extra-hosts
     restart: always
-    mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
+    mem_limit: ${SERVER_MEM_LIMIT:-8000000000}
     healthcheck:
       test: [
           "CMD-SHELL",
@@ -296,7 +296,7 @@ services:
       - node.name=cluster1-node1
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms${ES_MEM:-2g} -Xmx${ES_MEM:-2g}"
+      - "ES_JAVA_OPTS=-Xms${ES_MEM:-8g} -Xmx${ES_MEM:-8g}"
     ulimits:
       memlock:
         soft: -1
