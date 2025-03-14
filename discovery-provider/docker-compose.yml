@@ -47,6 +47,7 @@ services:
   core:
     container_name: core
     image: audius/audiusd:${TAG:-current}
+    pull_policy: always
     restart: unless-stopped
     ports:
       - "5001:80"     # echo server (proxy for core + uptime)
@@ -67,7 +68,6 @@ services:
       - AUDIUSD_TLS_DISABLED=true
     networks:
       - discovery-provider-network
-    pull_policy: always
     logging:
       options:
         max-size: 10m
@@ -140,6 +140,7 @@ services:
   backend:
     container_name: server
     image: audius/discovery-provider:${TAG:-current}
+    pull_policy: always
     <<: *extra-hosts
     restart: always
     mem_limit: ${SERVER_MEM_LIMIT:-5000000000}
@@ -175,6 +176,7 @@ services:
   indexer:
     container_name: indexer
     image: audius/discovery-provider:${TAG:-current}
+    pull_policy: always
     <<: *extra-hosts
     restart: always
     mem_limit: ${INDEXER_MEM_LIMIT:-5000000000}
