@@ -512,8 +512,6 @@ services:
         mode: non-blocking
         max-buffer-size: 100m
       driver: json-file
-    ports:
-      - '6003:6003'
 
   archiver:
     image: audius/archiver:${TAG:-current}
