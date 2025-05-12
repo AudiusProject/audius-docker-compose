@@ -15,6 +15,21 @@
     reverse_proxy {$ROOT_HOST:"openresty:5000"}
 }
 
+# Add a second HTTPS domain for unproxied requests
+{$audius_discprov_url_unproxied} {
+    encode zstd gzip
+    
+    @comms {
+        path /comms*
+        expression "{$NO_COMMS}" == ""
+    }
+    reverse_proxy @comms comms:8925
+
+    # defaults to openresty:5000
+    header X-Forwarded-Proto {scheme}
+    reverse_proxy {$ROOT_HOST:"openresty:5000"}
+}
+
 # Handle IP address with HTTP - explicitly bind to all interfaces
 :80 {
     encode zstd gzip
