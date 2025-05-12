@@ -17,8 +17,6 @@
 
 # Add a second HTTPS domain for unproxied requests
 {$audius_discprov_url_unproxied} {
-    {$CADDY_TLS}
-    
     encode zstd gzip
     
     @comms {
