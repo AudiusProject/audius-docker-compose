@@ -16,7 +16,7 @@
 }
 
 # Add a second HTTPS domain for unproxied requests
-{$audius_discprov_url_unproxied} {
+{$audius_discprov_url_unproxied:unused.localhost} {
     encode zstd gzip
     
     @comms {
