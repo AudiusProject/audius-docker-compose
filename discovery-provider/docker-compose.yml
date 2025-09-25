@@ -36,6 +36,7 @@ services:
     <<: *extra-hosts
     restart: unless-stopped
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
