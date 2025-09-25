@@ -17,6 +17,7 @@ services:
     <<: *extra-hosts
     restart: unless-stopped
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
@@ -36,6 +37,7 @@ services:
     <<: *extra-hosts
     restart: unless-stopped
     env_file:
+      - ${NETWORK:-prod}.env
       - ${OVERRIDE_PATH:-override.env}
     networks:
       - discovery-provider-network
@@ -195,7 +197,7 @@ services:
     environment:
       - audius_discprov_infra_setup=audius-docker-compose
       - audius_no_server=true
-      - audius_db_run_migrations=true
+      - audius_db_run_migrations=false
       - audius_elasticsearch_run_indexer=true
     healthcheck:
       test: >
