@@ -439,8 +439,7 @@ services:
 
 
   verified-notifications:
-    # specific tag because this plugin isn't a part of pedalboard
-    image: audius/verified-notifications:540cbb93546f653ad78847f5850c63c8a3de5c02
+    image: audius/verified-notifications:${TAG:-current}
     container_name: verified-notifications
     restart: unless-stopped
     networks:
