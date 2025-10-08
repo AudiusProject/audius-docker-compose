@@ -48,7 +48,7 @@ services:
 
   core:
     container_name: core
-    image: audius/audiusd:971e493d9d954fee3ccf2ff7ed1158f0a4c6917c
+    image: audius/audiusd:${TAG:-current}
     pull_policy: always
     restart: unless-stopped
     ports:
