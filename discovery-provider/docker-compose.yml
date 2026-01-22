@@ -48,7 +48,7 @@ services:
 
   core:
     container_name: core
-    image: audius/audiusd:${TAG:-current}
+    image: openaudio/go-openaudio:${TAG:-current}
     pull_policy: always
     restart: unless-stopped
     ports:
