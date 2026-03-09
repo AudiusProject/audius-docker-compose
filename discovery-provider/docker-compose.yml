@@ -379,25 +379,7 @@ services:
     profiles:
       - discovery
 
-  # plugins
-  notifications:
-    image: audius/discovery-provider-notifications:${TAG:-current}
-    container_name: notifications
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - notifications
+  # plugins (notifications plugin deployed to k8s; see audius-k8s prod-notifications stack)
 
   crm:
     image: audius/crm:${TAG:-current}
