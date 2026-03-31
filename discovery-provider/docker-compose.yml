@@ -283,28 +283,6 @@ services:
     profiles:
       - discovery
 
-  relay:
-    image: audius/relay:${TAG:-current}
-    container_name: relay
-    <<: *extra-hosts
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    environment:
-      - ENVIRONMENT=${NETWORK}
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-    profiles:
-      - discovery
-
   solana-relay:
     image: audius/solana-relay:${TAG:-current}
     container_name: solana-relay
@@ -379,25 +357,6 @@ services:
     profiles:
       - discovery
 
-  crm:
-    image: audius/crm:${TAG:-current}
-    container_name: crm
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    profiles:
-      - crm
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
   trending-challenge-rewards:
     image: audius/trending-challenge-rewards:${TAG:-current}
     container_name: trending-challenge-rewards
@@ -409,45 +368,6 @@ services:
       - ${OVERRIDE_PATH:-override.env}
     profiles:
       - trending-challenge-rewards
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-
-  verified-notifications:
-    image: audius/verified-notifications:${TAG:-current}
-    container_name: verified-notifications
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    profiles:
-      - verified-notifications
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-  mri:
-    image: audius/mri:${TAG:-current}
-    container_name: mri
-    restart: unless-stopped
-    networks:
-      - discovery-provider-network
-    env_file:
-      - ${NETWORK:-prod}.env
-      - ${OVERRIDE_PATH:-override.env}
-    profiles:
-      - mri
     logging:
       options:
         max-size: 10m
